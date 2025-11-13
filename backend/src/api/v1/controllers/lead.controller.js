@@ -105,3 +105,22 @@ exports.uploadLeadsCSV = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.uploadLeadsCSV = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw new ApiError(400, 'File CSV tidak ditemukan');
+    }
+
+    const fileBuffer = req.file.buffer;
+    const result = await leadService.bulkCreateLeadsFromCSV(fileBuffer);
+    
+    res.status(201).json({
+      status: 'success',
+      message: 'Upload CSV berhasil diproses',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

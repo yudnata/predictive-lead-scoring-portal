@@ -1,5 +1,7 @@
 const leadModel = require('../models/lead.model');
 const ApiError = require('../utils/apiError');
+const csv = require('fast-csv');
+const { Readable } = require('stream');
 
 /**
  * Membuat lead baru
@@ -12,6 +14,43 @@ const createLead = async (leadData, detailData) => {
     throw new ApiError(400, 'Nama dan Email lead harus diisi');
   }
   return leadModel.create(leadData, detailData);
+};
+
+const bulkCreateLeadsFromCSV = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const leads = [];
+
+    const stream = Readable.from(fileBuffer);
+
+    const csvStream = csv
+      .parse({ headers: true })
+      .on('error', (error) => {
+        // Error parsing CSV
+        reject(new ApiError(400, `Format CSV tidak valid: ${error.message}`));
+      })
+      .on('data', (row) => {
+        // TODO: Transformasi data di sini jika perlu
+        // Misal: Ubah 'TRUE'/'FALSE' (string) menjadi boolean
+        // row.lead_housing_loan = row.lead_housing_loan.toLowerCase() === 'true';
+        // row.lead_loan = row.lead_loan.toLowerCase() === 'true';
+        leads.push(row);
+      })
+      .on('end', async (rowCount) => {
+        if (leads.length === 0) {
+          return reject(new ApiError(400, 'File CSV kosong atau tidak ada data'));
+        }
+
+        try {
+          const result = await leadModel.bulkInsert(leads);
+          resolve(result);
+        } catch (error) {
+          // Tangkap error dari model (misal 400 jika semua gagal)
+          reject(error);
+        }
+      });
+
+    stream.pipe(csvStream);
+  });
 };
 
 /**
@@ -92,4 +131,5 @@ module.exports = {
   getLeadById,
   updateLeadById,
   deleteLeadById,
+  bulkCreateLeadsFromCSV
 };

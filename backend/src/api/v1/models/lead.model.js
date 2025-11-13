@@ -1,6 +1,64 @@
 const db = require('../../../config/database');
 const ApiError = require('../utils/apiError');
 
+const insertSingleLeadWithClient = async (client, lead) => {
+  // TODO: Validasi & Transformasi data row CSV di sini
+  // (Misal: 'true' -> true, 'SMA' -> 1)
+  // Untuk saat ini, kita asumsikan data CSV sudah bersih
+
+  const {
+    lead_name,
+    lead_phone_number,
+    lead_email,
+    lead_age,
+    job_id,
+    marital_id,
+    education_id,
+    lead_balance,
+    lead_housing_loan,
+    lead_loan,
+  } = lead;
+
+  // 1. Insert ke tb_leads
+  const leadQuery = {
+    text: `
+      INSERT INTO tb_leads (lead_name, lead_phone_number, lead_email, lead_age, job_id, marital_id, education_id, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+      RETURNING lead_id
+    `,
+    values: [
+      lead_name,
+      lead_phone_number || null,
+      lead_email || null,
+      lead_age || null,
+      job_id || null,
+      marital_id || null,
+      education_id || null,
+    ],
+  };
+  const { rows: leadRows } = await client.query(leadQuery);
+  const newLeadId = leadRows[0].lead_id;
+
+  // 2. Insert ke tb_leads_detail
+  const detailQuery = {
+    text: `
+      INSERT INTO tb_leads_detail (lead_id, lead_balance, lead_housing_loan, lead_loan, updated_at)
+      VALUES ($1, $2, $3, $4, NOW())
+    `,
+    values: [newLeadId, lead_balance || null, lead_housing_loan || false, lead_loan || false],
+  };
+  await client.query(detailQuery);
+
+  // 3. Insert skor default
+  const scoreQuery = {
+    text: `INSERT INTO tb_leads_score (lead_id, lead_score, predicted_at) VALUES ($1, $2, NOW())`,
+    values: [newLeadId, 0.0],
+  };
+  await client.query(scoreQuery);
+
+  return newLeadId;
+};
+
 /**
  * Helper untuk query full lead data
  */
@@ -78,7 +136,7 @@ const create = async (leadData, detailData) => {
     await client.query(scoreQuery);
 
     await client.query('COMMIT');
-    
+
     // Ambil data lengkap dari lead yang baru dibuat
     return findFullLeadById(newLeadId);
   } catch (error) {
@@ -100,10 +158,7 @@ const create = async (leadData, detailData) => {
  */
 const findAll = async (options) => {
   const { limit, offset, search } = options;
-  let queryText = fullLeadQuery.replace(
-    'FROM tb_leads l',
-    'FROM tb_leads l'
-  ); // Salin query
+  let queryText = fullLeadQuery.replace('FROM tb_leads l', 'FROM tb_leads l'); // Salin query
   const queryValues = [];
   let paramIndex = 1;
 
@@ -166,13 +221,13 @@ const update = async (leadId, leadData, detailData) => {
       // Ambil field yang ada di leadData
       const leadFields = Object.keys(leadData);
       const leadValues = Object.values(leadData);
-      
-      const setClause = leadFields
-        .map((field, index) => `${field} = $${index + 1}`)
-        .join(', ');
+
+      const setClause = leadFields.map((field, index) => `${field} = $${index + 1}`).join(', ');
 
       const leadQuery = {
-        text: `UPDATE tb_leads SET ${setClause}, updated_at = NOW() WHERE lead_id = $${leadValues.length + 1}`,
+        text: `UPDATE tb_leads SET ${setClause}, updated_at = NOW() WHERE lead_id = $${
+          leadValues.length + 1
+        }`,
         values: [...leadValues, leadId],
       };
       await client.query(leadQuery);
@@ -183,19 +238,19 @@ const update = async (leadId, leadData, detailData) => {
       const detailFields = Object.keys(detailData);
       const detailValues = Object.values(detailData);
 
-      const setClause = detailFields
-        .map((field, index) => `${field} = $${index + 1}`)
-        .join(', ');
+      const setClause = detailFields.map((field, index) => `${field} = $${index + 1}`).join(', ');
 
       const detailQuery = {
-        text: `UPDATE tb_leads_detail SET ${setClause}, updated_at = NOW() WHERE lead_id = $${detailValues.length + 1}`,
+        text: `UPDATE tb_leads_detail SET ${setClause}, updated_at = NOW() WHERE lead_id = $${
+          detailValues.length + 1
+        }`,
         values: [...detailValues, leadId],
       };
       await client.query(detailQuery);
     }
 
     await client.query('COMMIT');
-    
+
     return findFullLeadById(leadId);
   } catch (error) {
     await client.query('ROLLBACK');
@@ -214,11 +269,66 @@ const update = async (leadId, leadData, detailData) => {
  * @param {number} leadId
  */
 const deleteById = async (leadId) => {
-  const { rowCount } = await db.query('DELETE FROM tb_leads WHERE lead_id = $1', [
-    leadId,
-  ]);
+  const { rowCount } = await db.query('DELETE FROM tb_leads WHERE lead_id = $1', [leadId]);
   if (rowCount === 0) {
     throw new ApiError(404, 'Lead tidak ditemukan');
+  }
+};
+
+const bulkInsert = async (leads) => {
+  const client = await db.connect();
+  let successCount = 0;
+  let failureCount = 0;
+  const errors = [];
+
+  try {
+    await client.query('BEGIN');
+
+    // Kita gunakan Promise.allSettled untuk memproses semua
+    // dan mencatat yang gagal tanpa menghentikan yang lain
+    const results = await Promise.allSettled(
+      leads.map((lead) => insertSingleLeadWithClient(client, lead))
+    );
+
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        successCount++;
+      } else {
+        // Jika gagal (misal email duplikat)
+        failureCount++;
+        errors.push(
+          `Baris ${index + 2}: ${
+            result.reason.message || result.reason.detail || 'Error tidak diketahui'
+          }`
+        );
+      }
+    });
+
+    // Jika ada yang gagal, rollback
+    if (failureCount > 0) {
+      await client.query('ROLLBACK');
+      throw new ApiError(
+        400,
+        `Proses gagal. ${failureCount} dari ${leads.length} data bermasalah.`,
+        errors
+      );
+    }
+
+    // Jika semua sukses, commit
+    await client.query('COMMIT');
+
+    return {
+      totalRows: leads.length,
+      successCount,
+      failureCount,
+    };
+  } catch (error) {
+    // Tangani error di luar promise (misal commit gagal)
+    await client.query('ROLLBACK');
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(500, 'Transaksi database gagal', [error.message]);
+  } finally {
+    client.release();
   }
 };
 
@@ -229,4 +339,5 @@ module.exports = {
   findFullLeadById,
   update,
   deleteById,
+  bulkInsert,
 };
