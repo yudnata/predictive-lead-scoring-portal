@@ -1,0 +1,232 @@
+const db = require('../../../config/database');
+const ApiError = require('../utils/apiError');
+
+/**
+ * Helper untuk query full lead data
+ */
+const fullLeadQuery = `
+  SELECT
+    l.lead_id, l.lead_name, l.lead_phone_number, l.lead_email, l.lead_age, l.created_at, l.updated_at,
+    j.job_id, j.job_name,
+    m.marital_id, m.marital_status,
+    e.education_id, e.education_level,
+    d.leads_detail_id, d.lead_balance, d.lead_housing_loan, d.lead_loan, d.pOutcome_id,
+    po.pOutcome_name,
+    ls.lead_score
+  FROM tb_leads l
+  LEFT JOIN tb_job j ON l.job_id = j.job_id
+  LEFT JOIN tb_marital m ON l.marital_id = m.marital_id
+  LEFT JOIN tb_education e ON l.education_id = e.education_id
+  LEFT JOIN tb_leads_detail d ON l.lead_id = d.lead_id
+  LEFT JOIN tb_poutcome po ON d.pOutcome_id = po.pOutcome_id
+  LEFT JOIN tb_leads_score ls ON l.lead_id = ls.lead_id
+  -- (Tambahkan 'WHERE ls.model_id = ...' jika ada model spesifik)
+`;
+
+/**
+ * Membuat lead baru (tb_leads dan tb_leads_detail) dalam satu transaksi
+ * @param {object} leadData - Data dari tb_leads
+ * @param {object} detailData - Data dari tb_leads_detail
+ * @returns {Promise<object>} Lead baru yang sudah di-JOIN
+ */
+const create = async (leadData, detailData) => {
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+
+    // 1. Insert ke tb_leads
+    const leadQuery = {
+      text: `
+        INSERT INTO tb_leads (lead_name, lead_phone_number, lead_email, lead_age, job_id, marital_id, education_id, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+        RETURNING lead_id
+      `,
+      values: [
+        leadData.lead_name,
+        leadData.lead_phone_number,
+        leadData.lead_email,
+        leadData.lead_age,
+        leadData.job_id,
+        leadData.marital_id,
+        leadData.education_id,
+      ],
+    };
+    const { rows: leadRows } = await client.query(leadQuery);
+    const newLeadId = leadRows[0].lead_id;
+
+    // 2. Insert ke tb_leads_detail
+    const detailQuery = {
+      text: `
+        INSERT INTO tb_leads_detail (lead_id, lead_balance, lead_housing_loan, lead_loan, pOutcome_id, updated_at)
+        VALUES ($1, $2, $3, $4, $5, NOW())
+      `,
+      values: [
+        newLeadId,
+        detailData.lead_balance || null,
+        detailData.lead_housing_loan || false,
+        detailData.lead_loan || false,
+        detailData.pOutcome_id || null, // UI tidak ada, tapi skema ada
+      ],
+    };
+    await client.query(detailQuery);
+
+    // (Opsional) 3. Insert skor default (misal 0 atau null) ke tb_leads_score
+    const scoreQuery = {
+      text: `INSERT INTO tb_leads_score (lead_id, lead_score, predicted_at) VALUES ($1, $2, NOW())`,
+      values: [newLeadId, 0.0], // Default 0
+    };
+    await client.query(scoreQuery);
+
+    await client.query('COMMIT');
+    
+    // Ambil data lengkap dari lead yang baru dibuat
+    return findFullLeadById(newLeadId);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    // Cek error unique email
+    if (error.code === '23505' && error.constraint === 'tb_leads_lead_email_key') {
+      throw new ApiError(400, 'Email sudah terdaftar');
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+/**
+ * Mengambil semua leads dengan pagination dan search
+ * @param {object} options - { limit, offset, search }
+ * @returns {Promise<Array>}
+ */
+const findAll = async (options) => {
+  const { limit, offset, search } = options;
+  let queryText = fullLeadQuery.replace(
+    'FROM tb_leads l',
+    'FROM tb_leads l'
+  ); // Salin query
+  const queryValues = [];
+  let paramIndex = 1;
+
+  if (search) {
+    queryText += ` WHERE l.lead_name ILIKE $${paramIndex++} OR l.lead_email ILIKE $${paramIndex++}`;
+    queryValues.push(`%${search}%`, `%${search}%`);
+  }
+
+  queryText += ` ORDER BY ls.lead_score DESC, l.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+  queryValues.push(limit, offset);
+
+  const { rows } = await db.query(queryText, queryValues);
+  return rows;
+};
+
+/**
+ * Menghitung total leads
+ * @param {object} options - { search }
+ * @returns {Promise<number>}
+ */
+const countAll = async (options) => {
+  const { search } = options;
+  let queryText = 'SELECT COUNT(lead_id) FROM tb_leads';
+  const queryValues = [];
+
+  if (search) {
+    queryText += ' WHERE lead_name ILIKE $1 OR lead_email ILIKE $1';
+    queryValues.push(`%${search}%`);
+  }
+
+  const { rows } = await db.query(queryText, queryValues);
+  return parseInt(rows[0].count, 10);
+};
+
+/**
+ * Mengambil 1 lead dengan semua data JOIN
+ * @param {number} leadId
+ * @returns {Promise<object>}
+ */
+const findFullLeadById = async (leadId) => {
+  const queryText = `${fullLeadQuery} WHERE l.lead_id = $1`;
+  const { rows } = await db.query(queryText, [leadId]);
+  return rows[0];
+};
+
+/**
+ * Meng-update lead (tb_leads dan tb_leads_detail) dalam transaksi
+ * @param {number} leadId
+ * @param {object} leadData
+ * @param {object} detailData
+ * @returns {Promise<object>}
+ */
+const update = async (leadId, leadData, detailData) => {
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+
+    // 1. Update tb_leads
+    if (leadData && Object.keys(leadData).length > 0) {
+      // Ambil field yang ada di leadData
+      const leadFields = Object.keys(leadData);
+      const leadValues = Object.values(leadData);
+      
+      const setClause = leadFields
+        .map((field, index) => `${field} = $${index + 1}`)
+        .join(', ');
+
+      const leadQuery = {
+        text: `UPDATE tb_leads SET ${setClause}, updated_at = NOW() WHERE lead_id = $${leadValues.length + 1}`,
+        values: [...leadValues, leadId],
+      };
+      await client.query(leadQuery);
+    }
+
+    // 2. Update tb_leads_detail
+    if (detailData && Object.keys(detailData).length > 0) {
+      const detailFields = Object.keys(detailData);
+      const detailValues = Object.values(detailData);
+
+      const setClause = detailFields
+        .map((field, index) => `${field} = $${index + 1}`)
+        .join(', ');
+
+      const detailQuery = {
+        text: `UPDATE tb_leads_detail SET ${setClause}, updated_at = NOW() WHERE lead_id = $${detailValues.length + 1}`,
+        values: [...detailValues, leadId],
+      };
+      await client.query(detailQuery);
+    }
+
+    await client.query('COMMIT');
+    
+    return findFullLeadById(leadId);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    // Cek error unique email
+    if (error.code === '23505' && error.constraint === 'tb_leads_lead_email_key') {
+      throw new ApiError(400, 'Email sudah digunakan oleh lead lain');
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+/**
+ * Menghapus lead (ON DELETE CASCADE akan menghapus detail & score)
+ * @param {number} leadId
+ */
+const deleteById = async (leadId) => {
+  const { rowCount } = await db.query('DELETE FROM tb_leads WHERE lead_id = $1', [
+    leadId,
+  ]);
+  if (rowCount === 0) {
+    throw new ApiError(404, 'Lead tidak ditemukan');
+  }
+};
+
+module.exports = {
+  create,
+  findAll,
+  countAll,
+  findFullLeadById,
+  update,
+  deleteById,
+};

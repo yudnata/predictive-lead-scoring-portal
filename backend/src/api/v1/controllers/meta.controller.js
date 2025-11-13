@@ -1,22 +1,35 @@
-// Kerangka untuk data master (dropdown)
 const db = require('../../../config/database');
+const ApiError = require('../utils/apiError');
 
-const getMasterData = (tableName) => async (req, res, next) => {
-  try {
-    // Hati-hati dengan SQL Injection, pastikan tableName di-whitelist
-    const allowedTables = ['tb_job', 'tb_marital', 'tb_education', 'tb_status'];
-    if (!allowedTables.includes(tableName)) {
-      throw new Error('Invalid table');
-    }
-    
-    const { rows } = await db.query(`SELECT * FROM ${tableName}`);
-    res.status(200).json({ status: 'success', data: rows });
-  } catch (error) {
-    next(error);
-  }
+/**
+ * Fungsi helper generik untuk mengambil data dari tabel master
+ * @param {string} tableName - Nama tabel (e.g., 'tb_job')
+ */
+const getMetaData = async (tableName) => {
+  const { rows } = await db.query(`SELECT * FROM ${tableName}`);
+  return rows;
 };
 
-exports.getJobs = getMasterData('tb_job');
-exports.getMaritalStatus = getMasterData('tb_marital');
-exports.getEducationLevels = getMasterData('tb_education');
-exports.getStatuses = getMasterData('tb_status');
+// Fungsi helper untuk membuat controller
+const createMetaController = (tableName) => {
+  return async (req, res, next) => {
+    try {
+      const data = await getMetaData(tableName);
+      res.status(200).json({
+        status: 'success',
+        data,
+      });
+    } catch (error) {
+      // Tangani jika nama tabel salah (meskipun ini error internal)
+      next(new ApiError(500, `Gagal mengambil data dari ${tableName}`));
+    }
+  };
+};
+
+// Buat controllernya
+exports.getJobs = createMetaController('tb_job');
+exports.getMaritalStatus = createMetaController('tb_marital');
+exports.getEducationLevels = createMetaController('tb_education');
+exports.getPOutcomes = createMetaController('tb_poutcome');
+exports.getStatuses = createMetaController('tb_status');
+exports.getContactMethods = createMetaController('tb_contactmethod');
