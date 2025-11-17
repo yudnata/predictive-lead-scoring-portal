@@ -1,10 +1,8 @@
--- Hapus tabel jika sudah ada (untuk testing)
 DROP TABLE IF EXISTS tb_lead_status_history, tb_notes, tb_campaignleads, tb_campaign_assignments, tb_leads_score, tb_models, tb_leads_detail, tb_leads, tb_campaigns, tb_users, tb_roles, tb_status, tb_job, tb_marital, tb_education, tb_poutcome, tb_contactmethod CASCADE;
 
--- 1. Tabel Referensi (Data Master)
 CREATE TABLE tb_roles (
     role_id SERIAL PRIMARY KEY,
-    role_name VARCHAR(50) UNIQUE NOT NULL -- 'admin', 'sales'
+    role_name VARCHAR(50) UNIQUE NOT NULL
 );
 
 CREATE TABLE tb_job (
@@ -34,7 +32,7 @@ CREATE TABLE tb_contactmethod (
 
 CREATE TABLE tb_status (
     status_id SERIAL PRIMARY KEY,
-    status VARCHAR(100) NOT NULL -- “Belum Dihubungi”, “Sedang Dihubungi”, “Deal”, “Reject”, “Hubungi Kembali”
+    status VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE tb_models (
@@ -45,7 +43,6 @@ CREATE TABLE tb_models (
     model_version VARCHAR(50)
 );
 
--- 2. Tabel Utama
 CREATE TABLE tb_users (
     user_id SERIAL PRIMARY KEY,
     roles_id INT NOT NULL REFERENCES tb_roles(role_id),
@@ -105,7 +102,6 @@ CREATE TABLE tb_leads_score (
     predicted_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. Tabel Relasi (Junction Tables)
 CREATE TABLE tb_campaign_assignments (
     assignment_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES tb_users(user_id),
@@ -142,16 +138,11 @@ CREATE TABLE tb_lead_status_history (
     changed_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- SEEDING DATA (DATA AWAL)
--- Password untuk semua user: "password123"
 
--- Roles
 INSERT INTO tb_roles (role_name) VALUES ('admin'), ('sales');
 
--- Status
 INSERT INTO tb_status (status) VALUES ('Belum Dihubungi'), ('Sedang Dihubungi'), ('Deal'), ('Reject'), ('Hubungi Kembali');
 
--- Users
 -- password123
 INSERT INTO tb_users (roles_id, user_email, password, full_name, is_active)
 VALUES
@@ -159,7 +150,6 @@ VALUES
 (2, 'yudhinata04@gmail.com', '$2b$10$GQzLACGkxGXlqyLlW8MKeODQJkpoid3by5RRO.P.ggaE7X.q0Zymy', 'Sales Satu', true),
 (2, 'salesfalse@accenture.com', '$2b$10$GQzLACGkxGXlqyLlW8MKeODQJkpoid3by5RRO.P.ggaE7X.q0Zymy', 'Sales Dua', false);
 
--- Data master lainnya
 INSERT INTO tb_job (job_name) VALUES ('Mahasiswa'), ('Karyawan Swasta'), ('Wiraswasta'), ('PNS'), ('Tidak Bekerja');
 INSERT INTO tb_marital (marital_status) VALUES ('Menikah'), ('Belum Menikah'), ('Cerai');
 INSERT INTO tb_education (education_level) VALUES ('SMA'), ('D3'), ('S1'), ('S2'), ('Lainnya');
