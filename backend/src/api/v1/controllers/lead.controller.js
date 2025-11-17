@@ -1,9 +1,6 @@
 const leadService = require('../services/lead.service');
 const ApiError = require('../utils/apiError');
 
-// @desc    Membuat Lead baru
-// @route   POST /api/v1/leads
-// @access  Private (Admin)
 exports.createLead = async (req, res, next) => {
   try {
     const { leadData, detailData } = req.body;
@@ -21,9 +18,6 @@ exports.createLead = async (req, res, next) => {
   }
 };
 
-// @desc    Meng-update Lead
-// @route   PATCH /api/v1/leads/:leadId
-// @access  Private (Admin)
 exports.updateLead = async (req, res, next) => {
   try {
     const { leadId } = req.params;
@@ -40,25 +34,19 @@ exports.updateLead = async (req, res, next) => {
   }
 };
 
-// @desc    Menghapus Lead
-// @route   DELETE /api/v1/leads/:leadId
-// @access  Private (Admin)
 exports.deleteLead = async (req, res, next) => {
   try {
     const { leadId } = req.params;
     await leadService.deleteLeadById(leadId);
     res.status(204).json({
       status: 'success',
-      data: null, // 204 No Content
+      data: null,
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Mengambil semua Leads
-// @route   GET /api/v1/leads
-// @access  Private (Admin, Sales)
 exports.getAllLeads = async (req, res, next) => {
   try {
     const result = await leadService.queryLeads(req.query);
@@ -72,9 +60,6 @@ exports.getAllLeads = async (req, res, next) => {
   }
 };
 
-// @desc    Mengambil detail satu Lead
-// @route   GET /api/v1/leads/:leadId
-// @access  Private (Admin, Sales)
 exports.getLeadById = async (req, res, next) => {
   try {
     const { leadId } = req.params;
@@ -89,14 +74,8 @@ exports.getLeadById = async (req, res, next) => {
   }
 };
 
-// @desc    Upload Leads via CSV
-// @route   POST /api/v1/leads/upload-csv
-// @access  Private (Admin)
 exports.uploadLeadsCSV = async (req, res, next) => {
   try {
-    // Logika upload CSV akan ditambahkan di sini
-    // Ini memerlukan 'multer' untuk file handling
-    // dan 'fast-csv' untuk parsing
     res.status(501).json({
       status: 'info',
       message: 'Endpoint /upload-csv belum diimplementasikan',

@@ -4,8 +4,6 @@ const { protect } = require('../middlewares/auth.middleware');
 const { authorize } = require('../middlewares/role.middleware');
 
 const router = express.Router();
-
-// Proteksi semua rute & khusus Admin
 router.use(protect);
 router.use(authorize('admin'));
 

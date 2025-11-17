@@ -1,4 +1,6 @@
 const express = require('express');
+const router = express.Router();
+
 const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
 const leadRoutes = require('./lead.routes');
@@ -9,9 +11,6 @@ const metaRoutes = require('./meta.routes');
 const noteRoutes = require('./note.routes')
 const campaignLeadRoutes = require('./campaignLead.routes');
 
-const router = express.Router();
-
-// Pasang semua rute
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/leads', leadRoutes);

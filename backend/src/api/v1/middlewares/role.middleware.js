@@ -1,9 +1,5 @@
 const ApiError = require('../utils/apiError');
 
-/**
- * Middleware untuk otorisasi berdasarkan role
- * @param {Array<string>} roles - Array role yang diizinkan (e.g., ['admin'])
- */
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role_name)) {

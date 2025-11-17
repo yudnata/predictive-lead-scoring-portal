@@ -1,9 +1,6 @@
 const historyModel = require('../models/history.model');
 const ApiError = require('../utils/apiError');
 
-/**
- * Logika untuk 'Halaman History' (Admin & Sales)
- */
 const queryHistory = async (user, queryOptions) => {
   const page = parseInt(queryOptions.page, 10) || 1;
   const limit = parseInt(queryOptions.limit, 10) || 10;

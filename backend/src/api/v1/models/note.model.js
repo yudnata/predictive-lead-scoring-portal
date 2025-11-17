@@ -1,10 +1,5 @@
 const db = require('../../../config/database');
 
-/**
- * Membuat note baru
- * @param {object} noteData - { lead_id, user_id, note_content, campaign_id }
- * @returns {Promise<object>} Note yang baru dibuat (sudah di-join)
- */
 const create = async (noteData) => {
   const { lead_id, user_id, note_content, campaign_id } = noteData;
 
@@ -20,15 +15,9 @@ const create = async (noteData) => {
   const { rows } = await db.query(query);
   const newNoteId = rows[0].notes_id;
 
-  // Kembalikan data yang sudah di-join agar bisa langsung ditampilkan di UI
   return findByIdJoined(newNoteId);
 };
 
-/**
- * Mencari semua notes untuk satu lead ID (di-join)
- * @param {number} leadId
- * @returns {Promise<Array>} Daftar notes
- */
 const findAllByLeadId = async (leadId) => {
   const query = {
     text: `
@@ -51,11 +40,6 @@ const findAllByLeadId = async (leadId) => {
   return rows;
 };
 
-/**
- * Mencari satu note berdasarkan ID (di-join, helper untuk create)
- * @param {number} noteId
- * @returns {Promise<object>}
- */
 const findByIdJoined = async (noteId) => {
   const query = {
     text: `
@@ -77,11 +61,6 @@ const findByIdJoined = async (noteId) => {
   return rows[0];
 };
 
-/**
- * FUNGSI BARU: Mencari note mentah (untuk cek kepemilikan)
- * @param {number} noteId
- * @returns {Promise<object>}
- */
 const findRawById = async (noteId) => {
   const { rows } = await db.query('SELECT * FROM tb_notes WHERE notes_id = $1', [
     noteId,
@@ -89,10 +68,6 @@ const findRawById = async (noteId) => {
   return rows[0];
 };
 
-/**
- * FUNGSI BARU: Menghapus note berdasarkan ID
- * @param {number} noteId
- */
 const deleteById = async (noteId) => {
   await db.query('DELETE FROM tb_notes WHERE notes_id = $1', [noteId]);
 };
@@ -100,6 +75,6 @@ const deleteById = async (noteId) => {
 module.exports = {
   create,
   findAllByLeadId,
-  findRawById, // Ditambahkan
-  deleteById, // Ditambahkan
+  findRawById,
+  deleteById, 
 };

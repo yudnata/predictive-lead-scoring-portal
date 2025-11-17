@@ -1,24 +1,13 @@
 const campaignModel = require('../models/campaign.model');
 const ApiError = require('../utils/apiError');
 
-/**
- * Membuat campaign baru
- * @param {object} campaignBody
- * @returns {Promise<object>}
- */
 const createCampaign = async (campaignBody) => {
-  // Cek jika ada data yang diperlukan
   if (!campaignBody.campaign_name) {
     throw new ApiError(400, 'Nama campaign harus diisi');
   }
   return campaignModel.create(campaignBody);
 };
 
-/**
- * Mengambil semua campaign dengan pagination
- * @param {object} queryOptions - { page, limit, search }
- * @returns {Promise<object>}
- */
 const queryCampaigns = async (queryOptions) => {
   const page = parseInt(queryOptions.page, 10) || 1;
   const limit = parseInt(queryOptions.limit, 10) || 10;
@@ -42,11 +31,6 @@ const queryCampaigns = async (queryOptions) => {
   };
 };
 
-/**
- * Mengambil detail campaign berdasarkan ID
- * @param {number} campaignId
- * @returns {Promise<object>}
- */
 const getCampaignById = async (campaignId) => {
   const campaign = await campaignModel.findById(campaignId);
   if (!campaign) {
@@ -55,14 +39,7 @@ const getCampaignById = async (campaignId) => {
   return campaign;
 };
 
-/**
- * Meng-update campaign berdasarkan ID
- * @param {number} campaignId
- * @param {object} updateBody
- * @returns {Promise<object>}
- */
 const updateCampaignById = async (campaignId, updateBody) => {
-  // Cek dulu apakah campaign-nya ada
   await getCampaignById(campaignId);
 
   if (!updateBody.campaign_name) {
@@ -72,13 +49,8 @@ const updateCampaignById = async (campaignId, updateBody) => {
   return campaignModel.update(campaignId, updateBody);
 };
 
-/**
- * Menghapus campaign berdasarkan ID
- * @param {number} campaignId
- * @returns {Promise<void>}
- */
 const deleteCampaignById = async (campaignId) => {
-  await getCampaignById(campaignId); // Cek apakah ada
+  await getCampaignById(campaignId);
   await campaignModel.deleteById(campaignId);
 };
 

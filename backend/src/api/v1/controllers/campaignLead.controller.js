@@ -1,9 +1,6 @@
 const campaignLeadService = require('../services/campaignLead.service');
 const ApiError = require('../utils/apiError');
 
-// @desc    Menautkan Lead ke Campaign (Assign)
-// @route   POST /api/v1/campaign-leads/assign
-// @access  Private (Sales)
 exports.assignLead = async (req, res, next) => {
   try {
     const userId = req.user.user_id; // Dari token
@@ -23,14 +20,11 @@ exports.assignLead = async (req, res, next) => {
   }
 };
 
-// @desc    Update Status Lead (Deal, Reject, dll) oleh SALES
-// @route   PATCH /api/v1/campaign-leads/:campaignLeadId/status
-// @access  Private (Sales)
 exports.updateStatus = async (req, res, next) => {
   try {
     const { campaignLeadId } = req.params;
     const { status_id } = req.body;
-    const userId = req.user.user_id; // Dari token
+    const userId = req.user.user_id;
 
     if (req.user.role_name !== 'sales') {
       throw new ApiError(403, 'Hanya Sales yang bisa update status');
@@ -52,12 +46,9 @@ exports.updateStatus = async (req, res, next) => {
   }
 };
 
-// @desc    Get data untuk 'Leads Tracker'
-// @route   GET /api/v1/campaign-leads/my-tracker
-// @access  Private (Sales)
 exports.getTracker = async (req, res, next) => {
   try {
-    const userId = req.user.user_id; // Dari token
+    const userId = req.user.user_id;
 
     if (req.user.role_name !== 'sales') {
       throw new ApiError(403, 'Hanya Sales yang memiliki Leads Tracker');
@@ -74,14 +65,11 @@ exports.getTracker = async (req, res, next) => {
   }
 };
 
-// @desc    (ADMIN) Override/Update Status Lead
-// @route   PATCH /api/v1/campaign-leads/:campaignLeadId/admin-update-status
-// @access  Private (Admin)
 exports.adminUpdateStatus = async (req, res, next) => {
   try {
     const { campaignLeadId } = req.params;
     const { status_id } = req.body;
-    const adminUserId = req.user.user_id; // Dari token (sudah divalidasi 'admin' oleh authorize)
+    const adminUserId = req.user.user_id;
 
     const result = await campaignLeadService.adminUpdateLeadStatus(
       campaignLeadId,

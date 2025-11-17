@@ -1,12 +1,9 @@
 const noteService = require('../services/note.service');
 
-// @desc    Membuat note baru untuk lead
-// @route   POST /api/v1/leads/:leadId/notes
-// @access  Private (Admin, Sales)
 exports.createNote = async (req, res, next) => {
   try {
-    const { leadId } = req.params; // Diambil dari URL
-    const userId = req.user.user_id; // Diambil dari token (via middleware 'protect')
+    const { leadId } = req.params;
+    const userId = req.user.user_id;
     
     const note = await noteService.createNoteForLead(leadId, userId, req.body);
     
@@ -20,9 +17,7 @@ exports.createNote = async (req, res, next) => {
   }
 };
 
-// @desc    Mengambil semua notes untuk lead
-// @route   GET /api/v1/leads/:leadId/notes
-// @access  Private (Admin, Sales)
+
 exports.getAllNotesForLead = async (req, res, next) => {
   try {
     const { leadId } = req.params;
@@ -39,13 +34,10 @@ exports.getAllNotesForLead = async (req, res, next) => {
   }
 };
 
-// @desc    Menghapus note
-// @route   DELETE /api/v1/leads/:leadId/notes/:noteId
-// @access  Private (Admin, Sales - Otorisasi di service)
 exports.deleteNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    const user = req.user; // Diambil dari token
+    const user = req.user;
 
     await noteService.deleteNoteById(noteId, user);
     

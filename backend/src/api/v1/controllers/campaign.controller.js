@@ -46,7 +46,6 @@ exports.deleteCampaign = async (req, res, next) => {
 
 exports.getAllCampaigns = async (req, res, next) => {
   try {
-    // req.query akan berisi (misal: ?page=1&limit=10&search=KPR)
     const result = await campaignService.queryCampaigns(req.query);
     res.status(200).json({
       status: 'success',

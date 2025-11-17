@@ -2,7 +2,6 @@ const db = require('../../../config/database');
 const ApiError = require('../utils/apiError');
 
 const insertSingleLeadWithClient = async (client, lead) => {
-
   const {
     lead_name,
     lead_phone_number,
@@ -44,7 +43,6 @@ const insertSingleLeadWithClient = async (client, lead) => {
   };
   await client.query(detailQuery);
 
-  // 3. Insert skor default
   const scoreQuery = {
     text: `INSERT INTO tb_leads_score (lead_id, lead_score, predicted_at) VALUES ($1, $2, NOW())`,
     values: [newLeadId, 0.0],
@@ -70,7 +68,6 @@ const fullLeadQuery = `
   LEFT JOIN tb_leads_detail d ON l.lead_id = d.lead_id
   LEFT JOIN tb_poutcome po ON d.poutcome_id = po.poutcome_id
   LEFT JOIN tb_leads_score ls ON l.lead_id = ls.lead_id
-  -- (Tambahkan 'WHERE ls.model_id = ...' jika ada model spesifik)
 `;
 
 const create = async (leadData, detailData) => {
@@ -78,7 +75,6 @@ const create = async (leadData, detailData) => {
   try {
     await client.query('BEGIN');
 
-    // 1. Insert ke tb_leads
     const leadQuery = {
       text: `
         INSERT INTO tb_leads (lead_name, lead_phone_number, lead_email, lead_age, job_id, marital_id, education_id, created_at, updated_at)
@@ -98,7 +94,6 @@ const create = async (leadData, detailData) => {
     const { rows: leadRows } = await client.query(leadQuery);
     const newLeadId = leadRows[0].lead_id;
 
-    // 2. Insert ke tb_leads_detail
     const detailQuery = {
       text: `
         INSERT INTO tb_leads_detail (lead_id, lead_balance, lead_housing_loan, lead_loan, poutcome_id, updated_at)
@@ -136,7 +131,7 @@ const create = async (leadData, detailData) => {
 
 const findAll = async (options) => {
   const { limit, offset, search } = options;
-  let queryText = fullLeadQuery.replace('FROM tb_leads l', 'FROM tb_leads l'); // Salin query
+  let queryText = fullLeadQuery.replace('FROM tb_leads l', 'FROM tb_leads l');
   const queryValues = [];
   let paramIndex = 1;
 
@@ -236,7 +231,6 @@ const bulkInsert = async (leads) => {
 
   try {
     await client.query('BEGIN');
-
     const results = await Promise.allSettled(
       leads.map((lead) => insertSingleLeadWithClient(client, lead))
     );

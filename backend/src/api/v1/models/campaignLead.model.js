@@ -1,9 +1,7 @@
 const db = require('../../../config/database');
 const ApiError = require('../utils/apiError');
 
-/**
- * Mencari data campaign-lead berdasarkan ID
- */
+
 const findById = async (campaignLeadId) => {
   const { rows } = await db.query(
     'SELECT * FROM tb_campaign_leads WHERE campaignleads_id = $1',
@@ -12,9 +10,6 @@ const findById = async (campaignLeadId) => {
   return rows[0];
 };
 
-/**
- * Mencari data campaign-lead berdasarkan lead_id dan campaign_id (untuk cek duplikat)
- */
 const findByLeadAndCampaign = async (leadId, campaignId) => {
   const { rows } = await db.query(
     'SELECT * FROM tb_campaign_leads WHERE lead_id = $1 AND campaign_id = $2',
@@ -23,9 +18,6 @@ const findByLeadAndCampaign = async (leadId, campaignId) => {
   return rows[0];
 };
 
-/**
- * Menautkan lead ke campaign (assign)
- */
 const create = async (assignData) => {
   const { lead_id, campaign_id, user_id, status_id } = assignData;
   const query = {
@@ -41,9 +33,6 @@ const create = async (assignData) => {
   return rows[0];
 };
 
-/**
- * Meng-update status lead (Deal, Reject, dll)
- */
 const updateStatus = async (campaignLeadId, statusId) => {
   const query = {
     text: `
@@ -58,10 +47,6 @@ const updateStatus = async (campaignLeadId, statusId) => {
   return rows[0];
 };
 
-/**
- * Query utama untuk halaman 'Leads Tracker' (milik Sales)
- * HANYA mengambil status AKTIF (1, 2, 5)
- */
 const findAllForSalesUser = async (options) => {
   const { userId, limit, offset, search, campaignId } = options;
   
@@ -102,10 +87,6 @@ const findAllForSalesUser = async (options) => {
   return rows;
 };
 
-/**
- * Menghitung total data untuk 'Leads Tracker' (pagination)
- * HANYA menghitung status AKTIF (1, 2, 5)
- */
 const countAllForSalesUser = async (options) => {
   const { userId, search, campaignId } = options;
 

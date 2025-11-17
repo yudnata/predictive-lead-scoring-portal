@@ -1,9 +1,5 @@
 const db = require('../../../config/database');
 
-/**
- * Membuat log riwayat baru
- * (Hanya dipanggil untuk status Deal / Reject)
- */
 const create = async (historyData) => {
   const { lead_id, campaign_id, status_id, changed_by } = historyData;
   const query = {
@@ -19,10 +15,6 @@ const create = async (historyData) => {
   return rows[0];
 };
 
-/**
- * Query utama untuk halaman 'History'
- * (Hanya mengambil status final 3 dan 4)
- */
 const findAll = async (options) => {
   const { role, userId, limit, offset, search, campaignId } = options;
   
@@ -46,7 +38,6 @@ const findAll = async (options) => {
   let paramIndex = 1;
   let whereClauses = [];
 
-  // Filter berdasarkan role
   if (role === 'sales') {
     whereClauses.push(`h.changed_by = $${paramIndex++}`);
     queryValues.push(userId);
@@ -63,7 +54,6 @@ const findAll = async (options) => {
   }
   
   if (whereClauses.length > 0) {
-    // Tambahkan 'AND' setelah 'WHERE' utama
     queryText += ' AND ' + whereClauses.join(' AND ');
   }
 
@@ -74,10 +64,6 @@ const findAll = async (options) => {
   return rows;
 };
 
-/**
- * Menghitung total data untuk 'History' (pagination)
- * (Hanya menghitung status final 3 dan 4)
- */
 const countAll = async (options) => {
   const { role, userId, search, campaignId } = options;
 
@@ -115,10 +101,6 @@ const countAll = async (options) => {
   return parseInt(rows[0].count, 10);
 };
 
-/**
- * Menghapus log history saat Admin melakukan override
- * (Mengembalikan ke Tracker)
- */
 const deleteFinalStatus = async (leadId, campaignId, statusId) => {
   const query = {
     text: `
@@ -134,5 +116,5 @@ module.exports = {
   create,
   findAll,
   countAll,
-  deleteFinalStatus, // LOGIKA BARU
+  deleteFinalStatus,
 };
