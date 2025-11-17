@@ -6,7 +6,7 @@ const ApiError = require('../utils/apiError');
  */
 const findById = async (campaignLeadId) => {
   const { rows } = await db.query(
-    'SELECT * FROM tb_campaignleads WHERE campaignleads_id = $1',
+    'SELECT * FROM tb_campaign_leads WHERE campaignleads_id = $1',
     [campaignLeadId]
   );
   return rows[0];
@@ -17,7 +17,7 @@ const findById = async (campaignLeadId) => {
  */
 const findByLeadAndCampaign = async (leadId, campaignId) => {
   const { rows } = await db.query(
-    'SELECT * FROM tb_campaignleads WHERE lead_id = $1 AND campaign_id = $2',
+    'SELECT * FROM tb_campaign_leads WHERE lead_id = $1 AND campaign_id = $2',
     [leadId, campaignId]
   );
   return rows[0];
@@ -30,7 +30,7 @@ const create = async (assignData) => {
   const { lead_id, campaign_id, user_id, status_id } = assignData;
   const query = {
     text: `
-      INSERT INTO tb_campaignleads
+      INSERT INTO tb_campaign_leads
         (lead_id, campaign_id, user_id, status_id, updated_at)
       VALUES ($1, $2, $3, $4, NOW())
       RETURNING *
@@ -47,7 +47,7 @@ const create = async (assignData) => {
 const updateStatus = async (campaignLeadId, statusId) => {
   const query = {
     text: `
-      UPDATE tb_campaignleads
+      UPDATE tb_campaign_leads
       SET status_id = $1, updated_at = NOW()
       WHERE campaignleads_id = $2
       RETURNING *
@@ -74,7 +74,7 @@ const findAllForSalesUser = async (options) => {
       ls.lead_score,
       c.campaign_name,
       s.status
-    FROM tb_campaignleads cl
+    FROM tb_campaign_leads cl
     JOIN tb_leads l ON cl.lead_id = l.lead_id
     JOIN tb_campaigns c ON cl.campaign_id = c.campaign_id
     JOIN tb_status s ON cl.status_id = s.status_id
@@ -111,7 +111,7 @@ const countAllForSalesUser = async (options) => {
 
   let queryText = `
     SELECT COUNT(cl.campaignleads_id)
-    FROM tb_campaignleads cl
+    FROM tb_campaign_leads cl
     JOIN tb_leads l ON cl.lead_id = l.lead_id
     WHERE cl.user_id = $1
     AND cl.status_id IN (1, 2, 5) -- LOGIKA BARU: Hanya status aktif

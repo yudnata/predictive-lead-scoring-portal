@@ -14,7 +14,7 @@ router.use(authorize('admin', 'sales'));
 router.get('/jobs', metaController.getJobs);
 router.get('/marital-status', metaController.getMaritalStatus);
 router.get('/education-levels', metaController.getEducationLevels);
-router.get('/p-outcomes', metaController.getPOutcomes);
+router.get('/p-outcomes', metaController.getPoutcomes);
 router.get('/statuses', metaController.getStatuses);
 router.get('/contact-methods', metaController.getContactMethods);
 

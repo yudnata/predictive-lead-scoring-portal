@@ -1,11 +1,13 @@
+const dashboardService = require('../services/dashboard.service');
+
 exports.getDashboardData = async (req, res, next) => {
   try {
-    // Di sini akan ada logika:
-    // if (req.user.role_name === 'admin') { ... }
-    // else if (req.user.role_name === 'sales') { ... }
+
+    const dashboardData = await dashboardService.getDashboardData(req.user);
+    
     res.status(200).json({
-      message: `getDashboardData for ${req.user.role_name} not implemented`,
-      data: {},
+      status: 'success',
+      data: dashboardData,
     });
   } catch (error) {
     next(error);

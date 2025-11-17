@@ -122,7 +122,6 @@ const adminUpdateLeadStatus = async (campaignLeadId, newStatusId, adminUserId) =
     throw new ApiError(400, 'Status sudah sama dengan status saat ini');
   }
 
-  // 2. Update status di tb_campaignleads
   const updatedCampaignLead = await campaignLeadModel.updateStatus(campaignLeadId, newStatusId);
   const { lead_id, campaign_id } = updatedCampaignLead;
 

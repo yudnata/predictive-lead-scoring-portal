@@ -30,6 +30,6 @@ const createMetaController = (tableName) => {
 exports.getJobs = createMetaController('tb_job');
 exports.getMaritalStatus = createMetaController('tb_marital');
 exports.getEducationLevels = createMetaController('tb_education');
-exports.getPOutcomes = createMetaController('tb_poutcome');
+exports.getPoutcomes = createMetaController('tb_poutcome');
 exports.getStatuses = createMetaController('tb_status');
-exports.getContactMethods = createMetaController('tb_contactmethod');
+exports.getContactMethods = createMetaController('tb_contact_method');

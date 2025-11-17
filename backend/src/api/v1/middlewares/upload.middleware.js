@@ -1,10 +1,8 @@
 const multer = require('multer');
 const ApiError = require('../utils/apiError');
 
-// Konfigurasi penyimpanan di memori (buffer)
 const storage = multer.memoryStorage();
 
-// Filter file untuk hanya menerima .csv
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
     cb(null, true);

@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS tb_lead_status_history, tb_notes, tb_campaignleads, tb_campaign_assignments, tb_leads_score, tb_models, tb_leads_detail, tb_leads, tb_campaigns, tb_users, tb_roles, tb_status, tb_job, tb_marital, tb_education, tb_poutcome, tb_contactmethod CASCADE;
+DROP TABLE IF EXISTS tb_lead_status_history, tb_notes, tb_campaign_leads, tb_campaign_assignments, tb_leads_score, tb_models, tb_leads_detail, tb_leads, tb_campaigns, tb_users, tb_roles, tb_status, tb_job, tb_marital, tb_education, tb_poutcome, tb_contact_method CASCADE;
 
 CREATE TABLE tb_roles (
     role_id SERIAL PRIMARY KEY,
@@ -21,11 +21,11 @@ CREATE TABLE tb_education (
 );
 
 CREATE TABLE tb_poutcome (
-    pOutcome_id SERIAL PRIMARY KEY,
-    pOutcome_name VARCHAR(100) NOT NULL
+    poutcome_id SERIAL PRIMARY KEY,
+    poutcome_name VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE tb_contactmethod (
+CREATE TABLE tb_contact_method (
     contactmethod_id SERIAL PRIMARY KEY,
     contact_method_name VARCHAR(100) NOT NULL
 );
@@ -89,7 +89,7 @@ CREATE TABLE tb_leads_detail (
     last_contact_date DATE,
     last_contact_duration_sec INT,
     pDays INT,
-    pOutcome_id INT REFERENCES tb_poutcome(pOutcome_id),
+    poutcome_id INT REFERENCES tb_poutcome(poutcome_id),
     prev_contact_count INT,
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -109,12 +109,12 @@ CREATE TABLE tb_campaign_assignments (
     assigned_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE tb_campaignleads (
+CREATE TABLE tb_campaign_leads (
     campaignleads_id SERIAL PRIMARY KEY,
     campaign_id INT NOT NULL REFERENCES tb_campaigns(campaign_id),
     lead_id INT NOT NULL REFERENCES tb_leads(lead_id) ON DELETE CASCADE, -- <<< PERUBAHAN DI SINI
     user_id INT REFERENCES tb_users(user_id), -- Sales user
-    contactmethod_id INT REFERENCES tb_contactmethod(contactmethod_id),
+    contactmethod_id INT REFERENCES tb_contact_method(contactmethod_id),
     status_id INT NOT NULL REFERENCES tb_status(status_id),
     contact_this_campaign_num INT DEFAULT 0,
     updated_at TIMESTAMPTZ DEFAULT NOW()

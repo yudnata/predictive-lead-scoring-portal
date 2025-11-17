@@ -5,7 +5,9 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "migrate": "node-pg-migrate up",
+    "migrate:down": "node-pg-migrate down"
   },
   "keywords": [
     "express",
@@ -24,6 +26,7 @@
     "fast-csv": "^4.3.6",
     "jsonwebtoken": "^9.0.0",
     "multer": "^2.0.2",
+    "node-pg-migrate": "^8.0.3",
     "pg": "^8.11.3"
   },
   "devDependencies": {

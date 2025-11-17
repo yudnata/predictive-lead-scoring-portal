@@ -1,0 +1,6 @@
+{
+  "databaseUrl": "postgresql://postgres:rahasia@localhost:5432/db_accenture",
+  "dir": "migrations",
+  "direction": "up",
+  "logFileName": "migrations.log"
+}

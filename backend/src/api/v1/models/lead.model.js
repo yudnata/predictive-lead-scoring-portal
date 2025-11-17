@@ -2,9 +2,6 @@ const db = require('../../../config/database');
 const ApiError = require('../utils/apiError');
 
 const insertSingleLeadWithClient = async (client, lead) => {
-  // TODO: Validasi & Transformasi data row CSV di sini
-  // (Misal: 'true' -> true, 'SMA' -> 1)
-  // Untuk saat ini, kita asumsikan data CSV sudah bersih
 
   const {
     lead_name,
@@ -19,7 +16,6 @@ const insertSingleLeadWithClient = async (client, lead) => {
     lead_loan,
   } = lead;
 
-  // 1. Insert ke tb_leads
   const leadQuery = {
     text: `
       INSERT INTO tb_leads (lead_name, lead_phone_number, lead_email, lead_age, job_id, marital_id, education_id, created_at, updated_at)
@@ -39,7 +35,6 @@ const insertSingleLeadWithClient = async (client, lead) => {
   const { rows: leadRows } = await client.query(leadQuery);
   const newLeadId = leadRows[0].lead_id;
 
-  // 2. Insert ke tb_leads_detail
   const detailQuery = {
     text: `
       INSERT INTO tb_leads_detail (lead_id, lead_balance, lead_housing_loan, lead_loan, updated_at)
@@ -59,34 +54,25 @@ const insertSingleLeadWithClient = async (client, lead) => {
   return newLeadId;
 };
 
-/**
- * Helper untuk query full lead data
- */
 const fullLeadQuery = `
   SELECT
     l.lead_id, l.lead_name, l.lead_phone_number, l.lead_email, l.lead_age, l.created_at, l.updated_at,
     j.job_id, j.job_name,
     m.marital_id, m.marital_status,
     e.education_id, e.education_level,
-    d.leads_detail_id, d.lead_balance, d.lead_housing_loan, d.lead_loan, d.pOutcome_id,
-    po.pOutcome_name,
+    d.leads_detail_id, d.lead_balance, d.lead_housing_loan, d.lead_loan, d.poutcome_id,
+    po.poutcome_name,
     ls.lead_score
   FROM tb_leads l
   LEFT JOIN tb_job j ON l.job_id = j.job_id
   LEFT JOIN tb_marital m ON l.marital_id = m.marital_id
   LEFT JOIN tb_education e ON l.education_id = e.education_id
   LEFT JOIN tb_leads_detail d ON l.lead_id = d.lead_id
-  LEFT JOIN tb_poutcome po ON d.pOutcome_id = po.pOutcome_id
+  LEFT JOIN tb_poutcome po ON d.poutcome_id = po.poutcome_id
   LEFT JOIN tb_leads_score ls ON l.lead_id = ls.lead_id
   -- (Tambahkan 'WHERE ls.model_id = ...' jika ada model spesifik)
 `;
 
-/**
- * Membuat lead baru (tb_leads dan tb_leads_detail) dalam satu transaksi
- * @param {object} leadData - Data dari tb_leads
- * @param {object} detailData - Data dari tb_leads_detail
- * @returns {Promise<object>} Lead baru yang sudah di-JOIN
- */
 const create = async (leadData, detailData) => {
   const client = await db.connect();
   try {
@@ -115,7 +101,7 @@ const create = async (leadData, detailData) => {
     // 2. Insert ke tb_leads_detail
     const detailQuery = {
       text: `
-        INSERT INTO tb_leads_detail (lead_id, lead_balance, lead_housing_loan, lead_loan, pOutcome_id, updated_at)
+        INSERT INTO tb_leads_detail (lead_id, lead_balance, lead_housing_loan, lead_loan, poutcome_id, updated_at)
         VALUES ($1, $2, $3, $4, $5, NOW())
       `,
       values: [
@@ -123,25 +109,22 @@ const create = async (leadData, detailData) => {
         detailData.lead_balance || null,
         detailData.lead_housing_loan || false,
         detailData.lead_loan || false,
-        detailData.pOutcome_id || null, // UI tidak ada, tapi skema ada
+        detailData.poutcome_id || null,
       ],
     };
     await client.query(detailQuery);
 
-    // (Opsional) 3. Insert skor default (misal 0 atau null) ke tb_leads_score
     const scoreQuery = {
       text: `INSERT INTO tb_leads_score (lead_id, lead_score, predicted_at) VALUES ($1, $2, NOW())`,
-      values: [newLeadId, 0.0], // Default 0
+      values: [newLeadId, 0.0],
     };
     await client.query(scoreQuery);
 
     await client.query('COMMIT');
 
-    // Ambil data lengkap dari lead yang baru dibuat
     return findFullLeadById(newLeadId);
   } catch (error) {
     await client.query('ROLLBACK');
-    // Cek error unique email
     if (error.code === '23505' && error.constraint === 'tb_leads_lead_email_key') {
       throw new ApiError(400, 'Email sudah terdaftar');
     }
@@ -151,11 +134,6 @@ const create = async (leadData, detailData) => {
   }
 };
 
-/**
- * Mengambil semua leads dengan pagination dan search
- * @param {object} options - { limit, offset, search }
- * @returns {Promise<Array>}
- */
 const findAll = async (options) => {
   const { limit, offset, search } = options;
   let queryText = fullLeadQuery.replace('FROM tb_leads l', 'FROM tb_leads l'); // Salin query
@@ -174,11 +152,6 @@ const findAll = async (options) => {
   return rows;
 };
 
-/**
- * Menghitung total leads
- * @param {object} options - { search }
- * @returns {Promise<number>}
- */
 const countAll = async (options) => {
   const { search } = options;
   let queryText = 'SELECT COUNT(lead_id) FROM tb_leads';
@@ -193,32 +166,18 @@ const countAll = async (options) => {
   return parseInt(rows[0].count, 10);
 };
 
-/**
- * Mengambil 1 lead dengan semua data JOIN
- * @param {number} leadId
- * @returns {Promise<object>}
- */
 const findFullLeadById = async (leadId) => {
   const queryText = `${fullLeadQuery} WHERE l.lead_id = $1`;
   const { rows } = await db.query(queryText, [leadId]);
   return rows[0];
 };
 
-/**
- * Meng-update lead (tb_leads dan tb_leads_detail) dalam transaksi
- * @param {number} leadId
- * @param {object} leadData
- * @param {object} detailData
- * @returns {Promise<object>}
- */
 const update = async (leadId, leadData, detailData) => {
   const client = await db.connect();
   try {
     await client.query('BEGIN');
 
-    // 1. Update tb_leads
     if (leadData && Object.keys(leadData).length > 0) {
-      // Ambil field yang ada di leadData
       const leadFields = Object.keys(leadData);
       const leadValues = Object.values(leadData);
 
@@ -233,7 +192,6 @@ const update = async (leadId, leadData, detailData) => {
       await client.query(leadQuery);
     }
 
-    // 2. Update tb_leads_detail
     if (detailData && Object.keys(detailData).length > 0) {
       const detailFields = Object.keys(detailData);
       const detailValues = Object.values(detailData);
@@ -254,7 +212,6 @@ const update = async (leadId, leadData, detailData) => {
     return findFullLeadById(leadId);
   } catch (error) {
     await client.query('ROLLBACK');
-    // Cek error unique email
     if (error.code === '23505' && error.constraint === 'tb_leads_lead_email_key') {
       throw new ApiError(400, 'Email sudah digunakan oleh lead lain');
     }
@@ -264,10 +221,6 @@ const update = async (leadId, leadData, detailData) => {
   }
 };
 
-/**
- * Menghapus lead (ON DELETE CASCADE akan menghapus detail & score)
- * @param {number} leadId
- */
 const deleteById = async (leadId) => {
   const { rowCount } = await db.query('DELETE FROM tb_leads WHERE lead_id = $1', [leadId]);
   if (rowCount === 0) {
@@ -284,8 +237,6 @@ const bulkInsert = async (leads) => {
   try {
     await client.query('BEGIN');
 
-    // Kita gunakan Promise.allSettled untuk memproses semua
-    // dan mencatat yang gagal tanpa menghentikan yang lain
     const results = await Promise.allSettled(
       leads.map((lead) => insertSingleLeadWithClient(client, lead))
     );
@@ -294,7 +245,6 @@ const bulkInsert = async (leads) => {
       if (result.status === 'fulfilled') {
         successCount++;
       } else {
-        // Jika gagal (misal email duplikat)
         failureCount++;
         errors.push(
           `Baris ${index + 2}: ${
@@ -304,7 +254,6 @@ const bulkInsert = async (leads) => {
       }
     });
 
-    // Jika ada yang gagal, rollback
     if (failureCount > 0) {
       await client.query('ROLLBACK');
       throw new ApiError(
@@ -314,7 +263,6 @@ const bulkInsert = async (leads) => {
       );
     }
 
-    // Jika semua sukses, commit
     await client.query('COMMIT');
 
     return {
@@ -323,7 +271,6 @@ const bulkInsert = async (leads) => {
       failureCount,
     };
   } catch (error) {
-    // Tangani error di luar promise (misal commit gagal)
     await client.query('ROLLBACK');
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, 'Transaksi database gagal', [error.message]);

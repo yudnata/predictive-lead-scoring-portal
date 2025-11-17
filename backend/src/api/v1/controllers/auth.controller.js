@@ -30,7 +30,6 @@ const login = async (req, res, next) => {
 
 const getMe = async (req, res, next) => {
   try {
-    // Data user sudah dilampirkan oleh middleware 'protect'
     const user = req.user;
 
     res.status(200).json({
