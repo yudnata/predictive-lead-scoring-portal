@@ -174,7 +174,7 @@ const LeadsPage = () => {
   const userRole = userProfile?.role;
 
   return (
-    <div className="min-h-screen bg-dark-bg ">
+    <div className="min-h-screen bg-dark-bg">
       <Sidebar user={userProfile} />
       <main
         className="overflow-y-auto"
@@ -190,7 +190,7 @@ const LeadsPage = () => {
                   placeholder="Search..."
                   value={search}
                   onChange={handleSearchChange}
-                  className="w-80 p-2 pl-10 bg-[#1e1e1e] text-white rounded-lg border border-white/50 focus:border-gray-500"
+                  className="w-80 p-2 pl-10 bg-[#1e1e1e] text-white rounded-lg focus:outline-none border border-white/50"
                 />
                 <img
                   src="/search.png"
@@ -261,13 +261,13 @@ const LeadsPage = () => {
 
                     <td className="px-4 py-2">
                       <div className="flex flex-col">
-                        <p className="items-center font-semibold truncate">{lead.lead_name}</p>
+                        <p className="items-center font-semibold truncate text-white/80">{lead.lead_name}</p>
                       </div>
                     </td>
 
-                    <td className="px-4 py-2">{lead.job_name}</td>
+                    <td className="px-4 py-2 text-white/80">{lead.job_name}</td>
 
-                    <td className="px-4 py-2">{lead.lead_age}</td>
+                    <td className="px-4 py-2 text-white/80">{lead.lead_age}</td>
 
                     <td className="px-4 py-2">
                       <span

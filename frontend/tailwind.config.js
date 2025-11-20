@@ -17,8 +17,8 @@ export default {
           hover: '#242424',
         },
         brand: {
-          DEFAULT: '#F28500',
-          hover: '#d97700',
+          DEFAULT: '#388E3C', // hijau utama
+          hover: '#2C6B28', // hijau sedikit lebih gelap untuk hover
         },
       },
     },

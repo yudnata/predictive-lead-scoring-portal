@@ -3,6 +3,7 @@ import CampaignFormModal from '../../features/campaigns/components/CampaignFormM
 import CampaignService from '../../features/campaigns/api/campaign-service';
 import Sidebar from '../../layouts/Sidebar';
 import axios from 'axios';
+import Pagination from '../../components/Pagination';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1/auth';
 
@@ -40,14 +41,17 @@ const ActionDropdown = ({ campaignId, onEdit, onDelete }) => {
       await CampaignService.delete(campaignId);
       alert('Campaign berhasil dihapus!');
       onDelete();
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (err) {
       alert('Gagal menghapus campaign');
     }
   };
 
   return (
-    <div className="relative inline-block text-left" ref={dropdownRef}>
+    <div
+      className="relative inline-block text-left"
+      ref={dropdownRef}
+    >
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
         className="px-2 text-gray-400 hover:text-white"
@@ -82,14 +86,14 @@ const ActionDropdown = ({ campaignId, onEdit, onDelete }) => {
 // BADGE STATUS
 const getStatusBadge = (isActive) => {
   const base = 'px-3 py-1 text-xs font-semibold rounded-full';
-  if (isActive) return `${base} bg-green-900 text-green-300`;
-  return `${base} bg-red-900 text-red-300`;
+  if (isActive) return `${base} bg-[#66BB6A]/10 text-[#66BB6A]`;
+  return `${base} bg-[#EF5350]/10 text-[#EF5350]`;
 };
 
 // DROPDOWN STATUS (AKTIF / NONAKTIF)
 const StatusDropdown = ({ onChange }) => {
   return (
-    <div className="absolute z-30 w-32 p-2 bg-gray-800 border border-gray-700 rounded-md shadow">
+    <div className="absolute z-30 w-32 p-2 rounded-md shadow bg-dark-card">
       <button
         onClick={() => onChange(true)}
         className="w-full px-3 py-2 text-sm text-left text-white hover:bg-gray-700"
@@ -119,7 +123,7 @@ const CampaignPage = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [search, setSearch] = useState('');
 
-  const limit = 14;
+  const [limit, setLimit] = useState(14);
 
   const [userProfile, setUserProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -197,9 +201,6 @@ const CampaignPage = () => {
     }
   };
 
-  const startResult = (currentPage - 1) * limit + 1;
-  const endResult = Math.min(currentPage * limit, totalResults);
-
   if (loadingProfile) {
     return (
       <div className="flex items-center justify-center min-h-screen text-white bg-black">
@@ -226,8 +227,7 @@ const CampaignPage = () => {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-80 p-2 pl-10 bg-[#242424] text-white rounded-lg 
-                         border border-gray-700 focus:border-gray-500"
+              className="w-80 p-2 pl-10 bg-[#242424] text-white rounded-lg border border-gray-700 focus:outline-none"
             />
             <img
               src="/search.png"
@@ -250,7 +250,7 @@ const CampaignPage = () => {
         </div>
 
         {/* TABLE */}
-        <div className="p-4 border border-gray-800 rounded-lg shadow-lg bg-dark-card">
+        <div className="p-4 rounded-lg shadow-lg bg-dark-bg">
           {loading ? (
             <p className="text-white">Memuat data...</p>
           ) : campaigns.length === 0 ? (
@@ -258,7 +258,7 @@ const CampaignPage = () => {
           ) : (
             <table className="min-w-full text-white">
               <thead>
-                <tr className="text-sm text-gray-400 uppercase border-b border-gray-700">
+                <tr className="text-sm uppercase border-b border-white/30">
                   <th className="px-4 py-3 text-left">Nama Campaign</th>
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Tanggal Mulai</th>
@@ -269,8 +269,11 @@ const CampaignPage = () => {
 
               <tbody>
                 {campaigns.map((c) => (
-                  <tr key={c.campaign_id} className="text-sm border-b border-gray-800">
-                    <td className="px-4 py-4">{c.campaign_name}</td>
+                  <tr
+                    key={c.campaign_id}
+                    className="text-sm border-b border-white/10"
+                  >
+                    <td className="px-4 py-4 text-white/80">{c.campaign_name}</td>
 
                     {/* DROPDOWN STATUS */}
                     <td className="relative px-4 py-4">
@@ -293,9 +296,9 @@ const CampaignPage = () => {
                       )}
                     </td>
 
-                    <td className="px-4 py-4">{formatDate(c.campaign_start_date)}</td>
+                    <td className="px-4 py-4 text-white/80">{formatDate(c.campaign_start_date)}</td>
 
-                    <td className="px-4 py-4">{formatDate(c.campaign_end_date)}</td>
+                    <td className="px-4 py-4 text-white/80">{formatDate(c.campaign_end_date)}</td>
 
                     <td className="px-4 py-4">
                       <ActionDropdown
@@ -312,52 +315,17 @@ const CampaignPage = () => {
         </div>
 
         {/* PAGINATION */}
-        <div className="flex items-center justify-between mt-6 text-sm text-gray-400">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 border border-gray-700 rounded-lg disabled:opacity-30 hover:bg-gray-700"
-            >
-              Back
-            </button>
-
-            {[1, 2, 3, 4].map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`w-9 h-9 flex items-center justify-center rounded-md text-sm ${
-                  currentPage === page
-                    ? 'bg-gray-700 text-white'
-                    : 'border border-gray-700 hover:bg-gray-700'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-
-            {totalPages > 4 && <span>...</span>}
-
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 border border-gray-700 rounded-lg disabled:opacity-30 hover:bg-gray-700"
-            >
-              Next
-            </button>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span>
-              {startResult} to {endResult} of {totalResults} Result
-            </span>
-
-            <select className="bg-[#242424] border border-gray-700 rounded-lg p-1 text-white">
-              <option value="14">Show {limit}</option>
-              <option value="25">Show 25</option>
-            </select>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          limit={limit}
+          totalResults={totalResults}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(newLimit) => {
+            setLimit(newLimit); // gunakan state limit
+            setCurrentPage(1); // reset ke halaman pertama
+          }}
+        />
       </main>
 
       <CampaignFormModal

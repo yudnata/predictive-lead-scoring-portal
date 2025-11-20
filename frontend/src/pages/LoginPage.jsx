@@ -99,7 +99,7 @@ const LoginPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full p-2 text-white rounded-lg bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2 text-white rounded-lg bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-hover"
               />
             </div>
 
@@ -113,7 +113,7 @@ const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full p-2 text-white rounded-lg bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2 text-white rounded-lg bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand-hover"
               />
             </div>
 
@@ -123,7 +123,7 @@ const LoginPage = () => {
                 id="rememberMe"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 accent-orange-500"
+                className="w-4 h-4 accent-brand-hover"
               />
               <label htmlFor="rememberMe" className="text-gray-4 00">
                 Remember me
@@ -133,7 +133,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 text-lg font-bold transition bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-2 text-lg font-bold transition rounded-lg bg-brand hover:bg-brand-hover disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? 'Logging In...' : 'Sign In'}
             </button>
