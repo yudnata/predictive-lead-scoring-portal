@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CampaignService from '../api/campaign-service';
+import toast from 'react-hot-toast';
 
 const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
@@ -40,10 +41,10 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
     try {
       if (isEdit) {
         await CampaignService.update(initialData.campaign_id, formData);
-        alert('Campaign berhasil diupdate!');
+        toast.success('Campaign berhasil diupdate!');
       } else {
         await CampaignService.create(formData);
-        alert('Campaign berhasil ditambahkan!');
+        toast.success('Campaign berhasil ditambahkan!');
       }
       onSuccess();
       onClose();

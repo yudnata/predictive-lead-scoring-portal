@@ -30,7 +30,7 @@ const dashboardData = {
 };
 
 const StatCard = ({ title, value, detail, valueColor = 'text-white', detailBg = '' }) => (
-  <div className="flex flex-col justify-between h-32 p-5 bg-gray-900 rounded-lg shadow-lg">
+  <div className="flex flex-col justify-between h-32 p-5 rounded-lg shadow-lg bg-dark-card">
     <p className="text-sm text-gray-400">{title}</p>
     <div className="flex items-end justify-between">
       <h2 className={`text-4xl font-bold ${valueColor}`}>{value}</h2>
@@ -44,7 +44,7 @@ const StatCard = ({ title, value, detail, valueColor = 'text-white', detailBg = 
 );
 
 const RankedListCard = ({ title, items, isScore = false }) => (
-    <div className="bg-[#121212] p-5 rounded-lg shadow-lg h-full flex flex-col">
+    <div className="flex flex-col h-full p-5 rounded-lg shadow-lg bg-dark-card">
         <h3 className="mb-4 text-lg font-semibold">{title}</h3>
         <ul className="flex-grow space-y-3">
             {items.map((item, index) => (
@@ -103,10 +103,10 @@ const AdminDashboardPage = () => {
   }
 
   return (
-    <div className="bg-[#121212] min-h-screen">
+    <div className="min-h-screen bg-dark-bg">
       <Sidebar user={userProfile} /> 
       
-      <main className="p-8 overflow-y-auto" style={{ paddingLeft: '290px' }}>
+      <main className="overflow-y-auto ">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-white">Home</h1>
         </header>
@@ -131,7 +131,7 @@ const AdminDashboardPage = () => {
                 />
                 
                 {/* Distribution Chart Placeholder */}
-                <div className="h-full p-5 bg-gray-900 rounded-lg shadow-lg">
+                <div className="h-full p-5 rounded-lg shadow-lg bg-dark-card">
                     <h3 className="mb-4 text-lg font-semibold text-white">Distribution Leads Score</h3>
                     <ul className="mt-4 space-y-1 text-sm">
                         {dashboardData.scoreDistribution.map(item => (
@@ -166,7 +166,7 @@ const AdminDashboardPage = () => {
         </div>
         
         {/* Row Bottom */}
-        <div className="p-5 mt-5 mb-8 bg-gray-900 rounded-lg shadow-lg">
+        <div className="p-5 mt-5 mb-8 rounded-lg shadow-lg bg-dark-card">
             <h3 className="mb-4 text-lg font-semibold text-white">Conversion Rate Trend</h3>
             <p className="mb-2 text-sm text-gray-400">
                 · Define: Grafik garis (line chart) yang menunjukkan pergerakan Conversion Rate dari waktu ke waktu (misal: per hari atau per minggu).

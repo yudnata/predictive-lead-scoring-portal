@@ -53,7 +53,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen text-white bg-black">
+    <div className="flex min-h-screen text-white bg-dark-bg">
       {/* LEFT */}
       <div className="flex-1 w-1/2 overflow-hidden">
         <img

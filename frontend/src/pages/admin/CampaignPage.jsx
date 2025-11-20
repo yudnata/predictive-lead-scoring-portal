@@ -209,10 +209,10 @@ const CampaignPage = () => {
   }
 
   return (
-    <div className="flex bg-[#121212] min-h-screen">
+    <div className="flex min-h-screen bg-dark-bg">
       <Sidebar user={userProfile} />
 
-      <main className="w-full p-8 overflow-y-auto" style={{ paddingLeft: '290px' }}>
+      <main className="w-full overflow-y-auto">
         {/* Header */}
         <div className="flex items-center mb-8">
           <h1 className="text-3xl font-bold text-white">Campaign</h1>
@@ -250,7 +250,7 @@ const CampaignPage = () => {
         </div>
 
         {/* TABLE */}
-        <div className="p-4 bg-gray-900 border border-gray-800 rounded-lg shadow-lg">
+        <div className="p-4 border border-gray-800 rounded-lg shadow-lg bg-dark-card">
           {loading ? (
             <p className="text-white">Memuat data...</p>
           ) : campaigns.length === 0 ? (

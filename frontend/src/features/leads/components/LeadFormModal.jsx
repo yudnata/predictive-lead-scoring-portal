@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import LeadService from '../api/lead-service';
+import toast from 'react-hot-toast';
 
 const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
@@ -64,10 +65,10 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
     try {
       if (isEdit) {
         await LeadService.update(initialData.lead_id, leadData, detailData);
-        alert('Lead berhasil diupdate!');
+        toast.success('Lead berhasil diupdate!');
       } else {
         await LeadService.create(leadData, detailData);
-        alert('Lead berhasil ditambahkan!');
+        toast.success('Lead berhasil ditambahkan!');
       }
       onSuccess();
       onClose();

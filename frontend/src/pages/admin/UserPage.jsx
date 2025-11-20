@@ -154,10 +154,10 @@ const UserPage = () => {
   }
 
   return (
-    <div className="flex bg-[#121212] min-h-screen">
+    <div className="flex min-h-screen bg-dark-bg">
       <Sidebar user={userProfile} />
 
-      <main className="w-full p-8 overflow-y-auto" style={{ paddingLeft: "290px" }}>
+      <main className="w-full overflow-y-auto">
 
         {/* HEADER */}
         <div className="flex items-center mb-8">
@@ -194,7 +194,7 @@ const UserPage = () => {
       </div>
 
         {/* USER TABLE */}
-        <div className="p-4 bg-gray-900 border border-gray-800 rounded-lg shadow-lg">
+        <div className="p-4 border border-gray-800 rounded-lg shadow-lg bg-dark-card">
           {loading ? (
             <p className="text-white">Memuat data...</p>
           ) : salesUsers.length === 0 ? (
