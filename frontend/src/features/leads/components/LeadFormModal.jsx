@@ -1,7 +1,5 @@
-// src/components/LeadFormModal.jsx
-
 import React, { useState, useEffect } from 'react';
-import LeadService from '../services/LeadService';
+import LeadService from '../api/lead-service';
 
 const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
@@ -88,14 +86,14 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
 
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex justify-center items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
         <div className="bg-[#1E1E1E] w-full max-w-2xl rounded-2xl shadow-xl p-8 text-white">
 
             {/* Header */}
-            <h2 className="text-2xl font-bold mb-4">{isEdit ? 'Edit Lead' : 'Add New Lead'}</h2>
-            <div className="border-b border-gray-700 mb-6"></div>
+            <h2 className="mb-4 text-2xl font-bold">{isEdit ? 'Edit Lead' : 'Add New Lead'}</h2>
+            <div className="mb-6 border-b border-gray-700"></div>
 
-            {error && <div className="bg-red-900/40 p-3 mb-4 rounded text-red-300">{error}</div>}
+            {error && <div className="p-3 mb-4 text-red-300 rounded bg-red-900/40">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <h3 className="text-lg font-semibold text-orange-400">Informasi Dasar</h3>
@@ -106,7 +104,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     <input name="lead_age" value={formData.lead_age} onChange={handleChange} type="number" placeholder="Usia" className="p-2 bg-[#2C2C2C] rounded" />
                 </div>
                 
-                <h3 className="text-lg font-semibold text-orange-400 pt-4">Data Demografi</h3>
+                <h3 className="pt-4 text-lg font-semibold text-orange-400">Data Demografi</h3>
                 <div className="grid grid-cols-3 gap-4">
                     <select name="job_id" value={formData.job_id} onChange={handleChange} className="p-2 bg-[#2C2C2C] rounded">
                         <option value="">-- Pekerjaan --</option>
@@ -122,7 +120,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     </select>
                 </div>
                 
-                <h3 className="text-lg font-semibold text-orange-400 pt-4">Data Finansial</h3>
+                <h3 className="pt-4 text-lg font-semibold text-orange-400">Data Finansial</h3>
                 <div className="space-y-3">
                     <input name="lead_balance" value={formData.lead_balance} onChange={handleChange} type="number" placeholder="Saldo (Balance)" className="p-2 w-full bg-[#2C2C2C] rounded" />
                     
@@ -139,8 +137,8 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                 </div>
 
                 <div className="flex justify-end gap-3 pt-6">
-                    <button type="button" onClick={onClose} className="px-6 py-2 rounded-full bg-gray-600 text-white hover:bg-gray-700 transition">Batal</button>
-                    <button type="submit" disabled={loading} className="px-6 py-2 rounded-full bg-orange-600 text-white font-semibold hover:bg-orange-700 transition disabled:opacity-50">
+                    <button type="button" onClick={onClose} className="px-6 py-2 text-white transition bg-gray-600 rounded-full hover:bg-gray-700">Batal</button>
+                    <button type="submit" disabled={loading} className="px-6 py-2 font-semibold text-white transition bg-orange-600 rounded-full hover:bg-orange-700 disabled:opacity-50">
                         {loading ? 'Menyimpan...' : (isEdit ? 'Simpan Perubahan' : 'Add Lead')}
                     </button>
                 </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Sidebar from '../components/Sidebar'; 
+import Sidebar from '../../layouts/Sidebar'; 
 
 const API_BASE_URL = 'http://localhost:5000/api/v1/auth';
 
@@ -30,9 +30,9 @@ const dashboardData = {
 };
 
 const StatCard = ({ title, value, detail, valueColor = 'text-white', detailBg = '' }) => (
-  <div className="bg-gray-900 p-5 rounded-lg shadow-lg flex flex-col justify-between h-32">
+  <div className="flex flex-col justify-between h-32 p-5 bg-gray-900 rounded-lg shadow-lg">
     <p className="text-sm text-gray-400">{title}</p>
-    <div className="flex justify-between items-end">
+    <div className="flex items-end justify-between">
       <h2 className={`text-4xl font-bold ${valueColor}`}>{value}</h2>
       {detail && (
         <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${detailBg} text-white`}>
@@ -44,13 +44,13 @@ const StatCard = ({ title, value, detail, valueColor = 'text-white', detailBg = 
 );
 
 const RankedListCard = ({ title, items, isScore = false }) => (
-    <div className="bg-gray-900 p-5 rounded-lg shadow-lg h-full flex flex-col">
-        <h3 className="text-lg font-semibold mb-4">{title}</h3>
-        <ul className="space-y-3 flex-grow">
+    <div className="flex flex-col h-full p-5 bg-gray-900 rounded-lg shadow-lg">
+        <h3 className="mb-4 text-lg font-semibold">{title}</h3>
+        <ul className="flex-grow space-y-3">
             {items.map((item, index) => (
-                <li key={index} className="flex justify-between items-center text-sm">
+                <li key={index} className="flex items-center justify-between text-sm">
                     <div className="flex items-center space-x-2">
-                        <span className="font-bold w-4 text-gray-400">{index + 1}.</span>
+                        <span className="w-4 font-bold text-gray-400">{index + 1}.</span>
                         <span>{isScore ? item.name : item.name}</span>
                     </div>
                     <span className={`font-bold ${isScore ? 'text-green-400' : 'text-orange-400'}`}>
@@ -59,12 +59,12 @@ const RankedListCard = ({ title, items, isScore = false }) => (
                 </li>
             ))}
         </ul>
-        {isScore && <button className="mt-4 text-orange-500 text-sm self-start hover:underline">View All</button>}
+        {isScore && <button className="self-start mt-4 text-sm text-orange-500 hover:underline">View All</button>}
     </div>
 );
 
 
-const SalesDashboard = () => {
+const SalesDashboardPage = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
@@ -96,7 +96,7 @@ const SalesDashboard = () => {
 
   if (loadingProfile) {
       return (
-          <div className="flex justify-center items-center min-h-screen bg-black text-white">
+          <div className="flex items-center justify-center min-h-screen text-white bg-black">
               <p>Memuat profil pengguna...</p>
           </div>
       );
@@ -121,7 +121,7 @@ const SalesDashboard = () => {
 
         {/* Row Middle Content */}
         {/* <div className="grid grid-cols-12 gap-6 mb-8 h-96"> */}
-          <div className="grid grid-cols-12 gap-6 mb-8 pb-8">
+          <div className="grid grid-cols-12 gap-6 pb-8 mb-8">
 
             {/* Active Campaign & Distribution */}
             <div className="col-span-4 space-y-6">
@@ -132,9 +132,9 @@ const SalesDashboard = () => {
                 />
                 
                 {/* Distribution Chart Placeholder */}
-                <div className="bg-gray-900 p-5 rounded-lg shadow-lg h-full">
-                    <h3 className="text-lg font-semibold mb-4 text-white">Distribution Leads Score</h3>
-                    <ul className="text-sm mt-4 space-y-1">
+                <div className="h-full p-5 bg-gray-900 rounded-lg shadow-lg">
+                    <h3 className="mb-4 text-lg font-semibold text-white">Distribution Leads Score</h3>
+                    <ul className="mt-4 space-y-1 text-sm">
                         {dashboardData.scoreDistribution.map(item => (
                             <li key={item.label} className="flex justify-between text-gray-400">
                                 <div className="flex items-center space-x-2">
@@ -167,15 +167,15 @@ const SalesDashboard = () => {
         </div>
         
         {/* Row Bottom */}
-        <div className="bg-gray-900 p-5 rounded-lg shadow-lg mb-8 mt-10">
-            <h3 className="text-lg font-semibold mb-4 text-white">Conversion Rate Trend</h3>
-            <p className="text-sm text-gray-400 mb-2">
+        <div className="p-5 mt-10 mb-8 bg-gray-900 rounded-lg shadow-lg">
+            <h3 className="mb-4 text-lg font-semibold text-white">Conversion Rate Trend</h3>
+            <p className="mb-2 text-sm text-gray-400">
                 · Define: Grafik garis (line chart) yang menunjukkan pergerakan Conversion Rate dari waktu ke waktu (misal: per hari atau per minggu).
             </p>
             <p className="text-sm text-gray-400">
                 · Sumber Data: tb_lead_status. Kelompokkan (GROUP BY) berdasarkan changed_at (dijadikan harian/mingguan). Hitung rasio status_id = Deal terhadap total status yang berubah pada periode tersebut.
             </p>
-            <div className="h-64 bg-gray-800 mt-4 rounded flex items-center justify-center text-gray-500">
+            <div className="flex items-center justify-center h-64 mt-4 text-gray-500 bg-gray-800 rounded">
                 [Placeholder for Conversion Rate Line Chart]
             </div>
         </div>
@@ -185,4 +185,4 @@ const SalesDashboard = () => {
   );
 };
 
-export default SalesDashboard;
+export default SalesDashboardPage;

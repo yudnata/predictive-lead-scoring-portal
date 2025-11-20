@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import CampaignService from '../services/CampaignService';
+import CampaignService from '../api/campaign-service';
 
 const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
@@ -56,7 +56,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex justify-center items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
   <div className="bg-[#1E1E1E] w-full max-w-lg rounded-2xl shadow-xl p-8">
 
     
@@ -66,10 +66,10 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         <img 
             src="/campaign.png" 
             alt="" 
-            className="h-8 w-auto mr-2"
+            className="w-auto h-8 mr-2"
         />
 
-        <h2 className="text-xl font-bold text-white tracking-wide">
+        <h2 className="text-xl font-bold tracking-wide text-white">
           {isEdit ? 'Edit Campaign' : 'Add Campaign'}
         </h2>
       </div>
@@ -82,9 +82,9 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
       </button>
     </div>
 
-    <div className="border-b border-gray-600/50 mb-6"></div>
+    <div className="mb-6 border-b border-gray-600/50"></div>
 
-    <p className="text-gray-300 text-sm mb-5 leading-relaxed">
+    <p className="mb-5 text-sm leading-relaxed text-gray-300">
       Silahkan isi formulir di bawah untuk {isEdit ? 'mengubah' : 'menambah'} satu Campaign baru.
     </p>
 
@@ -92,7 +92,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
     <form onSubmit={handleSubmit} className="space-y-4">
 
       <div>
-        <label className="block text-white text-sm font-medium mb-1">
+        <label className="block mb-1 text-sm font-medium text-white">
           Nama Campaign*
         </label>
         <input
@@ -105,7 +105,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-white text-sm font-medium mb-1">
+          <label className="block mb-1 text-sm font-medium text-white">
             Campaign Start Date*
           </label>
           <input
@@ -118,7 +118,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         </div>
 
         <div>
-          <label className="block text-white text-sm font-medium mb-1">
+          <label className="block mb-1 text-sm font-medium text-white">
             Campaign End Date*
           </label>
           <input
@@ -132,7 +132,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
       </div>
 
       <div>
-        <label className="block text-white text-sm font-medium mb-1">
+        <label className="block mb-1 text-sm font-medium text-white">
           Deskripsi*
         </label>
         <textarea

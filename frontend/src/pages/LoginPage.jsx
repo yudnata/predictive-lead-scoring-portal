@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1/auth';
 
-const Login = () => {
+const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,37 +53,37 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-black text-white">
+    <div className="flex min-h-screen text-white bg-black">
       {/* LEFT */}
       <div className="flex-1 w-1/2 overflow-hidden">
         <img
           src="/Login 2.png"
           alt="Welcome Back"
-          className="w-full h-full object-cover block"
+          className="block object-cover w-full h-full"
         />
       </div>
 
       {/* RIGHT */}
-      <div className="flex-1 w-1/2 px-12 md:px-20 py-10 flex flex-col justify-between h-screen"> 
+      <div className="flex flex-col justify-between flex-1 w-1/2 h-screen px-12 py-10 md:px-20"> 
       {/* HEADER */}
-        <div className="w-full flex justify-end">
+        <div className="flex justify-end w-full">
           <div className="flex items-center space-x-2">
             <img 
               src="/logo.png" 
               alt="Accenture Logo" 
-              className="h-6 w-auto" 
+              className="w-auto h-6" 
             />
             <span className="text-xl font-semibold">accenture</span> 
           </div>
         </div>
 
       {/* CONTAINER */}
-        <div className="w-full max-w-md mx-auto mt-20 my-auto">
-          <h2 className="text-4xl mb-2 font-bold">Welcome Back</h2>
+        <div className="w-full max-w-md mx-auto my-auto mt-20">
+          <h2 className="mb-2 text-4xl font-bold">Welcome Back</h2>
           <p className="mb-10 text-white">Sign in to continue</p>
 
           {error && (
-            <div className="text-red-400 bg-red-900/40 p-3 mb-5 rounded-md border border-red-500">
+            <div className="p-3 mb-5 text-red-400 border border-red-500 rounded-md bg-red-900/40">
               {error}
             </div>
           )}
@@ -99,7 +99,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full p-2 bg-neutral-900 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2 text-white rounded-lg bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
 
@@ -113,11 +113,11 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full p-2 bg-neutral-900 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2 text-white rounded-lg bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
 
-            <div className="flex items-center space-x-2 mb-6">
+            <div className="flex items-center mb-6 space-x-2">
               <input
                 type="checkbox"
                 id="rememberMe"
@@ -125,7 +125,7 @@ const Login = () => {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="w-4 h-4 accent-orange-500"
               />
-              <label htmlFor="rememberMe" className="text-gray-4  00">
+              <label htmlFor="rememberMe" className="text-gray-4 00">
                 Remember me
               </label>
             </div>
@@ -133,7 +133,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 bg-orange-600 rounded-lg text-lg font-bold hover:bg-orange-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-2 text-lg font-bold transition bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? 'Logging In...' : 'Sign In'}
             </button>
@@ -144,4 +144,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginPage;

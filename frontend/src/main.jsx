@@ -6,7 +6,6 @@ import { BrowserRouter } from 'react-router-dom';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {/* APP DIBUNGKUS DENGAN BROWSER ROUTER */}
     <BrowserRouter>
       <App />
     </BrowserRouter>

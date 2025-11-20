@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import CampaignFormModal from '../../features/campaigns/components/CampaignFormModal';
-import CampaignService from '../../services/CampaignService';
+import CampaignService from '../../features/campaigns/api/campaign-service';
 import Sidebar from '../../layouts/Sidebar';
 import axios from 'axios';
 
@@ -50,26 +50,26 @@ const ActionDropdown = ({ campaignId, onEdit, onDelete }) => {
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="text-gray-400 hover:text-white px-2"
+        className="px-2 text-gray-400 hover:text-white"
       >
         ...
       </button>
 
       {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-40 bg-gray-800 rounded-md shadow-lg border border-gray-700 z-20">
+        <div className="absolute right-0 z-20 w-40 mt-2 bg-gray-800 border border-gray-700 rounded-md shadow-lg">
           <button
             onClick={() => {
               setDropdownOpen(false);
               onEdit();
             }}
-            className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-700"
+            className="block w-full px-4 py-2 text-sm text-left text-white hover:bg-gray-700"
           >
             Edit Campaign
           </button>
 
           <button
             onClick={handleDelete}
-            className="block w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700"
+            className="block w-full px-4 py-2 text-sm text-left text-red-400 hover:bg-gray-700"
           >
             Hapus Campaign
           </button>
@@ -89,16 +89,16 @@ const getStatusBadge = (isActive) => {
 // DROPDOWN STATUS (AKTIF / NONAKTIF)
 const StatusDropdown = ({ onChange }) => {
   return (
-    <div className="absolute bg-gray-800 shadow border border-gray-700 rounded-md p-2 z-30 w-32">
+    <div className="absolute z-30 w-32 p-2 bg-gray-800 border border-gray-700 rounded-md shadow">
       <button
         onClick={() => onChange(true)}
-        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-gray-700"
+        className="w-full px-3 py-2 text-sm text-left text-white hover:bg-gray-700"
       >
         Aktif
       </button>
       <button
         onClick={() => onChange(false)}
-        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-gray-700"
+        className="w-full px-3 py-2 text-sm text-left text-white hover:bg-gray-700"
       >
         Nonaktif
       </button>
@@ -202,7 +202,7 @@ const CampaignPage = () => {
 
   if (loadingProfile) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-black text-white">
+      <div className="flex items-center justify-center min-h-screen text-white bg-black">
         <p>Memuat profil pengguna...</p>
       </div>
     );
@@ -212,7 +212,7 @@ const CampaignPage = () => {
     <div className="flex bg-[#121212] min-h-screen">
       <Sidebar user={userProfile} />
 
-      <main className="p-8 w-full overflow-y-auto" style={{ paddingLeft: '290px' }}>
+      <main className="w-full p-8 overflow-y-auto" style={{ paddingLeft: '290px' }}>
         {/* Header */}
         <div className="flex items-center mb-8">
           <h1 className="text-3xl font-bold text-white">Campaign</h1>
@@ -231,7 +231,7 @@ const CampaignPage = () => {
             />
             <img
               src="/search.png"
-              className="h-4 w-auto absolute left-3 top-1/2 transform -translate-y-1/2"
+              className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
             />
           </div>
         </div>
@@ -243,15 +243,14 @@ const CampaignPage = () => {
               setEditingCampaign(null);
               setModalOpen(true);
             }}
-            className="px-4 py-2 bg-white text-black rounded-lg font-semibold shadow 
-                       hover:bg-gray-100 transition-all flex items-center gap-2"
+            className="flex items-center gap-2 px-4 py-2 font-semibold text-black transition-all bg-white rounded-lg shadow hover:bg-gray-100"
           >
             Add Campaign
           </button>
         </div>
 
         {/* TABLE */}
-        <div className="bg-gray-900 rounded-lg shadow-lg p-4 border border-gray-800">
+        <div className="p-4 bg-gray-900 border border-gray-800 rounded-lg shadow-lg">
           {loading ? (
             <p className="text-white">Memuat data...</p>
           ) : campaigns.length === 0 ? (
@@ -259,22 +258,22 @@ const CampaignPage = () => {
           ) : (
             <table className="min-w-full text-white">
               <thead>
-                <tr className="text-gray-400 text-sm border-b border-gray-700 uppercase">
-                  <th className="py-3 px-4 text-left">Nama Campaign</th>
-                  <th className="py-3 px-4 text-left">Status</th>
-                  <th className="py-3 px-4 text-left">Tanggal Mulai</th>
-                  <th className="py-3 px-4 text-left">Tanggal Selesai</th>
-                  <th className="py-3 px-4 text-left">Action</th>
+                <tr className="text-sm text-gray-400 uppercase border-b border-gray-700">
+                  <th className="px-4 py-3 text-left">Nama Campaign</th>
+                  <th className="px-4 py-3 text-left">Status</th>
+                  <th className="px-4 py-3 text-left">Tanggal Mulai</th>
+                  <th className="px-4 py-3 text-left">Tanggal Selesai</th>
+                  <th className="px-4 py-3 text-left">Action</th>
                 </tr>
               </thead>
 
               <tbody>
                 {campaigns.map((c) => (
-                  <tr key={c.campaign_id} className="border-b border-gray-800 text-sm">
-                    <td className="py-4 px-4">{c.campaign_name}</td>
+                  <tr key={c.campaign_id} className="text-sm border-b border-gray-800">
+                    <td className="px-4 py-4">{c.campaign_name}</td>
 
                     {/* DROPDOWN STATUS */}
-                    <td className="py-4 px-4 relative">
+                    <td className="relative px-4 py-4">
                       <button
                         onClick={() =>
                           setShowStatusDropdownId(
@@ -294,11 +293,11 @@ const CampaignPage = () => {
                       )}
                     </td>
 
-                    <td className="py-4 px-4">{formatDate(c.campaign_start_date)}</td>
+                    <td className="px-4 py-4">{formatDate(c.campaign_start_date)}</td>
 
-                    <td className="py-4 px-4">{formatDate(c.campaign_end_date)}</td>
+                    <td className="px-4 py-4">{formatDate(c.campaign_end_date)}</td>
 
-                    <td className="py-4 px-4">
+                    <td className="px-4 py-4">
                       <ActionDropdown
                         campaignId={c.campaign_id}
                         onEdit={() => handleOpenEditModal(c.campaign_id)}
@@ -313,7 +312,7 @@ const CampaignPage = () => {
         </div>
 
         {/* PAGINATION */}
-        <div className="mt-6 flex justify-between items-center text-gray-400 text-sm">
+        <div className="flex items-center justify-between mt-6 text-sm text-gray-400">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}

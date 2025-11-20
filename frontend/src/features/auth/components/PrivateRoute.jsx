@@ -10,7 +10,6 @@ const PrivateRoute = ({ allowedRoles }) => {
   }
 
   if (!userRole || !allowedRoles.includes(userRole)) {
-    // Bisa membuat komponen 403 Forbidden di sini
     return <Navigate to="/" replace />; 
   }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import UserFormModal from '../../features/users/components/UserFormModal';
-import UserService from '../../services/UserService';
+import UserService from '../../features/users/api/user-service';
 import Sidebar from '../../layouts/Sidebar'; 
 import axios from 'axios';
 
@@ -30,7 +30,7 @@ const ActionDropdown = ({ userId, onEdit, onDelete }) => {
       await UserService.delete(userId);
       alert("Sales berhasil dihapus!");
       onDelete(); 
-    } catch (err) {
+    } catch {
       alert("Gagal menghapus Sales.");
     }
   };
@@ -39,25 +39,25 @@ const ActionDropdown = ({ userId, onEdit, onDelete }) => {
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="text-gray-400 hover:text-white px-2"
+        className="px-2 text-gray-400 hover:text-white"
       >
         ...
       </button>
 
       {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-40 bg-gray-800 rounded-md shadow-lg border border-gray-700 z-20">
+        <div className="absolute right-0 z-20 w-40 mt-2 bg-gray-800 border border-gray-700 rounded-md shadow-lg">
           <button
             onClick={() => {
               setDropdownOpen(false);
               onEdit();
             }}
-            className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-700"
+            className="block w-full px-4 py-2 text-sm text-left text-white hover:bg-gray-700"
           >
             Edit Sales
           </button>
           <button
             onClick={handleDelete}
-            className="block w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700"
+            className="block w-full px-4 py-2 text-sm text-left text-red-400 hover:bg-gray-700"
           >
             Hapus Sales
           </button>
@@ -129,7 +129,7 @@ const UserPage = () => {
       const user = await UserService.getById(id);
       setEditingUser(user);
       setModalOpen(true);
-    } catch (err) {
+    } catch {
       alert("Gagal memuat detail Sales");
     } finally {
       setLoading(false);
@@ -147,7 +147,7 @@ const UserPage = () => {
 
   if (loadingProfile) {
     return (
-        <div className="flex justify-center items-center min-h-screen bg-black text-white">
+        <div className="flex items-center justify-center min-h-screen text-white bg-black">
             <p>Memuat profil pengguna...</p>
         </div>
     );
@@ -157,7 +157,7 @@ const UserPage = () => {
     <div className="flex bg-[#121212] min-h-screen">
       <Sidebar user={userProfile} />
 
-      <main className="p-8 w-full overflow-y-auto" style={{ paddingLeft: "290px" }}>
+      <main className="w-full p-8 overflow-y-auto" style={{ paddingLeft: "290px" }}>
 
         {/* HEADER */}
         <div className="flex items-center mb-8">
@@ -176,7 +176,7 @@ const UserPage = () => {
           />
           <img
             src="/search.png"
-            className="h-4 w-auto absolute left-3 top-1/2 transform -translate-y-1/2"
+            className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
           />
         </div>
       </div>
@@ -187,16 +187,14 @@ const UserPage = () => {
             setEditingUser(null);
             setModalOpen(true);
           }}
-          className="px-4 py-2 bg-white 
-                    text-black rounded-lg font-semibold shadow 
-                    hover:bg-gray-100 transition-all flex items-center gap-2"
+          className="flex items-center gap-2 px-4 py-2 font-semibold text-black transition-all bg-white rounded-lg shadow hover:bg-gray-100"
         >
           Add Sales
         </button>
       </div>
 
         {/* USER TABLE */}
-        <div className="bg-gray-900 rounded-lg shadow-lg p-4 border border-gray-800">
+        <div className="p-4 bg-gray-900 border border-gray-800 rounded-lg shadow-lg">
           {loading ? (
             <p className="text-white">Memuat data...</p>
           ) : salesUsers.length === 0 ? (
@@ -204,32 +202,32 @@ const UserPage = () => {
           ) : (
             <table className="min-w-full text-white">
               <thead>
-                <tr className="text-gray-400 text-sm border-b border-gray-700 uppercase">
-                  <th className="py-3 px-4 text-left">Nama Sales & ID</th>
-                  <th className="py-3 px-4 text-left">Email</th>
-                  <th className="py-3 px-4 text-left">Status</th>
-                  <th className="py-3 px-4 text-left">Campaign Aktif</th>
-                  <th className="py-3 px-4 text-left">Leads Ditangani</th>
-                  <th className="py-3 px-4 text-left">Action</th>
+                <tr className="text-sm text-gray-400 uppercase border-b border-gray-700">
+                  <th className="px-4 py-3 text-left">Nama Sales & ID</th>
+                  <th className="px-4 py-3 text-left">Email</th>
+                  <th className="px-4 py-3 text-left">Status</th>
+                  <th className="px-4 py-3 text-left">Campaign Aktif</th>
+                  <th className="px-4 py-3 text-left">Leads Ditangani</th>
+                  <th className="px-4 py-3 text-left">Action</th>
                 </tr>
               </thead>
 
               <tbody>
                 {salesUsers.map((user) => (
-                  <tr key={user.user_id} className="border-b border-gray-800 text-sm">
-                    <td className="py-4 px-4">
+                  <tr key={user.user_id} className="text-sm border-b border-gray-800">
+                    <td className="px-4 py-4">
                         <p className="font-semibold">{user.full_name}</p>
                         <p className="text-xs text-gray-500">#{user.user_id}</p>
                     </td>
-                    <td className="py-4 px-4">{user.user_email}</td>
-                    <td className="py-4 px-4">
+                    <td className="px-4 py-4">{user.user_email}</td>
+                    <td className="px-4 py-4">
                       <span className={getStatusBadge(user.is_active)}>
                         {user.is_active ? 'Aktif' : 'Nonaktif'}
                       </span>
                     </td>
-                    <td className="py-4 px-4">1</td>
-                    <td className="py-4 px-4">Total 21</td>
-                    <td className="py-4 px-4">
+                    <td className="px-4 py-4">1</td>
+                    <td className="px-4 py-4">Total 21</td>
+                    <td className="px-4 py-4">
                       <ActionDropdown
                         userId={user.user_id}
                         onEdit={() => handleOpenEditModal(user.user_id)}
@@ -244,7 +242,7 @@ const UserPage = () => {
         </div>
 
         {/* PAGINATION */}
-        <div className="mt-6 flex justify-between items-center text-gray-400 text-sm">
+        <div className="flex items-center justify-between mt-6 text-sm text-gray-400">
         <div className="flex items-center gap-2">
           <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1 border border-gray-700 rounded-lg disabled:opacity-30 hover:bg-gray-700">Back</button>
           {[1, 2, 3, 4].map(page => (

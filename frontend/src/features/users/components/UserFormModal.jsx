@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import UserService from '../services/UserService';
+import UserService from '../api/user-service';
 
 const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
@@ -69,14 +69,14 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
       <div className="bg-[#242424] p-8 rounded-lg shadow-2xl w-full max-w-lg">
-        <div className="flex justify-between items-start border-b border-gray-700 pb-3 mb-4">
+        <div className="flex items-start justify-between pb-3 mb-4 border-b border-gray-700">
           <h2 className="text-xl font-bold text-white">{isEdit ? 'Edit Sales' : 'Add Sales'}</h2>
           <button onClick={onClose} className="text-red-500 hover:text-red-700">X</button>
         </div>
 
-        {error && <div className="text-red-400 bg-red-900/40 p-3 mb-4 rounded-md">{error}</div>}
+        {error && <div className="p-3 mb-4 text-red-400 rounded-md bg-red-900/40">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -113,7 +113,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             <label className="text-sm text-white">Aktif</label>
           </div>
 
-          <div className="pt-4 flex justify-end space-x-3">
+          <div className="flex justify-end pt-4 space-x-3">
             <button type="button" onClick={onClose} disabled={loading} className="px-4 py-2 text-sm font-bold bg-red-600 rounded">Batal</button>
             <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-bold bg-green-600 rounded disabled:opacity-50">
               {loading ? 'Menyimpan...' : 'Simpan'}

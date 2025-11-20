@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../layouts/Sidebar';
 import LeadFormModal from '../features/leads/components/LeadFormModal'; 
-import LeadService from '../services/LeadService'; 
+import LeadService from '../features/leads/api/lead-service'; 
 import axios from 'axios';
 
 // Sidebar Component
@@ -30,7 +30,7 @@ const ActionDropdown = ({ leadId, onEdit, onDelete, userRole }) => {
                 await LeadService.delete(leadId);
                 alert('Lead berhasil dihapus.');
                 onDelete();
-            } catch (error) {
+            } catch {
                 alert('Gagal menghapus Lead.');
             }
         }
@@ -40,16 +40,16 @@ const ActionDropdown = ({ leadId, onEdit, onDelete, userRole }) => {
         <div className="relative inline-block text-left" ref={dropdownRef}>
             <button 
                 onClick={() => setDropdownOpen(!dropdownOpen)} 
-                className="text-gray-400 hover:text-white px-2"
+                className="px-2 text-gray-400 hover:text-white"
             >
                 ...
             </button>
             {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-gray-800 rounded-md shadow-lg border border-gray-700 z-20">
-                    <button onClick={() => { setDropdownOpen(false); onEdit(); }} className="block w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-700">
+                <div className="absolute right-0 z-20 w-40 mt-2 bg-gray-800 border border-gray-700 rounded-md shadow-lg">
+                    <button onClick={() => { setDropdownOpen(false); onEdit(); }} className="block w-full px-4 py-2 text-sm text-left text-white hover:bg-gray-700">
                         Edit Lead
                     </button>
-                    <button onClick={handleDelete} className="block w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700">
+                    <button onClick={handleDelete} className="block w-full px-4 py-2 text-sm text-left text-red-400 hover:bg-gray-700">
                         Hapus Lead
                     </button>
                 </div>
@@ -119,7 +119,7 @@ const LeadsPage = () => {
             const lead = await LeadService.getById(leadId); 
             setEditingLead(lead); 
             setModalOpen(true);
-        } catch (error) {
+        } catch {
             alert('Gagal memuat detail Lead.');
         } finally {
             setLoading(false);
@@ -146,7 +146,7 @@ const LeadsPage = () => {
     };
 
     if (loadingProfile) {
-        return <div className="flex justify-center items-center min-h-screen bg-black text-white"><p>Memuat profil...</p></div>;
+        return <div className="flex items-center justify-center min-h-screen text-white bg-black"><p>Memuat profil...</p></div>;
     }
     
     const userRole = userProfile?.role;
@@ -161,7 +161,7 @@ const LeadsPage = () => {
                     <div className="flex items-center">
                         <h1 className="text-3xl font-bold text-white">All Leads</h1>
 
-                        <div className="flex items-center space-x-4 ml-6">
+                        <div className="flex items-center ml-6 space-x-4">
                             <div className="relative">
                                 <input
                                     type="text"
@@ -171,14 +171,14 @@ const LeadsPage = () => {
                                     className="w-80 p-2 pl-10 bg-[#242424] text-white rounded-lg 
                                             border border-gray-700 focus:border-gray-500"
                                 />
-                                <img src="/search.png" className="h-4 w-auto absolute left-3 top-1/2 transform -translate-y-1/2" />
+                                <img src="/search.png" className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2" />
                             </div>
 
-                            <button className="px-4 py-2 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600">
+                            <button className="px-4 py-2 font-semibold text-white bg-gray-700 rounded-lg hover:bg-gray-600">
                                 Filter
                             </button>
 
-                            <button className="px-4 py-2 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600">
+                            <button className="px-4 py-2 font-semibold text-white bg-gray-700 rounded-lg hover:bg-gray-600">
                                 Sort-by
                             </button>
                         </div>
@@ -189,9 +189,7 @@ const LeadsPage = () => {
                     {userRole === 'admin' && (
                         <button
                         onClick={handleOpenAddModal}
-                        className="px-4 py-2 bg-white 
-                                    text-black rounded-lg font-semibold shadow 
-                                    hover:bg-gray-100 transition-all flex items-center gap-2"
+                        className="flex items-center gap-2 px-4 py-2 font-semibold text-black transition-all bg-white rounded-lg shadow hover:bg-gray-100"
                         >
                         Add Leads
                         </button>
@@ -199,40 +197,40 @@ const LeadsPage = () => {
                 </div>
 
                 {/* LEADS TABLE */}
-                <div className="bg-gray-900 rounded-lg shadow-lg border border-gray-800">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg shadow-lg">
                     {loading ? (
-                        <p className="text-white p-4">Memuat data...</p>
+                        <p className="p-4 text-white">Memuat data...</p>
                     ) : leads.length === 0 ? (
-                        <p className="text-gray-400 p-4">Tidak ada Leads ditemukan.</p>
+                        <p className="p-4 text-gray-400">Tidak ada Leads ditemukan.</p>
                     ) : (
                         <table className="min-w-full text-white">
                             <thead>
-                                <tr className="text-gray-400 text-sm border-b border-gray-700 uppercase">
+                                <tr className="text-sm text-gray-400 uppercase border-b border-gray-700">
                                     {['Skor', 'Nama Lead & ID', 'Pekerjaan', 'Age', 'Status', 'Action'].map(header => (
-                                        <th key={header} className="py-3 px-4 text-left">{header}</th>
+                                        <th key={header} className="px-4 py-3 text-left">{header}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {leads.map((lead) => (
-                                    <tr key={lead.lead_id} className="border-b border-gray-800 text-sm">
-                                        <td className="py-2 px-4">
+                                    <tr key={lead.lead_id} className="text-sm border-b border-gray-800">
+                                        <td className="px-4 py-2">
                                             <span className={`px-2 py-1 rounded-md text-sm ${getScoreColor(lead.lead_score)}`}>
                                                 {lead.lead_score}
                                             </span>
                                         </td>
-                                        <td className="py-2 px-4">
+                                        <td className="px-4 py-2">
                                             <p className="font-semibold">{lead.lead_name}</p>
                                             <p className="text-xs text-gray-500">#{lead.lead_id}</p>
                                         </td>
-                                        <td className="py-2 px-4">{lead.job_name}</td>
-                                        <td className="py-2 px-4">{lead.lead_age}</td>
-                                        <td className="py-2 px-4">
+                                        <td className="px-4 py-2">{lead.job_name}</td>
+                                        <td className="px-4 py-2">{lead.lead_age}</td>
+                                        <td className="px-4 py-2">
                                             <span className={getStatusBadge(lead.pOutcome_name === 'success' ? 'Tracked' : 'Available')}>
                                                 {lead.pOutcome_name || 'Available'}
                                             </span>
                                         </td>
-                                        <td className="py-2 px-4">
+                                        <td className="px-4 py-2">
                                             <ActionDropdown 
                                                 leadId={lead.lead_id} 
                                                 onEdit={() => handleOpenEditModal(lead.lead_id)}
@@ -247,7 +245,7 @@ const LeadsPage = () => {
                 </div>
 
                 {/* PAGINATION & RESULT INFO */}
-                <div className="mt-6 flex justify-between items-center text-gray-400 text-sm">
+                <div className="flex items-center justify-between mt-6 text-sm text-gray-400">
                     <div className="flex items-center gap-2">
                         <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1 border border-gray-700 rounded-lg disabled:opacity-30 hover:bg-gray-700">Back</button>
                         {[1, 2, 3, 4].map(page => (
