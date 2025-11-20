@@ -13,8 +13,8 @@ import LeadsPage from './pages/LeadsPage.jsx';
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage />} />
       
       <Route element={<PrivateRoute allowedRoles={['admin']} />}>
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
