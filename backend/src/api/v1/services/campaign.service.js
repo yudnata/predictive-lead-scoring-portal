@@ -40,13 +40,28 @@ const getCampaignById = async (campaignId) => {
 };
 
 const updateCampaignById = async (campaignId, updateBody) => {
-  await getCampaignById(campaignId);
+  const existingCampaign = await getCampaignById(campaignId);
 
-  if (!updateBody.campaign_name) {
+  if ('campaign_name' in updateBody && !updateBody.campaign_name) {
     throw new ApiError(400, 'Nama campaign harus diisi');
   }
 
-  return campaignModel.update(campaignId, updateBody);
+  const finalUpdateData = {
+    ...existingCampaign,
+    ...updateBody,
+  };
+
+  if ('campaign_is_active' in updateBody) {
+    const value = updateBody.campaign_is_active;
+
+    if (typeof value === 'string') {
+      finalUpdateData.campaign_is_active = value.toLowerCase() === 'true';
+    } else {
+      finalUpdateData.campaign_is_active = Boolean(value);
+    }
+  }
+
+  return campaignModel.update(campaignId, finalUpdateData);
 };
 
 const deleteCampaignById = async (campaignId) => {

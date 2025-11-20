@@ -7,13 +7,13 @@ const create = async (campaignData) => {
     campaign_start_date,
     campaign_end_date,
     campaign_desc,
-    campaign_status,
+    campaign_is_active,
   } = campaignData;
 
   const query = {
     text: `
       INSERT INTO tb_campaigns 
-        (campaign_name, campaign_start_date, campaign_end_date, campaign_desc, campaign_status, created_at, updated_at)
+        (campaign_name, campaign_start_date, campaign_end_date, campaign_desc, campaign_is_active, created_at, updated_at)
       VALUES 
         ($1, $2, $3, $4, $5, NOW(), NOW())
       RETURNING *
@@ -23,7 +23,7 @@ const create = async (campaignData) => {
       campaign_start_date || null,
       campaign_end_date || null,
       campaign_desc || null,
-      campaign_status || 'Aktif',
+      campaign_is_active === undefined ? true : campaign_is_active,
     ],
   };
   const { rows } = await db.query(query);
@@ -77,7 +77,7 @@ const update = async (campaignId, campaignData) => {
     campaign_start_date,
     campaign_end_date,
     campaign_desc,
-    campaign_status,
+    campaign_is_active,
   } = campaignData;
 
   const query = {
@@ -88,7 +88,7 @@ const update = async (campaignId, campaignData) => {
         campaign_start_date = $2,
         campaign_end_date = $3,
         campaign_desc = $4,
-        campaign_status = $5,
+        campaign_is_active = $5,
         updated_at = NOW()
       WHERE campaign_id = $6
       RETURNING *
@@ -98,7 +98,7 @@ const update = async (campaignId, campaignData) => {
       campaign_start_date || null,
       campaign_end_date || null,
       campaign_desc || null,
-      campaign_status,
+      campaign_is_active,
       campaignId,
     ],
   };

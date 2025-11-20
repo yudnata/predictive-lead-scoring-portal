@@ -54,7 +54,7 @@ exports.up = async (pgm) => {
 
 exports.down = async (pgm) => {
   await pgm.sql(`DELETE FROM tb_users;`);
-  await pgm.sql(`DELETE FROM tb_contactmethod;`);
+  await pgm.sql(`DELETE FROM tb_contact_method;`);
   await pgm.sql(`DELETE FROM tb_poutcome;`);
   await pgm.sql(`DELETE FROM tb_education;`);
   await pgm.sql(`DELETE FROM tb_marital;`);

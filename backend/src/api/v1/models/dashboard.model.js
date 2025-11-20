@@ -11,7 +11,7 @@ const getStats = async () => {
         (SELECT AVG(lead_score) FROM tb_leads_score WHERE lead_score > 0) AS "averageLeadsScore",
         
         -- 3. Total Active Campaigns
-        (SELECT COUNT(*) FROM tb_campaigns WHERE campaign_status = 'Aktif') AS "activeCampaigns",
+        (SELECT COUNT(*) FROM tb_campaigns WHERE campaign_is_active = true) AS "activeCampaigns",
         
         -- 4. Conversion Rate (Deal / (Deal + Reject))
         (

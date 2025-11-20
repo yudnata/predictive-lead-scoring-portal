@@ -71,7 +71,7 @@ exports.up = (pgm) => {
     campaign_start_date: { type: 'date' },
     campaign_end_date: { type: 'date' },
     campaign_desc: { type: 'text' },
-    campaign_status: { type: 'varchar(50)' },
+    campaign_is_active: { type: 'boolean', default: true },
     created_at: { type: 'timestamptz', default: pgm.func('NOW()') },
     updated_at: { type: 'timestamptz', default: pgm.func('NOW()') },
   });
