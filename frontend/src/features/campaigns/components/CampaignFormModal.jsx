@@ -106,7 +106,6 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           baru.
         </p>
 
-        {/* Form */}
         <form
           onSubmit={handleSubmit}
           className="space-y-4"
@@ -162,7 +161,6 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             ></textarea>
           </div>
 
-          {/* Buttons */}
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"

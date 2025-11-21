@@ -26,11 +26,9 @@ axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Token expired atau tidak valid
       localStorage.clear();
       sessionStorage.clear();
 
-      // [FIX INFINITE LOOP] Hanya redirect jika BUKAN di halaman login/root
       const currentPath = window.location.pathname;
       if (currentPath !== '/login' && currentPath !== '/') {
         window.location.href = '/login';

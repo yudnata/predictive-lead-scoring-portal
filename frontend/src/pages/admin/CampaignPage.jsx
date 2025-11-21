@@ -164,7 +164,6 @@ const CampaignPage = () => {
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center mb-8">
         <h1 className="text-3xl font-bold text-white">Campaign</h1>
 
@@ -186,7 +185,6 @@ const CampaignPage = () => {
         </div>
       </div>
 
-      {/* ADD BUTTON */}
       <div className="flex justify-end mb-6">
         <button
           onClick={() => {
@@ -199,7 +197,6 @@ const CampaignPage = () => {
         </button>
       </div>
 
-      {/* TABLE */}
       <div className="p-4 rounded-lg shadow-lg bg-dark-bg">
         {loading ? (
           <p className="text-white">Memuat data...</p>
@@ -264,7 +261,6 @@ const CampaignPage = () => {
         )}
       </div>
 
-      {/* PAGINATION */}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

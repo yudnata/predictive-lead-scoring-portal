@@ -1,5 +1,3 @@
-import React from 'react';
-
 const StatCard = ({ title, value, detail, valueColor = 'text-white', detailBg = '' }) => {
   return (
     <div className="flex flex-col justify-between h-32 p-5 transition-all rounded-lg shadow-lg bg-dark-card">

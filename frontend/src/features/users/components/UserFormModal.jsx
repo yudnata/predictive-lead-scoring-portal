@@ -6,26 +6,22 @@ import toast from 'react-hot-toast';
 const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
   
-  // State UI
   const [activeTab, setActiveTab] = useState('details'); // 'details' | 'campaigns'
   const [loading, setLoading] = useState(false);
   const [campaigns, setCampaigns] = useState([]);
   const [error, setError] = useState('');
 
-  // State Form
   const [formData, setFormData] = useState({
     full_name: '',
     user_email: '',
     password: '',
     is_active: true,
-    campaign_ids: [], // Stores selected campaign IDs
+    campaign_ids: [],
   });
 
-  // Fetch Campaigns & Init Data
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        // Mengambil semua campaign (limit besar untuk dropdown/list)
         const result = await CampaignService.getAll(1, 100); 
         setCampaigns(result.data);
       } catch (err) {
@@ -42,7 +38,6 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           user_email: initialData.user_email || '',
           is_active: initialData.is_active ?? true,
           password: '', 
-          // Backend harus mengirim campaign_ids saat getById
           campaign_ids: initialData.campaign_ids || [], 
         });
       } else {
@@ -111,15 +106,13 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
       <div className="bg-[#242424] w-full max-w-xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
           <h2 className="text-xl font-bold text-white">
             {isEdit ? 'Edit Sales' : 'Add New Sales'}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white">✕</button>
         </div>
-
-        {/* Tabs */}
+        
         <div className="flex shrink-0">
           <button
             type="button"
@@ -151,11 +144,9 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           </div>
         )}
 
-        {/* Scrollable Form Content */}
         <div className="p-6 overflow-y-auto custom-scrollbar grow">
           <form id="userForm" onSubmit={handleSubmit}>
             
-            {/* TAB 1: User Details */}
             {activeTab === 'details' && (
               <div className="space-y-4">
                 <div>
@@ -197,7 +188,6 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                   />
                 </div>
 
-                {/* Status Toggle */}
                 <div className="flex items-center pt-2 space-x-3">
                   <div className="relative inline-block w-10 mr-2 align-middle select-none">
                       <input 
@@ -215,8 +205,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                 </div>
               </div>
             )}
-
-            {/* TAB 2: Campaign Assignment */}
+            
             {activeTab === 'campaigns' && (
               <div className="space-y-4">
                 <p className="text-sm text-gray-400">Pilih campaign yang akan ditangani oleh Sales ini:</p>
@@ -257,7 +246,6 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           </form>
         </div>
 
-        {/* Footer Buttons */}
         <div className="flex justify-end p-6 border-t border-white/10 gap-3 shrink-0 bg-[#242424]">
           <button 
             type="button" 

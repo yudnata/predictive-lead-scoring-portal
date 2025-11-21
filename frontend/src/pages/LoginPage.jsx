@@ -58,7 +58,6 @@ const LoginPage = () => {
 
       {/* RIGHT */}
       <div className="relative flex flex-1 w-full h-screen px-8 py-10 md:w-1/2 md:px-20">
-        {/* Logo di pojok kanan atas */}
         <div className="absolute flex items-center space-x-2 top-8 right-8">
           <img
             src="/logo.png"
@@ -68,7 +67,6 @@ const LoginPage = () => {
           <span className="text-xl font-semibold">accenture</span>
         </div>
 
-        {/* Form di tengah */}
         <div className="flex flex-col items-center justify-center w-full">
           <div className="w-full max-w-md">
             <h2 className="mb-2 text-5xl font-bold">Welcome Back</h2>
@@ -84,7 +82,6 @@ const LoginPage = () => {
               onSubmit={handleSubmit}
               className="space-y-6"
             >
-              {/* Email */}
               <div className="space-y-2">
                 <label
                   htmlFor="email"
@@ -102,7 +99,6 @@ const LoginPage = () => {
                 />
               </div>
 
-              {/* Password */}
               <div className="space-y-2">
                 <label
                   htmlFor="password"
@@ -146,7 +142,6 @@ const LoginPage = () => {
                         />
                       </svg>
                     ) : (
-                      // Icon Mata Tertutup (Hide)
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -166,7 +161,6 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              {/* Remember me */}
               <div className="flex items-center mb-6 space-x-2">
                 <input
                   type="checkbox"
@@ -183,7 +177,6 @@ const LoginPage = () => {
                 </label>
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}

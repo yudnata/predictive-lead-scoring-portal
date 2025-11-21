@@ -4,7 +4,6 @@ const ProfilePage = ({ user }) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = () => {
-    // tampilkan modal konfirmasi
     setShowLogoutModal(true);
   };
 
@@ -60,7 +59,6 @@ const ProfilePage = ({ user }) => {
         </div>
       </div>
 
-      {/* LOGOUT CONFIRMATION MODAL */}
       {showLogoutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-[#1E1E1E] w-full max-w-sm p-6 rounded-2xl shadow-lg text-white">

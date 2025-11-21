@@ -142,7 +142,6 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         <h2 className="mb-4 text-2xl font-bold">{isEdit ? 'Edit Lead' : 'Add Leads'}</h2>
         <div className="mb-6 border-b border-white/10"></div>
 
-        {/* Tabs */}
         <div className="flex mb-4 border-b border-white/10">
           <button
             type="button"

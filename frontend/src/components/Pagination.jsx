@@ -22,7 +22,6 @@ const Pagination = ({
 
   return (
     <div className="flex items-center justify-between mt-6 text-sm text-black">
-      {/* Left */}
       <div className="flex items-center gap-2">
         <button
           onClick={() => onPageChange(currentPage - 1)}
@@ -59,7 +58,6 @@ const Pagination = ({
         </button>
       </div>
 
-      {/* Right */}
       <div className="flex items-center gap-4">
         <span className="text-white/70">
           {startResult} to {endResult} of {totalResults} Result
