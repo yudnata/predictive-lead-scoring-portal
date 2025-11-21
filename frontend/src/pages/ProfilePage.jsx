@@ -16,7 +16,7 @@ const ProfilePage = ({ user }) => {
   if (!user) return <div className="p-4 text-white">Memuat data profil...</div>;
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-dark-bg">
+    <div className="flex items-center justify-center h-full bg-dark-bg">
       <div className="w-full max-w-lg p-8 border shadow-xl rounded-xl bg-dark-card border-white/10">
         <h1 className="mb-6 text-3xl font-bold text-center text-white">Profil Saya</h1>
 
@@ -37,8 +37,18 @@ const ProfilePage = ({ user }) => {
             <span className="font-medium text-gray-400">Role</span>
             <span className="font-semibold capitalize">{user.role}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="font-medium text-gray-400">Status</span>
+        </div>
+
+        <div className="flex items-center justify-between mt-8">
+          <button
+            onClick={handleLogout}
+            className="px-6 py-1 font-semibold text-white transition-all bg-red-600 rounded-lg text-md hover:bg-red-700"
+          >
+            Logout
+          </button>
+
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-gray-400">Status:</span>
             <span
               className={`px-3 py-1 text-sm rounded-full ${
                 user.is_active ? 'bg-green-600/25 text-green-400' : 'bg-red-600/25 text-red-400'
@@ -47,15 +57,6 @@ const ProfilePage = ({ user }) => {
               {user.is_active ? 'Active' : 'Inactive'}
             </span>
           </div>
-        </div>
-
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={handleLogout}
-            className="px-6 py-3 text-lg font-semibold text-white transition-all bg-red-600 rounded-lg hover:bg-red-700"
-          >
-            Logout
-          </button>
         </div>
       </div>
 
@@ -67,13 +68,13 @@ const ProfilePage = ({ user }) => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+                className="px-3 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
               >
                 Batal
               </button>
               <button
                 onClick={confirmLogout}
-                className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700"
+                className="px-3 py-2 bg-red-600 rounded-lg hover:bg-red-700"
               >
                 Logout
               </button>
