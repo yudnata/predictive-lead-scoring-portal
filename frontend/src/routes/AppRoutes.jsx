@@ -1,8 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 
 import LoginPage from '../pages/LoginPage';
-import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
-import SalesDashboardPage from '../pages/sales/SalesDashboardPage';
+import DashboardPage from '../pages/DashboardPage';
+
 import CampaignPage from '../pages/admin/CampaignPage';
 import SalesPage from '../pages/admin/SalesPage';
 import LeadsPage from '../pages/LeadsPage';
@@ -34,7 +34,7 @@ const AppRoutes = ({ userProfile }) => (
         <Route element={<MainLayout user={userProfile} />}>
           <Route
             path="/admin/dashboard"
-            element={<AdminDashboardPage />}
+            element={<DashboardPage />}
           />
           <Route
             path="/admin/campaigns"
@@ -60,7 +60,7 @@ const AppRoutes = ({ userProfile }) => (
         <Route element={<MainLayout user={userProfile} />}>
           <Route
             path="/sales/dashboard"
-            element={<SalesDashboardPage />}
+            element={<DashboardPage />}
           />
           <Route
             path="/sales/leads"

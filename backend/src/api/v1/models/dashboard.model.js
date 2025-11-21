@@ -4,22 +4,43 @@ const getStats = async () => {
   const query = {
     text: `
       SELECT
-        -- 1. Total Leads
-        (SELECT COUNT(*) FROM tb_leads) AS "totalLeads",
+        (SELECT COUNT(lead_id) FROM tb_leads) AS "totalLeads",
         
-        -- 2. Average Leads Score
-        (SELECT AVG(lead_score) FROM tb_leads_score WHERE lead_score > 0) AS "averageLeadsScore",
+        -- REVISI: Dikali 10 agar nilai skala 0-10 menjadi persen 0-100
+        -- Contoh: 1.0 menjadi 10, 8.4 menjadi 84
+        (SELECT COALESCE(AVG(lead_score) * 10, 0)::int FROM tb_leads_score) AS "averageLeadsScore",
         
-        -- 3. Total Active Campaigns
-        (SELECT COUNT(*) FROM tb_campaigns WHERE campaign_is_active = true) AS "activeCampaigns",
-        
-        -- 4. Conversion Rate (Deal / (Deal + Reject))
         (
           SELECT 
-            (COUNT(CASE WHEN status_id = 3 THEN 1 END) * 1.0) / 
-            (NULLIF(COUNT(CASE WHEN status_id IN (3, 4) THEN 1 END), 0))
-          FROM tb_lead_status_history
-        ) AS "conversionRate"
+            CASE WHEN COUNT(*) = 0 THEN 0
+            ELSE (
+              (COUNT(CASE WHEN status_id = 3 THEN 1 END)::float) / 
+              (NULLIF(COUNT(CASE WHEN status_id != 1 THEN 1 END), 0)::float)
+            ) * 100
+            END
+          FROM tb_campaign_leads
+        ) AS "conversionRate",
+
+        (
+          SELECT COUNT(campaign_id) 
+          FROM tb_campaigns 
+          WHERE campaign_is_active = true 
+        ) AS "activeCampaigns",
+
+        (
+          WITH leads_contact_again AS (
+            SELECT DISTINCT lead_id FROM tb_lead_status_history WHERE status_id = 5
+          )
+          SELECT 
+            CASE WHEN COUNT(lca.lead_id) = 0 THEN 0
+            ELSE (
+              (COUNT(CASE WHEN cl.status_id = 4 THEN 1 END)::float) / 
+              (COUNT(lca.lead_id)::float)
+            ) * 100
+            END
+          FROM leads_contact_again lca
+          JOIN tb_campaign_leads cl ON lca.lead_id = cl.lead_id
+        ) AS "reboundRate"
     `,
   };
   const { rows } = await db.query(query);
@@ -30,20 +51,32 @@ const getScoreDistribution = async () => {
   const query = {
     text: `
       SELECT
-        COUNT(CASE WHEN lead_score >= 0.75 THEN 1 END) AS "skorTinggi",
-        COUNT(CASE WHEN lead_score >= 0.50 AND lead_score < 0.75 THEN 1 END) AS "skorSedang",
-        COUNT(CASE WHEN lead_score < 0.50 THEN 1 END) AS "skorRendah"
+        COUNT(CASE WHEN lead_score * 10 >= 80 THEN 1 END) AS "Skor Tinggi",
+        COUNT(CASE WHEN lead_score * 10 >= 50 AND lead_score * 10 < 80 THEN 1 END) AS "Skor Sedang",
+        COUNT(CASE WHEN lead_score * 10 < 50 THEN 1 END) AS "Skor Rendah"
       FROM tb_leads_score
     `,
   };
   const { rows } = await db.query(query);
-  return rows[0];
+
+  const rawResult = [
+    { label: 'Skor Tinggi', value: parseInt(rows[0]['Skor Tinggi'] || 0), color: '#4ade80' }, // Hijau
+    { label: 'Skor Sedang', value: parseInt(rows[0]['Skor Sedang'] || 0), color: '#facc15' }, // Kuning
+    { label: 'Skor Rendah', value: parseInt(rows[0]['Skor Rendah'] || 0), color: '#f87171' }, // Merah
+  ];
+
+  const total = rawResult.reduce((acc, curr) => acc + curr.value, 0);
+
+  return rawResult.map((r) => ({
+    ...r,
+    percentage: total === 0 ? '0%' : Math.round((r.value / total) * 100) + '%',
+  }));
 };
 
 const getTopLeads = async () => {
   const query = {
     text: `
-      SELECT l.lead_name, ls.lead_score
+      SELECT l.lead_name, (ls.lead_score * 10)::int as score
       FROM tb_leads l
       JOIN tb_leads_score ls ON l.lead_id = ls.lead_id
       ORDER BY ls.lead_score DESC
@@ -58,40 +91,42 @@ const getTopCampaigns = async () => {
   const query = {
     text: `
       SELECT
-        c.campaign_name,
-        (
-          (COUNT(CASE WHEN h.status_id = 3 THEN 1 END) * 1.0) / 
-          (NULLIF(COUNT(CASE WHEN h.status_id IN (3, 4) THEN 1 END), 0))
-        ) AS "conversionRate"
-      FROM tb_lead_status_history h
-      JOIN tb_campaigns c ON h.campaign_id = c.campaign_id
+        c.campaign_name as name,
+        CASE WHEN COUNT(cl.lead_id) = 0 THEN 0
+        ELSE (
+          (COUNT(CASE WHEN cl.status_id = 3 THEN 1 END)::float) / 
+          (COUNT(cl.lead_id)::float)
+        ) * 100
+        END AS rate
+      FROM tb_campaigns c
+      JOIN tb_campaign_leads cl ON c.campaign_id = cl.campaign_id
       GROUP BY c.campaign_name
-      ORDER BY "conversionRate" DESC
+      ORDER BY rate DESC
       LIMIT 3
     `,
   };
   const { rows } = await db.query(query);
-  return rows;
+  return rows.map((r) => ({
+    ...r,
+    rate: Math.round(r.rate) + '%',
+  }));
 };
 
 const getConversionRateTrend = async () => {
   const query = {
     text: `
       SELECT
-        -- 1. Kelompokkan berdasarkan hari
-        date_trunc('day', changed_at) AS "date",
-        -- 2. Hitung rasio Deal / (Deal + Reject) pada hari itu
-        (
-          (COUNT(CASE WHEN status_id = 3 THEN 1 END) * 1.0) / 
-          (NULLIF(COUNT(CASE WHEN status_id IN (3, 4) THEN 1 END), 0))
-        ) AS "conversionRate"
+        TO_CHAR(changed_at, 'YYYY-MM-DD') AS "date",
+        CASE WHEN COUNT(*) = 0 THEN 0
+        ELSE (
+          (COUNT(CASE WHEN status_id = 3 THEN 1 END)::float) / 
+          (COUNT(*)::float)
+        ) * 100
+        END AS "rate"
       FROM tb_lead_status_history
-      WHERE 
-        -- 3. Hanya ambil data 30 hari terakhir
-        changed_at >= NOW() - INTERVAL '30 days'
-        AND status_id IN (3, 4) -- Hanya hitung perubahan status final
-      GROUP BY "date"
-      ORDER BY "date" ASC; -- Wajib ASC untuk line chart
+      WHERE changed_at >= NOW() - INTERVAL '30 days'
+      GROUP BY 1
+      ORDER BY 1 ASC
     `,
   };
   const { rows } = await db.query(query);

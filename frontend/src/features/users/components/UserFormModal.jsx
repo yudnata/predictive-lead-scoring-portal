@@ -126,7 +126,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             onClick={() => setActiveTab('details')}
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               activeTab === 'details' 
-                ? 'bg-[#2C2C2C] text-brand border-b-2 border-brand' 
+                ? 'text-brand border-b-2 border-brand' 
                 : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -137,7 +137,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             onClick={() => setActiveTab('campaigns')}
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               activeTab === 'campaigns' 
-                ? 'bg-[#2C2C2C] text-brand border-b-2 border-brand' 
+                ? 'text-brand border-b-2 border-brand' 
                 : 'text-gray-400 hover:text-white'
             }`}
           >

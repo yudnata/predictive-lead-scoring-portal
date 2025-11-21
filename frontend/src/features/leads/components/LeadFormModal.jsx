@@ -140,10 +140,10 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <div className="bg-[#1E1E1E] w-full max-w-2xl rounded-2xl shadow-xl p-8 text-white">
         <h2 className="mb-4 text-2xl font-bold">{isEdit ? 'Edit Lead' : 'Add Leads'}</h2>
-        <div className="mb-6 border-b border-gray-700"></div>
+        <div className="mb-6 border-b border-white/10"></div>
 
         {/* Tabs */}
-        <div className="flex mb-4 border-b border-gray-600">
+        <div className="flex mb-4 border-b border-white/10">
           <button
             type="button"
             className={`px-4 py-2 font-semibold ${
@@ -322,7 +322,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 text-white transition bg-gray-600 rounded-full hover:bg-gray-700"
+              className="px-6 py-2 text-white transition bg-[#EF5350] rounded-full hover:bg-[#EF5350]/60"
             >
               Batal
             </button>
