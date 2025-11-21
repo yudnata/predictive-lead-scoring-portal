@@ -165,7 +165,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     value={formData.full_name} 
                     onChange={handleChange} 
                     required
-                    className="w-full p-2.5 bg-[#1A1A1A] border border-gray-600 rounded-lg text-white focus:border-brand focus:outline-none"
+                    className="w-full p-2.5 bg-[#1A1A1A] rounded-lg text-white focus:border-brand focus:outline-none"
                   />
                 </div>
                 
@@ -177,7 +177,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     value={formData.user_email} 
                     onChange={handleChange} 
                     required
-                    className="w-full p-2.5 bg-[#1A1A1A] border border-gray-600 rounded-lg text-white focus:border-brand focus:outline-none disabled:opacity-50"
+                    className="w-full p-2.5 bg-[#1A1A1A] rounded-lg text-white focus:border-brand focus:outline-none disabled:opacity-50"
                     readOnly={isEdit} 
                     disabled={isEdit}
                   />
@@ -193,7 +193,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     value={formData.password} 
                     onChange={handleChange} 
                     required={!isEdit}
-                    className="w-full p-2.5 bg-[#1A1A1A] border border-gray-600 rounded-lg text-white focus:border-brand focus:outline-none"
+                    className="w-full p-2.5 bg-[#1A1A1A] rounded-lg text-white focus:border-brand focus:outline-none"
                   />
                 </div>
 
@@ -231,7 +231,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                         className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
                           formData.campaign_ids.includes(campaign.campaign_id)
                             ? 'bg-brand/20 border-brand'
-                            : 'bg-[#1A1A1A] border-gray-700 hover:border-gray-500'
+                            : 'bg-[#1A1A1A] border-white/10 hover:border-gray-500'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -258,7 +258,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         </div>
 
         {/* Footer Buttons */}
-        <div className="flex justify-end p-6 border-t border-gray-700 gap-3 shrink-0 bg-[#242424]">
+        <div className="flex justify-end p-6 border-t border-white/10 gap-3 shrink-0 bg-[#242424]">
           <button 
             type="button" 
             onClick={onClose} 

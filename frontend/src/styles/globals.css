@@ -8,9 +8,28 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   background: #121212;
   font-family: 'Urbanist', sans-serif;
+}
+
+.datepicker-white::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(2);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #1e1e1e inset !important;
+  -webkit-text-fill-color: white !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.bg-neutral-900:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 30px #1e1e1e inset !important;
 }

@@ -99,7 +99,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           </button>
         </div>
 
-        <div className="mb-6 border-b border-gray-600/50"></div>
+        <div className="mb-6 border-b border-white/10"></div>
 
         <p className="mb-5 text-sm leading-relaxed text-gray-300">
           Silahkan isi formulir di bawah untuk {isEdit ? 'mengubah' : 'menambah'} satu Campaign
@@ -118,7 +118,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
               name="campaign_name"
               value={formData.campaign_name}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-[#2C2C2C] text-white border border-gray-700 focus:border-[#F28500] outline-none"
+              className="w-full p-3 rounded-lg bg-[#2C2C2C] text-white  focus:border-brand outline-none"
             />
           </div>
 
@@ -132,7 +132,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                 name="campaign_start_date"
                 value={formData.campaign_start_date}
                 onChange={handleChange}
-                className="w-full p-3 rounded-lg bg-[#2C2C2C] text-white border border-gray-700 focus:border-[#F28500] outline-none"
+                className="w-full p-3 rounded-lg bg-[#2C2C2C] text-white focus:border-brand outline-none datepicker-white"
               />
             </div>
 
@@ -145,7 +145,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                 name="campaign_end_date"
                 value={formData.campaign_end_date}
                 onChange={handleChange}
-                className="w-full p-3 rounded-lg bg-[#2C2C2C] text-white border border-gray-700 focus:border-[#F28500] outline-none"
+                className="w-full p-3 rounded-lg bg-[#2C2C2C] text-white focus:border-brand outline-none datepicker-white"
               />
             </div>
           </div>
@@ -158,7 +158,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
               value={formData.campaign_desc}
               onChange={handleChange}
               placeholder="Deskripsi"
-              className="w-full p-3 rounded-lg bg-[#2C2C2C] text-white border border-gray-700 focus:border-[#F28500] outline-none"
+              className="w-full p-3 rounded-lg bg-[#2C2C2C] text-white  focus:border-brand outline-none"
             ></textarea>
           </div>
 
