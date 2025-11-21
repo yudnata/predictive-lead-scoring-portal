@@ -74,7 +74,7 @@ const getStatusBadge = (status) => {
 };
 
 const getScoreColor = (score) => {
-  const displayScore = score * 10;
+  const displayScore = score * 100;
   if (displayScore === 0) return 'bg-white/10 text-white';
   if (displayScore >= 80) return 'bg-[#66BB6A]/10 text-[#66BB6A]';
   if (displayScore >= 50) return 'bg-[#FFCA28]/10 text-[#FFCA28]';
@@ -198,7 +198,7 @@ const LeadsPage = () => {
                               lead.lead_score
                             )}`}
                           >
-                            {lead.lead_score * 10}
+                            {lead.lead_score * 100}
                           </span>
                         </td>
                         <td className="px-4 py-2">

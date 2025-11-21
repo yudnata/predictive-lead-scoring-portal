@@ -5,10 +5,7 @@ const getStats = async () => {
     text: `
       SELECT
         (SELECT COUNT(lead_id) FROM tb_leads) AS "totalLeads",
-        
-        -- REVISI: Dikali 10 agar nilai skala 0-10 menjadi persen 0-100
-        -- Contoh: 1.0 menjadi 10, 8.4 menjadi 84
-        (SELECT COALESCE(AVG(lead_score) * 10, 0)::int FROM tb_leads_score) AS "averageLeadsScore",
+        (SELECT COALESCE(AVG(lead_score) * 100, 0)::int FROM tb_leads_score) AS "averageLeadsScore",
         
         (
           SELECT 
@@ -51,18 +48,18 @@ const getScoreDistribution = async () => {
   const query = {
     text: `
       SELECT
-        COUNT(CASE WHEN lead_score * 10 >= 80 THEN 1 END) AS "Skor Tinggi",
-        COUNT(CASE WHEN lead_score * 10 >= 50 AND lead_score * 10 < 80 THEN 1 END) AS "Skor Sedang",
-        COUNT(CASE WHEN lead_score * 10 < 50 THEN 1 END) AS "Skor Rendah"
+        COUNT(CASE WHEN lead_score * 100 >= 80 THEN 1 END) AS "Skor Tinggi",
+        COUNT(CASE WHEN lead_score * 100 >= 50 AND lead_score * 100 < 80 THEN 1 END) AS "Skor Sedang",
+        COUNT(CASE WHEN lead_score * 100 < 50 THEN 1 END) AS "Skor Rendah"
       FROM tb_leads_score
     `,
   };
   const { rows } = await db.query(query);
 
   const rawResult = [
-    { label: 'Skor Tinggi', value: parseInt(rows[0]['Skor Tinggi'] || 0), color: '#4ade80' }, // Hijau
-    { label: 'Skor Sedang', value: parseInt(rows[0]['Skor Sedang'] || 0), color: '#facc15' }, // Kuning
-    { label: 'Skor Rendah', value: parseInt(rows[0]['Skor Rendah'] || 0), color: '#f87171' }, // Merah
+    { label: 'Skor Tinggi', value: parseInt(rows[0]['Skor Tinggi'] || 0), color: '#4ade80' },
+    { label: 'Skor Sedang', value: parseInt(rows[0]['Skor Sedang'] || 0), color: '#facc15' },
+    { label: 'Skor Rendah', value: parseInt(rows[0]['Skor Rendah'] || 0), color: '#f87171' }, 
   ];
 
   const total = rawResult.reduce((acc, curr) => acc + curr.value, 0);
@@ -76,7 +73,7 @@ const getScoreDistribution = async () => {
 const getTopLeads = async () => {
   const query = {
     text: `
-      SELECT l.lead_name, (ls.lead_score * 10)::int as score
+      SELECT l.lead_name, (ls.lead_score * 100)::int as score
       FROM tb_leads l
       JOIN tb_leads_score ls ON l.lead_id = ls.lead_id
       ORDER BY ls.lead_score DESC

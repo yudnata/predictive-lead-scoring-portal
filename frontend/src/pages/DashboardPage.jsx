@@ -1,9 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import axiosClient from '../api/axiosClient';
 import StatCard from '../features/dashboard/components/StatCard';
 import RankedListCard from '../features/dashboard/components/RankedListCard';
 import ScoreDistributionCard from '../features/dashboard/components/ScoreDistributionCard';
+
+const CustomBarTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="p-3 border border-gray-700 rounded-lg shadow-xl bg-gray-900/95 backdrop-blur">
+        <p className="mb-1 text-xs text-gray-400">{label}</p>
+        <p className="text-sm font-bold text-brand">Rate: {payload[0].value}%</p>
+      </div>
+    );
+  }
+  return null;
+};
 
 const DashboardPage = () => {
   const { user } = useOutletContext();
@@ -36,9 +49,17 @@ const DashboardPage = () => {
   if (!data)
     return <div className="p-8 text-center text-white">Gagal memuat data. Silakan refresh.</div>;
 
+  const chartTrendData = data.conversionRateTrend.map((item) => ({
+    ...item,
+    formattedDate: new Date(item.date).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+    }),
+    rate: parseFloat(item.rate),
+  }));
+
   return (
     <div>
-      {/* HEADER */}
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-white">
           Hello, {user?.full_name?.split(' ')[0] || 'User'}
@@ -46,12 +67,7 @@ const DashboardPage = () => {
         <p className="mt-1 text-gray-400">Berikut adalah ringkasan performa leads Anda.</p>
       </header>
 
-      {/* ----------------------------------------------------- */}
-      {/* BENTO GRID START */}
-      {/* ----------------------------------------------------- */}
-
       <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Row 1 – Three main stat cards */}
         <div className="col-span-1">
           <StatCard
             title="Total Leads"
@@ -59,7 +75,6 @@ const DashboardPage = () => {
             valueColor="text-white"
           />
         </div>
-
         <div className="col-span-1">
           <StatCard
             title="Avg Leads Score"
@@ -69,7 +84,6 @@ const DashboardPage = () => {
             valueColor={getScoreColor(data.averageLeadsScore)}
           />
         </div>
-
         <div className="col-span-1">
           <StatCard
             title="Conversion Rate"
@@ -78,7 +92,6 @@ const DashboardPage = () => {
           />
         </div>
 
-        {/* Row 2 – Bento style */}
         <div className="col-span-1">
           <StatCard
             title="Rebound Rate"
@@ -88,7 +101,6 @@ const DashboardPage = () => {
             valueColor="text-white"
           />
         </div>
-
         <div className="col-span-1">
           <StatCard
             title="Active Campaign"
@@ -97,12 +109,10 @@ const DashboardPage = () => {
           />
         </div>
 
-        {/* Tall box (row-span-2) */}
         <div className="col-span-1 row-span-2">
           <ScoreDistributionCard data={data.distributionLeadsScore} />
         </div>
 
-        {/* Row 3 – Ranked lists */}
         <div className="col-span-1">
           <RankedListCard
             title="Top Highest Leads Score"
@@ -110,7 +120,6 @@ const DashboardPage = () => {
             isScore={true}
           />
         </div>
-
         <div className="col-span-1">
           <RankedListCard
             title="Top Campaign by Conversion"
@@ -119,41 +128,54 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* ----------------------------------------------------- */}
-      {/* BOTTOM WIDE GRAPH */}
-      {/* ----------------------------------------------------- */}
-
       <div className="p-6 mt-8 rounded-lg shadow-lg bg-dark-card">
         <h3 className="mb-2 text-lg font-semibold text-white">Conversion Rate Trend (30 Days)</h3>
         <p className="mb-6 text-sm text-gray-400">Grafik pergerakan rasio 'Deal' harian.</p>
 
-        <div className="relative flex items-end h-64 pb-2 space-x-3 overflow-x-auto custom-scrollbar">
-          {data.conversionRateTrend.length === 0 ? (
+        <div className="w-full h-72">
+          {chartTrendData.length === 0 ? (
             <div className="flex items-center justify-center w-full h-full text-gray-600">
               Belum ada data tren historis.
             </div>
           ) : (
-            data.conversionRateTrend.map((day, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col items-center group min-w-[40px] h-full justify-end"
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+            >
+              <BarChart
+                data={chartTrendData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               >
-                <div
-                  className="w-full bg-brand/40 hover:bg-brand transition-all rounded-t-sm relative group-hover:shadow-[0_0_10px_rgba(74,222,128,0.5)]"
-                  style={{ height: `${Math.max(day.rate * 2, 5)}%`, maxHeight: '100%' }}
-                >
-                  <span className="absolute z-10 px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-black border border-gray-700 rounded opacity-0 -top-10 left-1/2 group-hover:opacity-100 whitespace-nowrap">
-                    {parseFloat(day.rate).toFixed(1)}%
-                  </span>
-                </div>
-                <span className="text-[10px] text-gray-500 mt-2 rotate-45 origin-left truncate w-full text-center">
-                  {new Date(day.date).toLocaleDateString('id-ID', {
-                    day: '2-digit',
-                    month: 'short',
-                  })}
-                </span>
-              </div>
-            ))
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#333"
+                />
+                <XAxis
+                  dataKey="formattedDate"
+                  tick={{ fill: '#9CA3AF', fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                  minTickGap={15}
+                />
+                <YAxis
+                  tick={{ fill: '#9CA3AF', fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  content={<CustomBarTooltip />}
+                  cursor={{ fill: '#ffffff10' }}
+                />
+                <Bar
+                  dataKey="rate"
+                  fill="#4ade80"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={40}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           )}
         </div>
       </div>
