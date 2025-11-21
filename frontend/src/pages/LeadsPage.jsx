@@ -85,8 +85,6 @@ const getScoreColor = (score) => {
   return 'bg-white/10 text-white'; // fallback
 };
 
-// --- HALAMAN UTAMA ---
-
 const LeadsPage = () => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -83,7 +83,11 @@ const Sidebar = ({ user }) => {
               <li
                 key={item.name}
                 onClick={() => navigate(item.path)}
-                className="p-2 text-gray-300 rounded-lg cursor-pointer"
+                className={`p-2 rounded-lg cursor-pointer transition-colors ${
+                  location.pathname.startsWith(item.path)
+                    ? 'bg-[#585858] font-semibold'
+                    : 'hover:text-gray-300 text-gray-300'
+                }`}
               >
                 <div className="flex items-center space-x-3">
                   <img
