@@ -38,6 +38,7 @@ const DashboardPage = () => {
 
   return (
     <div>
+      {/* HEADER */}
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-white">
           Hello, {user?.full_name?.split(' ')[0] || 'User'}
@@ -45,50 +46,64 @@ const DashboardPage = () => {
         <p className="mt-1 text-gray-400">Berikut adalah ringkasan performa leads Anda.</p>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Leads"
-          value={data.totalLeads}
-          valueColor="text-white"
-        />
-        
-        <StatCard
-          title="Avg Leads Score"
-          value={`${data.averageLeadsScore}%`}
-          detail="Based on AI/ML"
-          detailBg="bg-white/10"
-          valueColor={getScoreColor(data.averageLeadsScore)}
-        />
+      {/* ----------------------------------------------------- */}
+      {/* BENTO GRID START */}
+      {/* ----------------------------------------------------- */}
 
-        <StatCard
-          title="Conversion Rate"
-          value={`${parseFloat(data.conversionRate).toFixed(1)}%`}
-          valueColor="text-white"
-        />
-        <StatCard
-          title="Rebound Rate"
-          value={`${parseFloat(data.reboundRate).toFixed(1)}%`}
-          detail="Inefficiency"
-          detailBg="bg-red-900"
-          valueColor="text-white"
-        />
-      </div>
-
-      <div className="grid h-auto grid-cols-1 gap-6 mb-6 lg:grid-cols-12 lg:h-80">
-        <div className="flex flex-col h-full gap-6 lg:col-span-4">
-          <div className="h-24 shrink-0">
-            <StatCard
-              title="Active Campaign"
-              value={data.activeCampaigns}
-              valueColor="text-white"
-            />
-          </div>
-          <div className="flex-1 h-full">
-            <ScoreDistributionCard data={data.distributionLeadsScore} />
-          </div>
+      <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Row 1 – Three main stat cards */}
+        <div className="col-span-1">
+          <StatCard
+            title="Total Leads"
+            value={data.totalLeads}
+            valueColor="text-white"
+          />
         </div>
-        
-        <div className="h-full lg:col-span-4">
+
+        <div className="col-span-1">
+          <StatCard
+            title="Avg Leads Score"
+            value={`${data.averageLeadsScore}%`}
+            detail="Based on AI/ML"
+            detailBg="bg-white/10"
+            valueColor={getScoreColor(data.averageLeadsScore)}
+          />
+        </div>
+
+        <div className="col-span-1">
+          <StatCard
+            title="Conversion Rate"
+            value={`${parseFloat(data.conversionRate).toFixed(1)}%`}
+            valueColor="text-white"
+          />
+        </div>
+
+        {/* Row 2 – Bento style */}
+        <div className="col-span-1">
+          <StatCard
+            title="Rebound Rate"
+            value={`${parseFloat(data.reboundRate).toFixed(1)}%`}
+            detail="Inefficiency"
+            detailBg="bg-red-900"
+            valueColor="text-white"
+          />
+        </div>
+
+        <div className="col-span-1">
+          <StatCard
+            title="Active Campaign"
+            value={data.activeCampaigns}
+            valueColor="text-white"
+          />
+        </div>
+
+        {/* Tall box (row-span-2) */}
+        <div className="col-span-1 row-span-2">
+          <ScoreDistributionCard data={data.distributionLeadsScore} />
+        </div>
+
+        {/* Row 3 – Ranked lists */}
+        <div className="col-span-1">
           <RankedListCard
             title="Top Highest Leads Score"
             items={data.topHighestLeadsScore}
@@ -96,13 +111,17 @@ const DashboardPage = () => {
           />
         </div>
 
-        <div className="h-full lg:col-span-4">
+        <div className="col-span-1">
           <RankedListCard
             title="Top Campaign by Conversion"
             items={data.topCampaignByConversion}
           />
         </div>
       </div>
+
+      {/* ----------------------------------------------------- */}
+      {/* BOTTOM WIDE GRAPH */}
+      {/* ----------------------------------------------------- */}
 
       <div className="p-6 mt-8 rounded-lg shadow-lg bg-dark-card">
         <h3 className="mb-2 text-lg font-semibold text-white">Conversion Rate Trend (30 Days)</h3>

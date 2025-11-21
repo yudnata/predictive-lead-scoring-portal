@@ -8,12 +8,23 @@ const Pagination = ({
 }) => {
   const renderPageNumbers = () => {
     const pages = [];
-    const maxVisiblePages = 4;
-    const endPage = Math.min(maxVisiblePages, totalPages);
+    const maxVisiblePages = 5; // bebas mau 5 atau 7
 
-    for (let i = 1; i <= endPage; i++) {
+    let start = Math.max(1, currentPage - 2);
+    let end = Math.min(totalPages, currentPage + 2);
+
+    if (end - start + 1 < maxVisiblePages) {
+      if (start === 1) {
+        end = Math.min(totalPages, start + maxVisiblePages - 1);
+      } else if (end === totalPages) {
+        start = Math.max(1, end - maxVisiblePages + 1);
+      }
+    }
+
+    for (let i = start; i <= end; i++) {
       pages.push(i);
     }
+
     return pages;
   };
 
@@ -63,15 +74,32 @@ const Pagination = ({
           {startResult} to {endResult} of {totalResults} Result
         </span>
 
-        <select
-          value={limit}
-          onChange={(e) => onLimitChange(Number(e.target.value))}
-          className="p-1 text-white transition border rounded-lg appearance-none cursor-pointer border-white/50 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-0"
-        >
-          <option value="14">Show 14</option>
-          <option value="25">Show 25</option>
-          <option value="50">Show 50</option>
-        </select>
+        <div className="relative">
+          <select
+            value={limit}
+            onChange={(e) => onLimitChange(Number(e.target.value))}
+            className="p-2 pr-2 text-white border rounded-lg cursor-pointer bg-dark-card border-white/10 focus:outline-none"
+          >
+            <option
+              value="20"
+              className="bg-[#0f0f0f]"
+            >
+              Show 20
+            </option>
+            <option
+              value="30"
+              className="bg-[#0f0f0f]"
+            >
+              Show 30
+            </option>
+            <option
+              value="50"
+              className="bg-[#0f0f0f]"
+            >
+              Show 50
+            </option>
+          </select>
+        </div>
       </div>
     </div>
   );

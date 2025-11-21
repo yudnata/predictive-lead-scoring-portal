@@ -221,9 +221,7 @@ const CampaignPage = () => {
                   className="text-sm border-b border-white/10"
                 >
                   <td className="px-4 py-4 text-white/80">{c.campaign_name}</td>
-
-                  {/* DROPDOWN STATUS */}
-                  <td className="relative px-4 py-4">
+                  <td className="relative px-4 py-6">
                     <button
                       onClick={() =>
                         setShowStatusDropdownId(

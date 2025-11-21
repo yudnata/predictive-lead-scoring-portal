@@ -19,7 +19,7 @@ const ScoreDistributionCard = ({ data }) => {
   const backgroundStyle = data.length > 0 ? `conic-gradient(${gradientParts.join(', ')})` : '#333';
 
   return (
-    <div className="flex flex-row items-center justify-between h-full p-5 border-t rounded-b-lg shadow-lg border-t-white/10 bg-dark-card">
+    <div className="flex flex-row items-center justify-between h-full p-5 rounded-lg shadow-lg bg-dark-card">
       <div className="flex flex-col justify-between w-1/2 h-full">
         <h3 className="mb-4 text-lg font-semibold text-white">Distribution Leads Score</h3>
 

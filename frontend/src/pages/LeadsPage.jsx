@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import LeadFormModal from '../features/leads/components/LeadFormModal';
 import LeadService from '../features/leads/api/lead-service';
 import Pagination from '../components/Pagination';
+import TableLoaderWrapper from '../components/TableLoaderWrapper';
 
 const ActionDropdown = ({ leadId, onEdit, onDelete }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -91,7 +92,7 @@ const LeadsPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLead, setEditingLead] = useState(null);
 
-  const [limit, setLimit] = useState(14);
+  const [limit, setLimit] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
@@ -107,6 +108,7 @@ const LeadsPage = () => {
       console.error('Gagal memuat leads:', error);
       setLeads([]);
     } finally {
+      setTimeout(() => setLoading(false), 300);
       setLoading(false);
     }
   }, [currentPage, search, limit]);
@@ -121,15 +123,12 @@ const LeadsPage = () => {
   };
 
   const handleOpenEditModal = async (leadId) => {
-    setLoading(true);
     try {
       const lead = await LeadService.getById(leadId);
       setEditingLead(lead);
       setModalOpen(true);
     } catch {
       alert('Gagal memuat detail Lead.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -149,22 +148,21 @@ const LeadsPage = () => {
                     setSearch(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20 focus:outline-none"
+                  className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20 focus:outline-none focus:border-white/50 transition-colors"
                 />
                 <img
                   src="/search.png"
-                  className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
+                  className="absolute w-auto h-4 transform -translate-y-1/2 opacity-50 left-3 top-1/2"
                   alt="Search"
                 />
               </div>
             </div>
           </div>
 
-          {/* Hanya tampilkan tombol Add jika Admin */}
           {isAdmin && (
             <button
               onClick={handleOpenAddModal}
-              className="flex items-center gap-2 px-4 py-2 font-semibold text-black transition-all bg-white rounded-lg shadow hover:bg-gray-100"
+              className="flex items-center gap-2 px-4 py-2 font-semibold text-black transition-all bg-white rounded-lg shadow hover:bg-gray-200"
             >
               Add Leads
             </button>
@@ -172,81 +170,93 @@ const LeadsPage = () => {
         </div>
       </header>
 
-      <div className="overflow-x-auto rounded-lg shadow-lg bg-dark-bg">
-        {loading ? (
-          <p className="p-4 text-center text-white">Memuat data...</p>
-        ) : leads.length === 0 ? (
-          <p className="p-4 text-center text-gray-400">Tidak ada Leads ditemukan.</p>
-        ) : (
-          <table className="min-w-full text-center text-white table-auto">
-            <thead>
-              <tr className="text-sm uppercase border-b border-white/30 text-gray">
-                <th className="px-4 py-5">Skor</th>
-                <th className="px-4 py-5">Nama Lead & ID</th>
-                <th className="px-4 py-5">Pekerjaan</th>
-                <th className="px-4 py-5">Age</th>
-                <th className="px-4 py-5">Status</th>
-                {/* Hanya tampilkan header Action jika Admin */}
-                {isAdmin && <th className="px-4 py-5">Action</th>}
-              </tr>
-            </thead>
-
-            <tbody>
-              {leads.map((lead) => (
-                <tr
-                  key={lead.lead_id}
-                  className="text-sm border-t border-b border-white/10"
-                >
-                  <td className="px-4 py-4">
-                    <span
-                      className={`px-2 py-1 rounded-md text-sm ${getScoreColor(lead.lead_score)}`}
-                    >
-                      {lead.lead_score * 10}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2">
-                    <p className="font-semibold truncate text-white/80">{lead.lead_name}</p>
-                  </td>
-                  <td className="px-4 py-2 text-white/80">{lead.job_name}</td>
-                  <td className="px-4 py-2 text-white/80">{lead.lead_age}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={getStatusBadge(
-                        lead.pOutcome_name === 'success' ? 'Tracked' : 'Available'
-                      )}
-                    >
-                      {lead.pOutcome_name || 'Available'}
-                    </span>
-                  </td>
-
-                  {/* Hanya tampilkan kolom Action jika Admin */}
-                  {isAdmin && (
-                    <td className="px-4 py-2">
-                      <ActionDropdown
-                        leadId={lead.lead_id}
-                        onEdit={() => handleOpenEditModal(lead.lead_id)}
-                        onDelete={fetchLeads}
-                      />
-                    </td>
-                  )}
+      <div className="overflow-hidden rounded-lg shadow-lg bg-dark-bg">
+        <TableLoaderWrapper loading={loading}>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-center text-white table-auto">
+              <thead>
+                <tr className="text-sm uppercase border-b border-white/30 text-gray">
+                  <th className="px-4 py-5 font-semibold tracking-wider">Skor</th>
+                  <th className="px-4 py-5 font-semibold tracking-wider">Nama Lead & ID</th>
+                  <th className="px-4 py-5 font-semibold tracking-wider">Pekerjaan</th>
+                  <th className="px-4 py-5 font-semibold tracking-wider">Age</th>
+                  <th className="px-4 py-5 font-semibold tracking-wider">Status</th>
+                  {isAdmin && <th className="px-4 py-5 font-semibold tracking-wider">Action</th>}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+
+              <tbody>
+                {leads.length > 0
+                  ? leads.map((lead) => (
+                      <tr
+                        key={lead.lead_id}
+                        className="text-sm transition-colors border-t border-b border-white/10 hover:bg-white/5"
+                      >
+                        <td className="px-4 py-3">
+                          <span
+                            className={`px-2 py-1 rounded-md text-sm font-bold ${getScoreColor(
+                              lead.lead_score
+                            )}`}
+                          >
+                            {lead.lead_score * 10}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2">
+                          <p className="font-semibold truncate text-white/90">{lead.lead_name}</p>
+                        </td>
+                        <td className="px-4 py-2 text-white/70">{lead.job_name}</td>
+                        <td className="px-4 py-2 text-white/70">{lead.lead_age}</td>
+                        <td className="px-4 py-2">
+                          <span
+                            className={getStatusBadge(
+                              lead.pOutcome_name === 'success' ? 'Tracked' : 'Available'
+                            )}
+                          >
+                            {lead.pOutcome_name || 'Available'}
+                          </span>
+                        </td>
+
+                        {isAdmin && (
+                          <td className="px-4 py-2">
+                            <ActionDropdown
+                              leadId={lead.lead_id}
+                              onEdit={() => handleOpenEditModal(lead.lead_id)}
+                              onDelete={fetchLeads}
+                            />
+                          </td>
+                        )}
+                      </tr>
+                    ))
+                  :
+                    !loading && (
+                      <tr>
+                        <td
+                          colSpan={isAdmin ? 6 : 5}
+                          className="py-12 text-center text-gray-400"
+                        >
+                          Tidak ada Leads ditemukan.
+                        </td>
+                      </tr>
+                    )}
+              </tbody>
+            </table>
+          </div>
+        </TableLoaderWrapper>
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        limit={limit}
-        totalResults={totalResults}
-        onPageChange={(page) => setCurrentPage(page)}
-        onLimitChange={(newLimit) => {
-          setLimit(newLimit);
-          setCurrentPage(1);
-        }}
-      />
+      {(totalResults > 0 || loading) && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          limit={limit}
+          totalResults={totalResults}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(newLimit) => {
+            setLimit(newLimit);
+            setCurrentPage(1);
+          }}
+        />
+      )}
 
       <LeadFormModal
         isOpen={modalOpen}
