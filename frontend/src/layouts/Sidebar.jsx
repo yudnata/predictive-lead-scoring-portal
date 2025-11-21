@@ -35,7 +35,7 @@ const Sidebar = ({ user }) => {
     <div className="w-64 bg-[#1e1e1e] h-screen text-white flex flex-col justify-between p-6 fixed top-0 left-0 z-10">
       <div>
         <div
-          className="flex items-center mb-10 space-x-2 cursor-pointer"
+          className="flex pb-8 mb-10 space-x-2 text-center cursor-pointer"
           onClick={() => navigate(isAdmin ? '/admin/dashboard' : '/sales/dashboard')}
         >
           <img
@@ -43,11 +43,11 @@ const Sidebar = ({ user }) => {
             alt="Accenture Logo"
             className="w-auto h-6"
           />
-          <span className="text-xl font-semibold">accenture</span>
+          <span className="text-xl font-semibold ">accenture</span>
         </div>
 
         <h3 className="mb-6 text-sm font-semibold tracking-wider uppercase text-gray">
-          {isAdmin ? 'Admin Dashboard' : 'Leads'}
+          {isAdmin ? 'Admin Dashboard' : 'Sales Dashboard'}
         </h3>
 
         <nav className="space-y-1">
@@ -74,7 +74,7 @@ const Sidebar = ({ user }) => {
             ))}
           </ul>
 
-          <h3 className="pt-6 text-sm font-semibold tracking-wider text-gray-400 uppercase">
+          <h3 className="pt-6 pb-3 text-sm font-semibold tracking-wider uppercase text-white/80">
             Other
           </h3>
           <ul className="space-y-1 text-sm">
@@ -102,7 +102,7 @@ const Sidebar = ({ user }) => {
         </nav>
       </div>
 
-      <div className="pt-4 border-t border-gray-500">
+      <div className="flex pt-4 border-t border-white/30">
         {user ? (
           <div>
             <p className="text-sm font-semibold">{user.full_name}</p>
