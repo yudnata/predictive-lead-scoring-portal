@@ -35,7 +35,7 @@ const Sidebar = ({ user }) => {
     <div className="w-64 bg-[#1e1e1e] h-screen text-white flex flex-col justify-between p-6 fixed top-0 left-0 z-10">
       <div>
         <div
-          className="flex pb-8 mb-10 space-x-2 text-center cursor-pointer"
+          className="flex pb-4 mb-10 space-x-2 text-center cursor-pointer"
           onClick={() => navigate(isAdmin ? '/admin/dashboard' : '/sales/dashboard')}
         >
           <img
