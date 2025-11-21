@@ -6,13 +6,14 @@ import LoginPage from './pages/LoginPage.jsx';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx';
 import SalesDashboardPage from './pages/sales/SalesDashboardPage.jsx';
 import CampaignPage from './pages/admin/CampaignPage.jsx';
-import UserPage from './pages/admin/UserPage.jsx';
+import SalesPage from './pages/admin/SalesPage.jsx';
 import LeadsPage from './pages/LeadsPage.jsx';
 
 import PrivateRoute from './features/auth/components/PrivateRoute.jsx';
 import MainLayout from './layouts/MainLayout.jsx';
 import RouteLoader from './components/RouteLoader.jsx';
 import axiosClient from './api/axiosClient';
+import NotFoundPage from './pages/NotFoundPage.jsx';
 
 function App() {
   const [userProfile, setUserProfile] = useState(null);
@@ -47,7 +48,10 @@ function App() {
             path="/login"
             element={<LoginPage />}
           />
-
+          <Route
+            path="*"
+            element={<NotFoundPage message="Halaman tidak ditemukan" />}
+          />
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
             <Route element={<MainLayout user={userProfile} />}>
               <Route
@@ -60,7 +64,7 @@ function App() {
               />
               <Route
                 path="/admin/sales-management"
-                element={<UserPage />}
+                element={<SalesPage />}
               />
               <Route
                 path="/admin/leads"
@@ -75,7 +79,6 @@ function App() {
                 path="/sales/dashboard"
                 element={<SalesDashboardPage />}
               />
-              {/* Tambahkan halaman sales lainnya di sini */}
             </Route>
           </Route>
         </Routes>

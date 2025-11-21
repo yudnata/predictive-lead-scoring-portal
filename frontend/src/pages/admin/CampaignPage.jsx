@@ -165,7 +165,7 @@ const CampaignPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, search]);
+  }, [currentPage, search, limit]);
 
   useEffect(() => {
     fetchCampaigns();

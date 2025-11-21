@@ -71,7 +71,7 @@ const ActionDropdown = ({ userId, onEdit, onDelete }) => {
   );
 };
 
-const UserPage = () => {
+const SalesPage = () => {
   const [salesUsers, setSalesUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -200,7 +200,7 @@ const UserPage = () => {
           ) : (
             <table className="min-w-full text-white">
               <thead>
-                <tr className="text-sm text-gray-400 uppercase border-b border-gray-700">
+                <tr className="text-sm text-white uppercase border-b border-white/30">
                   <th className="px-4 py-3 text-left">Nama Sales & ID</th>
                   <th className="px-4 py-3 text-left">Email</th>
                   <th className="px-4 py-3 text-left">Status</th>
@@ -214,20 +214,22 @@ const UserPage = () => {
                 {salesUsers.map((user) => (
                   <tr
                     key={user.user_id}
-                    className="text-sm border-b border-gray-800"
+                    className="text-sm border-b border-white/10"
                   >
                     <td className="px-4 py-4">
-                      <p className="font-semibold">{user.full_name}</p>
+                      <p className="font-semibold text-white/80">{user.full_name}</p>
                       <p className="text-xs text-gray-500">#{user.user_id}</p>
                     </td>
-                    <td className="px-4 py-4">{user.user_email}</td>
+                    <td className="px-4 py-4 text-white/80">{user.user_email}</td>
                     <td className="px-4 py-4">
                       <span className={getStatusBadge(user.is_active)}>
                         {user.is_active ? 'Aktif' : 'Nonaktif'}
                       </span>
                     </td>
-                    <td className="px-4 py-4">1</td>
-                    <td className="px-4 py-4">Total 21</td>
+
+                    <td className="px-4 py-4 pl-12 text-center text-white/80">{user.active_campaigns}</td>
+                    <td className="px-4 py-4 text-white/80">Total {user.leads_handled}</td>
+
                     <td className="px-4 py-4">
                       <ActionDropdown
                         userId={user.user_id}
@@ -266,4 +268,4 @@ const UserPage = () => {
   );
 };
 
-export default UserPage;
+export default SalesPage;
