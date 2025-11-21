@@ -7,8 +7,8 @@ const RouteLoader = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
-    const timerStart = setTimeout(() => setLoading(true), 0); // set async
-    const timerEnd = setTimeout(() => setLoading(false), 300); // spinner 300ms
+    const timerStart = setTimeout(() => setLoading(true), 0);
+    const timerEnd = setTimeout(() => setLoading(false), 300);
 
     return () => {
       clearTimeout(timerStart);

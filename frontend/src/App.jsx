@@ -9,12 +9,20 @@ function App() {
   const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+
+    if (!token) {
+      setLoadingProfile(false);
+      return;
+    }
+
     const fetchProfile = async () => {
       try {
         const response = await axiosClient.get('/auth/me');
         setUserProfile(response.data.data);
       } catch (error) {
         console.error('Gagal mengambil profil user:', error);
+        setUserProfile(null);
       } finally {
         setLoadingProfile(false);
       }

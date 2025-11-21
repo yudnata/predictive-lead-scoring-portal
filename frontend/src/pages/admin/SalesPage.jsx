@@ -1,13 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import UserFormModal from '../../features/users/components/UserFormModal';
 import UserService from '../../features/users/api/user-service';
-import Sidebar from '../../layouts/Sidebar';
-import axios from 'axios';
 import Pagination from '../../components/Pagination';
 
-const API_BASE_URL_AUTH = 'http://localhost:5000/api/v1/auth';
-
-// Dropdown Component
 const ActionDropdown = ({ userId, onEdit, onDelete }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = React.useRef(null);
@@ -83,31 +78,6 @@ const SalesPage = () => {
 
   const [limit, setLimit] = useState(14);
 
-  const [userProfile, setUserProfile] = useState(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-
-  const fetchProfile = async () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      setLoadingProfile(false);
-      return;
-    }
-    try {
-      const response = await axios.get(`${API_BASE_URL_AUTH}/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUserProfile(response.data.data);
-    } catch (error) {
-      console.error('Gagal mengambil profil user:', error);
-    } finally {
-      setLoadingProfile(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
   const fetchSales = useCallback(async () => {
     setLoading(true);
     try {
@@ -145,127 +115,115 @@ const SalesPage = () => {
     return `${base} bg-[#EF5350]/10 text-[#EF5350]`;
   };
 
-  if (loadingProfile) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-white bg-black">
-        <p>Memuat profil pengguna...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex min-h-screen bg-dark-bg">
-      <Sidebar user={userProfile} />
-
-      <main className="w-full overflow-y-auto">
-        {/* HEADER */}
-        <div className="flex items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Sales</h1>
-          <div className="relative ml-6">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20 focus:outline-none"
-            />
-            <img
-              src="/search.png"
-              className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end mb-6">
-          <button
-            onClick={() => {
-              setEditingUser(null);
-              setModalOpen(true);
+    <div>
+      {/* HEADER */}
+      <div className="flex items-center mb-8">
+        <h1 className="text-3xl font-bold text-white">Sales</h1>
+        <div className="relative ml-6">
+          <input
+            type="text"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
             }}
-            className="flex items-center gap-2 px-4 py-2 font-semibold text-black transition-all bg-white rounded-lg shadow hover:bg-gray-100"
-          >
-            Add Sales
-          </button>
+            className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20 focus:outline-none"
+          />
+          <img
+            src="/search.png"
+            className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
+          />
         </div>
+      </div>
 
-        {/* USER TABLE */}
-        <div className="p-4 rounded-lg shadow-lg bg-dark-bg">
-          {loading ? (
-            <p className="text-white">Memuat data...</p>
-          ) : salesUsers.length === 0 ? (
-            <p className="text-gray-300">Tidak ada Sales ditemukan.</p>
-          ) : (
-            <table className="min-w-full text-white">
-              <thead>
-                <tr className="text-sm text-white uppercase border-b border-white/30">
-                  {/* Kiri: Identitas */}
-                  <th className="px-4 py-3 text-left">Nama Sales & ID</th>
-                  <th className="px-4 py-3 text-left">Email</th>
-
-                  {/* Tengah: Metrik & Status */}
-                  <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3 text-center">Campaign Aktif</th>
-                  <th className="px-4 py-3 text-center">Leads Ditangani</th>
-                  <th className="px-4 py-3 text-center">Action</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {salesUsers.map((user) => (
-                  <tr
-                    key={user.user_id}
-                    className="text-sm border-b border-white/10"
-                  >
-                    {/* Identitas (Left Aligned) */}
-                    <td className="px-4 py-4">
-                      <p className="font-semibold text-white/80">{user.full_name}</p>
-                      <p className="text-xs text-gray-500">#{user.user_id}</p>
-                    </td>
-                    <td className="px-4 py-4 text-white/80">{user.user_email}</td>
-
-                    {/* Metrik & Status (Center Aligned) */}
-                    <td className="px-4 py-4 text-center">
-                      <span className={getStatusBadge(user.is_active)}>
-                        {user.is_active ? 'Aktif' : 'Nonaktif'}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-4 text-center text-white/80">{user.active_campaigns}</td>
-
-                    <td className="px-4 py-4 text-center text-white/80">
-                      Total {user.leads_handled}
-                    </td>
-
-                    <td className="px-4 py-4 text-center">
-                      <ActionDropdown
-                        userId={user.user_id}
-                        onEdit={() => handleOpenEditModal(user.user_id)}
-                        onDelete={fetchSales}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* PAGINATION */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          limit={limit}
-          totalResults={totalResults}
-          onPageChange={(page) => setCurrentPage(page)}
-          onLimitChange={(newLimit) => {
-            setLimit(newLimit);
-            setCurrentPage(1);
+      <div className="flex justify-end mb-6">
+        <button
+          onClick={() => {
+            setEditingUser(null);
+            setModalOpen(true);
           }}
-        />
-      </main>
+          className="flex items-center gap-2 px-4 py-2 font-semibold text-black transition-all bg-white rounded-lg shadow hover:bg-gray-100"
+        >
+          Add Sales
+        </button>
+      </div>
+
+      {/* USER TABLE */}
+      <div className="p-4 rounded-lg shadow-lg bg-dark-bg">
+        {loading ? (
+          <p className="text-white">Memuat data...</p>
+        ) : salesUsers.length === 0 ? (
+          <p className="text-gray-300">Tidak ada Sales ditemukan.</p>
+        ) : (
+          <table className="min-w-full text-white">
+            <thead>
+              <tr className="text-sm text-white uppercase border-b border-white/30">
+                {/* Kiri: Identitas */}
+                <th className="px-4 py-3 text-left">Nama Sales & ID</th>
+                <th className="px-4 py-3 text-left">Email</th>
+
+                {/* Tengah: Metrik & Status */}
+                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-center">Campaign Aktif</th>
+                <th className="px-4 py-3 text-center">Leads Ditangani</th>
+                <th className="px-4 py-3 text-center">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {salesUsers.map((user) => (
+                <tr
+                  key={user.user_id}
+                  className="text-sm border-b border-white/10"
+                >
+                  {/* Identitas (Left Aligned) */}
+                  <td className="px-4 py-4">
+                    <p className="font-semibold text-white/80">{user.full_name}</p>
+                    <p className="text-xs text-gray-500">#{user.user_id}</p>
+                  </td>
+                  <td className="px-4 py-4 text-white/80">{user.user_email}</td>
+
+                  {/* Metrik & Status (Center Aligned) */}
+                  <td className="px-4 py-4 text-center">
+                    <span className={getStatusBadge(user.is_active)}>
+                      {user.is_active ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-4 text-center text-white/80">{user.active_campaigns}</td>
+
+                  <td className="px-4 py-4 text-center text-white/80">
+                    Total {user.leads_handled}
+                  </td>
+
+                  <td className="px-4 py-4 text-center">
+                    <ActionDropdown
+                      userId={user.user_id}
+                      onEdit={() => handleOpenEditModal(user.user_id)}
+                      onDelete={fetchSales}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* PAGINATION */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        limit={limit}
+        totalResults={totalResults}
+        onPageChange={(page) => setCurrentPage(page)}
+        onLimitChange={(newLimit) => {
+          setLimit(newLimit);
+          setCurrentPage(1);
+        }}
+      />
 
       <UserFormModal
         isOpen={modalOpen}

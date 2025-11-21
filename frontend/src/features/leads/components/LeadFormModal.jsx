@@ -4,13 +4,12 @@ import toast from 'react-hot-toast';
 
 const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
-  const [activeTab, setActiveTab] = useState('manual'); // manual | csv
+  const [activeTab, setActiveTab] = useState('manual');
   const [formData, setFormData] = useState({});
   const [csvFile, setCsvFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Dropdown placeholders
+  
   const jobOptions = [
     { id: 1, name: 'Mahasiswa' },
     { id: 2, name: 'Karyawan' },

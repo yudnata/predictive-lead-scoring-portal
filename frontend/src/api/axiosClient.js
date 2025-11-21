@@ -11,9 +11,7 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use(
   (config) => {
-    // Cek token di localStorage DULU, jika tidak ada baru cek sessionStorage
     const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,10 +26,15 @@ axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Opsional: Logout otomatis jika token expired
+      // Token expired atau tidak valid
       localStorage.clear();
       sessionStorage.clear();
-      window.location.href = '/login';
+
+      // [FIX INFINITE LOOP] Hanya redirect jika BUKAN di halaman login/root
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

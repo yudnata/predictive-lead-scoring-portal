@@ -1,5 +1,3 @@
-import React from 'react';
-
 const NotFoundPage = ({ message = 'Tidak ada data ditemukan' }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 text-white bg-dark-bg">

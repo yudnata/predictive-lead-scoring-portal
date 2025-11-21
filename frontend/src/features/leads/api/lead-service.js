@@ -1,67 +1,45 @@
-// src/services/LeadService.js
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:5000/api/v1/leads';
-
-const getConfig = () => {
-  const token = localStorage.getItem('authToken');
-  return {
-    headers: { Authorization: `Bearer ${token}` },
-  };
-};
+import axiosClient from '../../../api/axiosClient';
 
 const LeadService = {
   // GET /api/v1/leads
   getAll: async (page = 1, limit = 14, search = '') => {
-    const config = getConfig();
-    const response = await axios.get(
-      `${API_BASE_URL}?page=${page}&limit=${limit}&search=${search}`,
-      config
-    );
+    const response = await axiosClient.get(`/leads?page=${page}&limit=${limit}&search=${search}`);
     return response.data;
   },
 
   // GET /api/v1/leads/:leadId
   getById: async (leadId) => {
-    const config = getConfig();
-    const response = await axios.get(`${API_BASE_URL}/${leadId}`, config);
+    const response = await axiosClient.get(`/leads/${leadId}`);
     return response.data.data;
   },
 
-  // POST /api/v1/leads (Membutuhkan leadData dan detailData)
+  // POST /api/v1/leads
   create: async (leadData, detailData) => {
-    const config = getConfig();
-    const response = await axios.post(API_BASE_URL, { leadData, detailData }, config);
+    const response = await axiosClient.post('/leads', { leadData, detailData });
     return response.data.data;
   },
 
   // PATCH /api/v1/leads/:leadId
   update: async (leadId, leadData, detailData) => {
-    const config = getConfig();
-    const response = await axios.patch(
-      `${API_BASE_URL}/${leadId}`,
-      { leadData, detailData },
-      config
-    );
+    const response = await axiosClient.patch(`/leads/${leadId}`, { leadData, detailData });
     return response.data.data;
   },
 
   // DELETE /api/v1/leads/:leadId
   delete: async (leadId) => {
-    const config = getConfig();
-    await axios.delete(`${API_BASE_URL}/${leadId}`, config);
+    await axiosClient.delete(`/leads/${leadId}`);
     return null;
   },
 
   // POST /api/v1/leads/upload-csv
   uploadCSV: async (file) => {
-    const config = getConfig();
     const formData = new FormData();
     formData.append('file', file);
-    
-    config.headers['Content-Type'] = undefined; 
 
-    const response = await axios.post(`${API_BASE_URL}/upload-csv`, formData, config);
+    // Override Content-Type untuk upload file
+    const response = await axiosClient.post('/leads/upload-csv', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data.data;
   },
 };

@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import Sidebar from '../layouts/Sidebar';
+import { useOutletContext } from 'react-router-dom';
 import LeadFormModal from '../features/leads/components/LeadFormModal';
 import LeadService from '../features/leads/api/lead-service';
-import axiosClient from '../api/axiosClient'; // Import axiosClient
 import Pagination from '../components/Pagination';
-// Dropdown Component
+
 const ActionDropdown = ({ leadId, onEdit, onDelete }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -66,7 +65,6 @@ const ActionDropdown = ({ leadId, onEdit, onDelete }) => {
   );
 };
 
-// Helper Functions untuk Styling
 const getStatusBadge = (status) => {
   const base = 'px-3 py-1 text-xs font-semibold rounded-full';
   if (status === 'Tracked') return `${base} bg-[#66BB6A]/10 text-[#66BB6A]`;
@@ -76,16 +74,17 @@ const getStatusBadge = (status) => {
 
 const getScoreColor = (score) => {
   const displayScore = score * 10;
-
   if (displayScore === 0) return 'bg-white/10 text-white';
   if (displayScore >= 80) return 'bg-[#66BB6A]/10 text-[#66BB6A]';
   if (displayScore >= 50) return 'bg-[#FFCA28]/10 text-[#FFCA28]';
   if (displayScore < 50) return 'bg-[#EF5350]/10 text-[#EF5350]';
-
-  return 'bg-white/10 text-white'; // fallback
+  return 'bg-white/10 text-white';
 };
 
 const LeadsPage = () => {
+  const { user } = useOutletContext();
+  const isAdmin = user?.role === 'admin';
+
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -97,22 +96,6 @@ const LeadsPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
 
-  const [userProfile, setUserProfile] = useState(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-
-  // 1. Fetch Profile menggunakan axiosClient (lebih bersih)
-  const fetchProfile = async () => {
-    try {
-      const response = await axiosClient.get('/auth/me');
-      setUserProfile(response.data.data);
-    } catch (error) {
-      console.error('Gagal mengambil profil user:', error);
-    } finally {
-      setLoadingProfile(false);
-    }
-  };
-
-  // 2. Fetch Leads
   const fetchLeads = useCallback(async () => {
     setLoading(true);
     try {
@@ -128,23 +111,17 @@ const LeadsPage = () => {
     }
   }, [currentPage, search, limit]);
 
-  // Effect Calls
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
   useEffect(() => {
     fetchLeads();
   }, [fetchLeads]);
 
-  // Handlers
   const handleOpenAddModal = () => {
     setEditingLead(null);
     setModalOpen(true);
   };
 
   const handleOpenEditModal = async (leadId) => {
-    setLoading(true); // Tampilkan loading saat fetch detail
+    setLoading(true);
     try {
       const lead = await LeadService.getById(leadId);
       setEditingLead(lead);
@@ -156,38 +133,22 @@ const LeadsPage = () => {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
-    setCurrentPage(1);
-  };
-
-  if (loadingProfile) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-white bg-black">
-        <p>Memuat profil...</p>
-      </div>
-    );
-  }
-
-  const userRole = userProfile?.role;
-
   return (
-    <div className="min-h-screen bg-dark-bg">
-      <Sidebar user={userProfile} />
-      <main
-        className="overflow-y-auto"
-      >
-        <header className="mb-8">
+    <div>
+      <header className="mb-8">
+        <div className="flex items-center justify-between">
           <div className="flex items-center">
             <h1 className="text-3xl font-bold text-white">All Leads</h1>
-
             <div className="flex items-center ml-6 space-x-4">
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Search..."
                   value={search}
-                  onChange={handleSearchChange}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20 focus:outline-none"
                 />
                 <img
@@ -196,21 +157,11 @@ const LeadsPage = () => {
                   alt="Search"
                 />
               </div>
-
-              <button className="px-4 py-1 font-semibold text-white border rounded-lg border-white/50 hover:bg-white hover:text-black">
-                Filter
-              </button>
-
-              <button className="px-4 py-1 font-semibold text-white border rounded-lg border-white/50 hover:bg-white hover:text-black">
-                Sort-by
-              </button>
             </div>
-            
           </div>
-        </header>
 
-        <div className="flex justify-end mb-6">
-          {userRole === 'admin' && (
+          {/* Hanya tampilkan tombol Add jika Admin */}
+          {isAdmin && (
             <button
               onClick={handleOpenAddModal}
               className="flex items-center gap-2 px-4 py-2 font-semibold text-black transition-all bg-white rounded-lg shadow hover:bg-gray-100"
@@ -219,64 +170,57 @@ const LeadsPage = () => {
             </button>
           )}
         </div>
+      </header>
 
-        {/* LEADS TABLE */}
-        <div className="overflow-x-auto rounded-lg shadow-lg bg-dark-bg">
-          {loading ? (
-            <p className="p-4 text-center text-white">Memuat data...</p>
-          ) : leads.length === 0 ? (
-            <p className="p-4 text-center text-gray-400">Tidak ada Leads ditemukan.</p>
-          ) : (
-            <table className="min-w-full text-center text-white table-auto">
-              <thead>
-                <tr className="text-sm uppercase border-b border-white/30 text-gray">
-                  {['Skor', 'Nama Lead & ID', 'Pekerjaan', 'Age', 'Status', 'Action'].map(
-                    (header) => (
-                      <th
-                        key={header}
-                        className="px-4 py-5"
-                      >
-                        {header}
-                      </th>
-                    )
-                  )}
-                </tr>
-              </thead>
+      <div className="overflow-x-auto rounded-lg shadow-lg bg-dark-bg">
+        {loading ? (
+          <p className="p-4 text-center text-white">Memuat data...</p>
+        ) : leads.length === 0 ? (
+          <p className="p-4 text-center text-gray-400">Tidak ada Leads ditemukan.</p>
+        ) : (
+          <table className="min-w-full text-center text-white table-auto">
+            <thead>
+              <tr className="text-sm uppercase border-b border-white/30 text-gray">
+                <th className="px-4 py-5">Skor</th>
+                <th className="px-4 py-5">Nama Lead & ID</th>
+                <th className="px-4 py-5">Pekerjaan</th>
+                <th className="px-4 py-5">Age</th>
+                <th className="px-4 py-5">Status</th>
+                {/* Hanya tampilkan header Action jika Admin */}
+                {isAdmin && <th className="px-4 py-5">Action</th>}
+              </tr>
+            </thead>
 
-              <tbody>
-                {leads.map((lead) => (
-                  <tr
-                    key={lead.lead_id}
-                    className="text-sm border-t border-b border-white/10"
-                  >
-                    <td className="px-4 py-4">
-                      <span
-                        className={`px-2 py-1 rounded-md text-sm ${getScoreColor(lead.lead_score)}`}
-                      >
-                        {lead.lead_score * 10}
-                      </span>
-                    </td>
+            <tbody>
+              {leads.map((lead) => (
+                <tr
+                  key={lead.lead_id}
+                  className="text-sm border-t border-b border-white/10"
+                >
+                  <td className="px-4 py-4">
+                    <span
+                      className={`px-2 py-1 rounded-md text-sm ${getScoreColor(lead.lead_score)}`}
+                    >
+                      {lead.lead_score * 10}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2">
+                    <p className="font-semibold truncate text-white/80">{lead.lead_name}</p>
+                  </td>
+                  <td className="px-4 py-2 text-white/80">{lead.job_name}</td>
+                  <td className="px-4 py-2 text-white/80">{lead.lead_age}</td>
+                  <td className="px-4 py-2">
+                    <span
+                      className={getStatusBadge(
+                        lead.pOutcome_name === 'success' ? 'Tracked' : 'Available'
+                      )}
+                    >
+                      {lead.pOutcome_name || 'Available'}
+                    </span>
+                  </td>
 
-                    <td className="px-4 py-2">
-                      <div className="flex flex-col">
-                        <p className="items-center font-semibold truncate text-white/80">{lead.lead_name}</p>
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-2 text-white/80">{lead.job_name}</td>
-
-                    <td className="px-4 py-2 text-white/80">{lead.lead_age}</td>
-
-                    <td className="px-4 py-2">
-                      <span
-                        className={getStatusBadge(
-                          lead.pOutcome_name === 'success' ? 'Tracked' : 'Available'
-                        )}
-                      >
-                        {lead.pOutcome_name || 'Available'}
-                      </span>
-                    </td>
-
+                  {/* Hanya tampilkan kolom Action jika Admin */}
+                  {isAdmin && (
                     <td className="px-4 py-2">
                       <ActionDropdown
                         leadId={lead.lead_id}
@@ -284,26 +228,25 @@ const LeadsPage = () => {
                         onDelete={fetchLeads}
                       />
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
-        {/* PAGINATION & RESULT INFO */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          limit={limit}
-          totalResults={totalResults}
-          onPageChange={(page) => setCurrentPage(page)}
-          onLimitChange={(newLimit) => {
-            setLimit(newLimit);
-            setCurrentPage(1);
-          }}
-        />
-      </main>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        limit={limit}
+        totalResults={totalResults}
+        onPageChange={(page) => setCurrentPage(page)}
+        onLimitChange={(newLimit) => {
+          setLimit(newLimit);
+          setCurrentPage(1);
+        }}
+      />
 
       <LeadFormModal
         isOpen={modalOpen}
