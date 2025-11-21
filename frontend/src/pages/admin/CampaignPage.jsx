@@ -227,7 +227,7 @@ const CampaignPage = () => {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-80 p-2 pl-10 bg-[#242424] text-white rounded-lg border border-gray-700 focus:outline-none"
+              className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20 focus:outline-none"
             />
             <img
               src="/search.png"

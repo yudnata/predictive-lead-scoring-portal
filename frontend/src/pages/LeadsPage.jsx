@@ -190,7 +190,7 @@ const LeadsPage = () => {
                   placeholder="Search..."
                   value={search}
                   onChange={handleSearchChange}
-                  className="w-80 p-2 pl-10 bg-[#1e1e1e] text-white rounded-lg focus:outline-none border border-white/50"
+                  className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20 focus:outline-none"
                 />
                 <img
                   src="/search.png"
@@ -199,11 +199,11 @@ const LeadsPage = () => {
                 />
               </div>
 
-              <button className="px-4 py-2 font-semibold text-white border rounded-lg border-white/50 hover:bg-white hover:text-black">
+              <button className="px-4 py-1 font-semibold text-white border rounded-lg border-white/50 hover:bg-white hover:text-black">
                 Filter
               </button>
 
-              <button className="px-4 py-2 font-semibold text-white border rounded-lg border-white/50 hover:bg-white hover:text-black">
+              <button className="px-4 py-1 font-semibold text-white border rounded-lg border-white/50 hover:bg-white hover:text-black">
                 Sort-by
               </button>
             </div>

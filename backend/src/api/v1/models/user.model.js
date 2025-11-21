@@ -66,7 +66,9 @@ const create = async (userData) => {
 const findAllSales = async (options) => {
   const { limit, offset, search } = options;
   let queryText = `
-    SELECT u.user_id, u.full_name, u.user_email, u.is_active, u.created_at, r.role_name 
+    SELECT u.user_id, u.full_name, u.user_email, u.is_active, u.created_at, r.role_name,
+    (SELECT COUNT(*) FROM tb_campaign_assignments ca WHERE ca.user_id = u.user_id) as active_campaigns,
+    (SELECT COUNT(*) FROM tb_campaign_leads cl WHERE cl.user_id = u.user_id) as leads_handled
     FROM tb_users u
     JOIN tb_roles r ON u.roles_id = r.role_id
     WHERE r.role_name = 'sales'
@@ -105,7 +107,6 @@ const countAllSales = async (options) => {
   return parseInt(rows[0].count, 10);
 };
 
-
 const update = async (userId, userData) => {
   const currentUser = await findById(userId);
   if (!currentUser) {
@@ -117,6 +118,7 @@ const update = async (userId, userData) => {
     address = currentUser.address,
     country = currentUser.country,
     is_active = currentUser.is_active,
+    password = currentUser.password,
   } = userData;
 
   const query = {
@@ -127,11 +129,12 @@ const update = async (userId, userData) => {
         user_email = $2,
         address = $3,
         country = $4,
-        is_active = $5
-      WHERE user_id = $6
+        is_active = $5,
+        password = $6
+      WHERE user_id = $7
       RETURNING *
     `,
-    values: [full_name, user_email, address, country, is_active, userId],
+    values: [full_name, user_email, address, country, is_active, password, userId],
   };
 
   const { rows } = await db.query(query);
@@ -148,6 +151,31 @@ const deleteById = async (userId) => {
   }
 };
 
+const assignCampaigns = async (userId, campaignIds) => {
+  if (!campaignIds || campaignIds.length === 0) return;
+
+  const values = campaignIds.map((id, index) => `($1, $${index + 2}, NOW())`).join(', ');
+  const queryText = `
+    INSERT INTO tb_campaign_assignments (user_id, campaign_id, assigned_at)
+    VALUES ${values}
+    ON CONFLICT DO NOTHING
+  `;
+  
+  await db.query(queryText, [userId, ...campaignIds]);
+};
+
+const deleteAssignments = async (userId) => {
+  await db.query('DELETE FROM tb_campaign_assignments WHERE user_id = $1', [userId]);
+};
+
+const getAssignments = async (userId) => {
+  const { rows } = await db.query(
+    'SELECT campaign_id FROM tb_campaign_assignments WHERE user_id = $1',
+    [userId]
+  );
+  return rows.map((r) => r.campaign_id);
+};
+
 module.exports = {
   findByEmail,
   findById,
@@ -156,4 +184,7 @@ module.exports = {
   countAllSales,
   update,
   deleteById,
+  assignCampaigns,
+  deleteAssignments,
+  getAssignments,
 };

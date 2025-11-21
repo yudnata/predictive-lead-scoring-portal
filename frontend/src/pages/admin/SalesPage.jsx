@@ -141,8 +141,8 @@ const SalesPage = () => {
 
   const getStatusBadge = (isActive) => {
     const base = 'px-3 py-1 text-xs font-semibold rounded-full';
-    if (isActive) return `${base} bg-green-900 text-green-300`;
-    return `${base} bg-red-900 text-red-300`;
+    if (isActive) return `${base} bg-[#66BB6A]/10 text-[#66BB6A]`;
+    return `${base} bg-[#EF5350]/10 text-[#EF5350]`;
   };
 
   if (loadingProfile) {
@@ -170,7 +170,7 @@ const SalesPage = () => {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-80 p-2 pl-10 bg-[#242424] text-white rounded-lg border border-gray-700 focus:outline-none"
+              className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20 focus:outline-none"
             />
             <img
               src="/search.png"
@@ -201,12 +201,15 @@ const SalesPage = () => {
             <table className="min-w-full text-white">
               <thead>
                 <tr className="text-sm text-white uppercase border-b border-white/30">
+                  {/* Kiri: Identitas */}
                   <th className="px-4 py-3 text-left">Nama Sales & ID</th>
                   <th className="px-4 py-3 text-left">Email</th>
-                  <th className="px-4 py-3 text-left">Status</th>
-                  <th className="px-4 py-3 text-left">Campaign Aktif</th>
-                  <th className="px-4 py-3 text-left">Leads Ditangani</th>
-                  <th className="px-4 py-3 text-left">Action</th>
+
+                  {/* Tengah: Metrik & Status */}
+                  <th className="px-4 py-3 text-center">Status</th>
+                  <th className="px-4 py-3 text-center">Campaign Aktif</th>
+                  <th className="px-4 py-3 text-center">Leads Ditangani</th>
+                  <th className="px-4 py-3 text-center">Action</th>
                 </tr>
               </thead>
 
@@ -216,21 +219,27 @@ const SalesPage = () => {
                     key={user.user_id}
                     className="text-sm border-b border-white/10"
                   >
+                    {/* Identitas (Left Aligned) */}
                     <td className="px-4 py-4">
                       <p className="font-semibold text-white/80">{user.full_name}</p>
                       <p className="text-xs text-gray-500">#{user.user_id}</p>
                     </td>
                     <td className="px-4 py-4 text-white/80">{user.user_email}</td>
-                    <td className="px-4 py-4">
+
+                    {/* Metrik & Status (Center Aligned) */}
+                    <td className="px-4 py-4 text-center">
                       <span className={getStatusBadge(user.is_active)}>
                         {user.is_active ? 'Aktif' : 'Nonaktif'}
                       </span>
                     </td>
 
-                    <td className="px-4 py-4 pl-12 text-center text-white/80">{user.active_campaigns}</td>
-                    <td className="px-4 py-4 text-white/80">Total {user.leads_handled}</td>
+                    <td className="px-4 py-4 text-center text-white/80">{user.active_campaigns}</td>
 
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-4 text-center text-white/80">
+                      Total {user.leads_handled}
+                    </td>
+
+                    <td className="px-4 py-4 text-center">
                       <ActionDropdown
                         userId={user.user_id}
                         onEdit={() => handleOpenEditModal(user.user_id)}
