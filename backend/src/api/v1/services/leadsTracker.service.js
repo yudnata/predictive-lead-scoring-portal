@@ -6,14 +6,13 @@ const queryLeadsForSales = async (queryOptions, userId, minStatusName = null) =>
   const limit = parseInt(queryOptions.limit, 10) || 10;
   const offset = (page - 1) * limit;
   const search = queryOptions.search || '';
-  const campaignId = queryOptions.campaignFilter || null;
+  const campaignId = queryOptions.campaign_id || null;
 
   const options = { 
     limit, 
     offset, 
     search, 
     campaignId, 
-    userId,
     minStatusName
   };
 
