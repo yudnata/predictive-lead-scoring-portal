@@ -154,7 +154,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
       {uploadProgress && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80 rounded-2xl backdrop-blur-md">
           <div className="flex flex-col items-center p-6 space-y-4">

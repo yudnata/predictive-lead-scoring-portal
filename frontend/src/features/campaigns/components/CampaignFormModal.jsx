@@ -49,6 +49,9 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           campaign_desc: initialData.campaign_desc || '',
           campaign_status: initialData.campaign_is_active,
         });
+
+        setSelectedSales(initialData.assigned_sales?.map(s => s.user_id) || []);
+
       } else {
         setFormData({
           campaign_name: '',
@@ -57,6 +60,9 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           campaign_desc: '',
           campaign_status: true,
         });
+        
+        setSelectedSales([]); 
+
       }
       setError('');
       setDateError('');

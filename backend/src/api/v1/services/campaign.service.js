@@ -6,8 +6,37 @@ const createCampaign = async (campaignBody) => {
   if (!campaignBody.campaign_name) {
     throw new ApiError(400, 'Nama campaign harus diisi');
   }
-  return campaignModel.create(campaignBody);
+
+  // 1️⃣ Buat campaign dulu
+  const newCampaign = await campaignModel.create(campaignBody);
+  const campaignId = newCampaign.campaign_id;
+
+  // 2️⃣ Jika tidak ada assigned_sales -> selesai
+  if (!Array.isArray(campaignBody.assigned_sales) || campaignBody.assigned_sales.length === 0) {
+    return newCampaign;
+  }
+
+  // 3️⃣ Normalisasi data (bisa dikirim berupa [id] atau [{user_id: id}])
+  const sample = campaignBody.assigned_sales[0];
+  let userIds;
+
+  if (typeof sample === 'object' && sample !== null && 'user_id' in sample) {
+    userIds = campaignBody.assigned_sales.map((s) => s.user_id);
+  } else {
+    userIds = campaignBody.assigned_sales.map((s) => parseInt(s));
+  }
+
+  const validUserIds = userIds.filter((id) => id);
+
+  // 4️⃣ Insert assignments
+  for (const uid of validUserIds) {
+    await assignmentService.assignSalesToCampaign(uid, campaignId);
+  }
+
+  // 5️⃣ Return campaign
+  return newCampaign;
 };
+
 
 const queryCampaigns = async (queryOptions, userId = null) => { 
   const page = parseInt(queryOptions.page, 10) || 1;

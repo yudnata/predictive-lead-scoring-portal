@@ -109,8 +109,24 @@ const queryLeads = async (queryOptions) => {
   const limit = parseInt(queryOptions.limit, 10) || 10;
   const offset = (page - 1) * limit;
   const search = queryOptions.search || '';
+  
+  // Filters
+  const minScore = queryOptions.minScore;
+  const maxScore = queryOptions.maxScore;
+  const jobId = queryOptions.jobId;
+  const maritalId = queryOptions.maritalId;
+  const educationId = queryOptions.educationId;
 
-  const options = { limit, offset, search };
+  const options = { 
+    limit, 
+    offset, 
+    search,
+    minScore,
+    maxScore,
+    jobId,
+    maritalId,
+    educationId
+  };
 
   const data = await leadModel.findAll(options);
   const total = await leadModel.countAll(options);

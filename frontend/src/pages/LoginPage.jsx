@@ -69,18 +69,18 @@ const LoginPage = () => {
   return (
     <div className="flex min-h-screen text-white bg-dark-bg">
       {/* Left side animation */}
-      <div className="flex-1 hidden w-1/2 overflow-hidden md:flex items-center justify-center">
+      <div className="flex-1 hidden w-1/2 overflow-hidden md:flex items-center justify-center mb-10 ml-24">
         <Lottie
           lottieRef={animRef}
           animationData={salesAnimation}
           loop={false}
           onComplete={handleComplete}
-          className="w-full max-w-2xl"
+          className="w-full max-w-3xl"
         />
       </div>
 
       {/* Right side form */}
-      <div className="relative flex flex-1 w-full h-screen px-8 py-10 md:w-1/2 md:px-20 bg-black/10">
+      <div className="relative flex flex-1 w-full h-screen px-8 py-10 md:w-1/2 md:px-20">
         <div className="absolute flex items-center space-x-2 top-8 right-8">
           <img
             src="/logo.png"

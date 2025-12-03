@@ -214,15 +214,60 @@ const create = async (leadData, detailData, score = 0.0) => {
 };
 
 const findAll = async (options) => {
-  const { limit = 10, offset = 0, search = '' } = options;
+  const { 
+    limit = 10, 
+    offset = 0, 
+    search = '',
+    minScore,
+    maxScore,
+    jobId,
+    maritalId,
+    educationId
+  } = options;
+
   let queryText = fullLeadQuery;
   const queryValues = [];
   let idx = 1;
+  const conditions = [];
 
   if (search) {
-    queryText += ` WHERE l.lead_name ILIKE $${idx} OR l.lead_email ILIKE $${idx + 1}`;
-    queryValues.push(`%${search}%`, `%${search}%`);
-    idx += 2;
+    conditions.push(`(l.lead_name ILIKE $${idx} OR l.lead_email ILIKE $${idx})`);
+    queryValues.push(`%${search}%`);
+    idx++;
+  }
+
+  if (minScore !== undefined) {
+    conditions.push(`ls.lead_score >= $${idx}`);
+    queryValues.push(parseFloat(minScore));
+    idx++;
+  }
+
+  if (maxScore !== undefined) {
+    conditions.push(`ls.lead_score <= $${idx}`);
+    queryValues.push(parseFloat(maxScore));
+    idx++;
+  }
+
+  if (jobId) {
+    conditions.push(`l.job_id = $${idx}`);
+    queryValues.push(parseInt(jobId));
+    idx++;
+  }
+
+  if (maritalId) {
+    conditions.push(`l.marital_id = $${idx}`);
+    queryValues.push(parseInt(maritalId));
+    idx++;
+  }
+
+  if (educationId) {
+    conditions.push(`l.education_id = $${idx}`);
+    queryValues.push(parseInt(educationId));
+    idx++;
+  }
+
+  if (conditions.length > 0) {
+    queryText += ` WHERE ${conditions.join(' AND ')}`;
   }
 
   queryText += ` ORDER BY ls.lead_score DESC NULLS LAST, l.created_at DESC LIMIT $${idx} OFFSET $${
@@ -235,13 +280,65 @@ const findAll = async (options) => {
 };
 
 const countAll = async (options) => {
-  const { search = '' } = options;
-  let queryText = 'SELECT COUNT(lead_id) AS count FROM tb_leads';
+  const { 
+    search = '',
+    minScore,
+    maxScore,
+    jobId,
+    maritalId,
+    educationId
+  } = options;
+
+  let queryText = `
+    SELECT COUNT(l.lead_id) AS count 
+    FROM tb_leads l
+    LEFT JOIN tb_leads_score ls ON l.lead_id = ls.lead_id
+  `;
+  
   const queryValues = [];
+  let idx = 1;
+  const conditions = [];
+
   if (search) {
-    queryText += ' WHERE lead_name ILIKE $1 OR lead_email ILIKE $1';
+    conditions.push(`(l.lead_name ILIKE $${idx} OR l.lead_email ILIKE $${idx})`);
     queryValues.push(`%${search}%`);
+    idx++;
   }
+
+  if (minScore !== undefined) {
+    conditions.push(`ls.lead_score >= $${idx}`);
+    queryValues.push(parseFloat(minScore));
+    idx++;
+  }
+
+  if (maxScore !== undefined) {
+    conditions.push(`ls.lead_score <= $${idx}`);
+    queryValues.push(parseFloat(maxScore));
+    idx++;
+  }
+
+  if (jobId) {
+    conditions.push(`l.job_id = $${idx}`);
+    queryValues.push(parseInt(jobId));
+    idx++;
+  }
+
+  if (maritalId) {
+    conditions.push(`l.marital_id = $${idx}`);
+    queryValues.push(parseInt(maritalId));
+    idx++;
+  }
+
+  if (educationId) {
+    conditions.push(`l.education_id = $${idx}`);
+    queryValues.push(parseInt(educationId));
+    idx++;
+  }
+
+  if (conditions.length > 0) {
+    queryText += ` WHERE ${conditions.join(' AND ')}`;
+  }
+
   const { rows } = await db.query(queryText, queryValues);
   return parseInt(rows[0].count, 10);
 };

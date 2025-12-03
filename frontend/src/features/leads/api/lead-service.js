@@ -1,8 +1,14 @@
 import axiosClient from '../../../api/axiosClient';
 
 const LeadService = {
-  getAll: async (page = 1, limit = 14, search = '') => {
-    const response = await axiosClient.get(`/leads?page=${page}&limit=${limit}&search=${search}`);
+  getAll: async (page = 1, limit = 14, search = '', filters = {}) => {
+    const params = new URLSearchParams({
+      page,
+      limit,
+      search,
+      ...filters,
+    });
+    const response = await axiosClient.get(`/leads?${params.toString()}`);
     return response.data;
   },
 

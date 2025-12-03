@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const LeadDetailModal = ({ isOpen, onClose, lead }) => {
   const [activeTab, setActiveTab] = useState('notes'); // Default tab
@@ -23,11 +24,10 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
     return 'text-gray-400 bg-gray-700/50';
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      {/* Modal Container */}
-      <div className="bg-[#1E1E1E] border border-white/10 w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm h-screen">
+      {/* Modal Container */}        
+      <div className="bg-[#1E1E1E] border border-white/10 w-full max-w-2xl rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-auto">
         {/* HEADER */}
         <div className="flex items-start justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
@@ -161,7 +161,8 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body 
   );
 };
 

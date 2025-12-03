@@ -1,8 +1,9 @@
+/* eslint-disable no-irregular-whitespace */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import LeadsTrackerService from '../../features/tracker/api/tracker-service';
-import CampaignService from '../../features/campaigns/api/campaign-service';
-import KanbanColumn from '../../components/KanbanColumn';
+import CampaignService from "../../features/campaigns/api/campaign-service";
+import KanbanColumn from '../../features/tracker/components/KanbanColumn';
 
 const KANBAN_STATUSES = [
   { name: 'Uncontacted', id: 3 },
@@ -25,42 +26,53 @@ const LeadsTrackerPage = () => {
   const [campaigns, setCampaigns] = useState([]);
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    if (!user.user_id) {
-      setLoading(false);
-      return;
-    }
-    try {
-      const res = await LeadsTrackerService.getAll(
-        1,
-        500,
-        search,
-        campaignFilter || null,
-        user.user_id
-      );
-      setList(res.data || []);
-      setTotalResults(res.meta?.total || 0);
-    } catch (err) {
-      console.error('Failed to load leads tracker:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [search, campaignFilter, user.user_id]);
+    setLoading(true);
+    if (!user.user_id) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await LeadsTrackerService.getAll( 
+        1, 
+        500, 
+        search, 
+        campaignFilter || null, 
+        user.user_id 
+      );
+      
+      setList(res.data || []);
+      setTotalResults(res.meta?.total || 0);
+    } catch (err) {
+      console.error("Gagal memuat leads tracker:", err);
+      if (err.response) { 
+          console.error(err.response.data?.message || "Gagal memuat data leads tracker.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [search, campaignFilter, user.user_id]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   useEffect(() => {
-    if (!user.user_id) return;
-    import('../../features/campaigns/api/campaign-service')
-      .then((module) => module.default.getAll(1, 100))
-      .then((res) => {
-        const activeCampaigns = res.data.filter((c) => c.campaign_is_active === true);
-        setCampaigns(activeCampaigns || []);
-      })
-      .catch(() => {});
-  }, [user.user_id]);
+  if (!user.user_id) return;
+
+  const loadCampaigns = async () => {
+    try {
+      const res = await CampaignService.getAssignedForUser();
+      setCampaigns(res.data || []);
+    } catch (err) {
+      console.error("Gagal memuat campaign filter:", err);
+      setCampaigns([]);
+    }
+  };
+
+  loadCampaigns();
+}, [user.user_id]);
+
+
 
   const handleChangeStatus = async (leadCampaignId, newStatusId) => {
     try {

@@ -47,13 +47,17 @@ exports.findCampaignsBySales = async (userId) => {
       FROM tb_campaign_assignments a
       JOIN tb_campaigns c ON c.campaign_id = a.campaign_id
       WHERE a.user_id = $1
+        AND c.campaign_is_active = TRUE
+      ORDER BY c.created_at DESC
     `,
     values: [userId],
   };
 
   const { rows } = await db.query(query);
-  return rows;
+  return rows; 
 };
+
+
 
 exports.deleteByCampaign = async (campaignId) => {
   const query = {
