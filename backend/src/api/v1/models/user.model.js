@@ -4,7 +4,7 @@ const ApiError = require('../utils/apiError');
 const findByEmail = async (email) => {
   const query = {
     text: `
-      SELECT u.*, r.role_name 
+      SELECT u.*, r.role_name
       FROM tb_users u
       JOIN tb_roles r ON u.roles_id = r.role_id
       WHERE u.user_email = $1
@@ -18,7 +18,7 @@ const findByEmail = async (email) => {
 const findById = async (userId) => {
   const query = {
     text: `
-      SELECT u.*, r.role_name 
+      SELECT u.*, r.role_name
       FROM tb_users u
       JOIN tb_roles r ON u.roles_id = r.role_id
       WHERE u.user_id = $1
@@ -30,15 +30,7 @@ const findById = async (userId) => {
 };
 
 const create = async (userData) => {
-  const {
-    roles_id,
-    user_email,
-    password,
-    full_name,
-    address,
-    country,
-    is_active,
-  } = userData;
+  const { roles_id, user_email, password, full_name, address, country, is_active } = userData;
 
   const query = {
     text: `
@@ -64,25 +56,23 @@ const create = async (userData) => {
 };
 
 const findAllSales = async (options) => {
-  const { limit, offset, search } = options;
+  const { limit, offset, search, isActive, minLeadsHandled, maxLeadsHandled } = options;
   let queryText = `
-    SELECT 
-      u.user_id, 
-      u.full_name, 
-      u.user_email, 
-      u.is_active, 
-      u.created_at, 
+    SELECT
+      u.user_id,
+      u.full_name,
+      u.user_email,
+      u.is_active,
+      u.created_at,
       r.role_name,
-      
       COALESCE(
         (
-          SELECT COUNT(ca.campaign_id) 
+          SELECT COUNT(ca.campaign_id)
           FROM tb_campaign_assignments ca
           JOIN tb_campaigns c ON ca.campaign_id = c.campaign_id
           WHERE ca.user_id = u.user_id AND c.campaign_is_active = TRUE
         )
       , 0) AS active_campaigns,
-      
       (SELECT COUNT(*) FROM tb_campaign_leads cl WHERE cl.user_id = u.user_id) as leads_handled
 
     FROM tb_users u
@@ -97,6 +87,21 @@ const findAllSales = async (options) => {
     queryValues.push(`%${search}%`, `%${search}%`);
   }
 
+  if (isActive !== undefined && isActive !== '') {
+    queryText += ` AND u.is_active = $${paramIndex++}`;
+    queryValues.push(isActive === 'true');
+  }
+
+  if (minLeadsHandled) {
+    queryText += ` AND (SELECT COUNT(*) FROM tb_campaign_leads cl WHERE cl.user_id = u.user_id) >= $${paramIndex++}`;
+    queryValues.push(parseInt(minLeadsHandled, 10));
+  }
+
+  if (maxLeadsHandled) {
+    queryText += ` AND (SELECT COUNT(*) FROM tb_campaign_leads cl WHERE cl.user_id = u.user_id) <= $${paramIndex++}`;
+    queryValues.push(parseInt(maxLeadsHandled, 10));
+  }
+
   queryText += ` ORDER BY u.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
   queryValues.push(limit, offset);
 
@@ -104,44 +109,35 @@ const findAllSales = async (options) => {
   return rows;
 };
 
-// const findAllSales = async (options) => {
-//   const { limit, offset, search } = options;
-//   let queryText = `
-//     SELECT u.user_id, u.full_name, u.user_email, u.is_active, u.created_at, r.role_name,
-//     (SELECT COUNT(*) FROM tb_campaign_assignments ca WHERE ca.user_id = u.user_id) as active_campaigns,
-//     (SELECT COUNT(*) FROM tb_campaign_leads cl WHERE cl.user_id = u.user_id) as leads_handled
-//     FROM tb_users u
-//     JOIN tb_roles r ON u.roles_id = r.role_id
-//     WHERE r.role_name = 'sales'
-//   `;
-//   const queryValues = [];
-//   let paramIndex = 1;
-
-//   if (search) {
-//     queryText += ` AND (u.full_name ILIKE $${paramIndex++} OR u.user_email ILIKE $${paramIndex++})`;
-//     queryValues.push(`%${search}%`, `%${search}%`);
-//   }
-
-//   queryText += ` ORDER BY u.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
-//   queryValues.push(limit, offset);
-
-//   const { rows } = await db.query(queryText, queryValues);
-//   return rows;
-// };
-
 const countAllSales = async (options) => {
-  const { search } = options;
+  const { search, isActive, minLeadsHandled, maxLeadsHandled } = options;
   let queryText = `
-    SELECT COUNT(u.user_id) 
+    SELECT COUNT(u.user_id)
     FROM tb_users u
     JOIN tb_roles r ON u.roles_id = r.role_id
     WHERE r.role_name = 'sales'
   `;
   const queryValues = [];
+  let paramIndex = 1;
 
   if (search) {
-    queryText += ' AND (u.full_name ILIKE $1 OR u.user_email ILIKE $1)';
-    queryValues.push(`%${search}%`);
+    queryText += ` AND (u.full_name ILIKE $${paramIndex++} OR u.user_email ILIKE $${paramIndex++})`;
+    queryValues.push(`%${search}%`, `%${search}%`);
+  }
+
+  if (isActive !== undefined && isActive !== '') {
+    queryText += ` AND u.is_active = $${paramIndex++}`;
+    queryValues.push(isActive === 'true');
+  }
+
+  if (minLeadsHandled) {
+    queryText += ` AND (SELECT COUNT(*) FROM tb_campaign_leads cl WHERE cl.user_id = u.user_id) >= $${paramIndex++}`;
+    queryValues.push(parseInt(minLeadsHandled, 10));
+  }
+
+  if (maxLeadsHandled) {
+    queryText += ` AND (SELECT COUNT(*) FROM tb_campaign_leads cl WHERE cl.user_id = u.user_id) <= $${paramIndex++}`;
+    queryValues.push(parseInt(maxLeadsHandled, 10));
   }
 
   const { rows } = await db.query(queryText, queryValues);
@@ -165,7 +161,7 @@ const update = async (userId, userData) => {
   const query = {
     text: `
       UPDATE tb_users
-      SET 
+      SET
         full_name = $1,
         user_email = $2,
         address = $3,
@@ -183,10 +179,7 @@ const update = async (userId, userData) => {
 };
 
 const deleteById = async (userId) => {
-  const { rowCount } = await db.query(
-    'DELETE FROM tb_users WHERE user_id = $1',
-    [userId]
-  );
+  const { rowCount } = await db.query('DELETE FROM tb_users WHERE user_id = $1', [userId]);
   if (rowCount === 0) {
     throw new ApiError(404, 'User tidak ditemukan');
   }
@@ -201,7 +194,7 @@ const assignCampaigns = async (userId, campaignIds) => {
     VALUES ${values}
     ON CONFLICT DO NOTHING
   `;
-  
+
   await db.query(queryText, [userId, ...campaignIds]);
 };
 

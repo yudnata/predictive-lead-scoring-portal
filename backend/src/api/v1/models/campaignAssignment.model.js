@@ -1,7 +1,6 @@
-const db = require("../../../config/database");
+const db = require('../../../config/database');
 
 exports.create = async (userId, campaignId) => {
-  // console.log("MODEL create() userId:", userId, "campaignId:", campaignId);
   const query = {
     text: `
       INSERT INTO tb_campaign_assignments (user_id, campaign_id, assigned_at)
@@ -18,7 +17,7 @@ exports.create = async (userId, campaignId) => {
 exports.findSalesByCampaign = async (campaignId) => {
   const query = {
     text: `
-      SELECT 
+      SELECT
         a.assignment_id,
         u.user_id,
         u.user_name,
@@ -37,7 +36,7 @@ exports.findSalesByCampaign = async (campaignId) => {
 exports.findCampaignsBySales = async (userId) => {
   const query = {
     text: `
-      SELECT 
+      SELECT
         c.campaign_id,
         c.campaign_name,
         c.campaign_start_date,
@@ -54,10 +53,8 @@ exports.findCampaignsBySales = async (userId) => {
   };
 
   const { rows } = await db.query(query);
-  return rows; 
+  return rows;
 };
-
-
 
 exports.deleteByCampaign = async (campaignId) => {
   const query = {
@@ -66,4 +63,3 @@ exports.deleteByCampaign = async (campaignId) => {
   };
   await db.query(query);
 };
-

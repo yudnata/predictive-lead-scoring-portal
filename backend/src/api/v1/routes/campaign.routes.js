@@ -11,7 +11,7 @@ router.patch('/:campaignId', authorize('admin'), campaignController.updateCampai
 router.delete('/:campaignId', authorize('admin'), campaignController.deleteCampaign);
 
 router.get('/', authorize('admin', 'sales'), campaignController.getAllCampaigns);
+router.get('/options', authorize('admin', 'sales'), campaignController.getCampaignOptions);
 router.get('/:campaignId', authorize('admin', 'sales'), campaignController.getCampaignById);
-
 
 module.exports = router;

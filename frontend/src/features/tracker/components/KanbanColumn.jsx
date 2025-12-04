@@ -60,15 +60,13 @@ const KanbanColumn = ({
   };
 
   return (
-    <div className="bg-dark-card rounded-lg">
+    <div className="bg-dark-card rounded-xl">
       {/* Row Header */}
       <div
         className={`p-3 flex items-center gap-2 border-l-4 ${config.bgColor}`}
         style={{ borderLeftColor: config.color }}
       >
-        <h3 className="text-white font-bold text-sm uppercase tracking-wide">
-          {status}
-        </h3>
+        <h3 className="text-white font-bold text-sm uppercase tracking-wide">{status}</h3>
         <span
           className="px-2 py-1 text-xs font-semibold rounded-full"
           style={{
@@ -92,7 +90,15 @@ const KanbanColumn = ({
       >
         {leads.length > 0 ? (
           <div className="overflow-x-auto pb-2">
-            <div className={`grid gap-3 grid-flow-col auto-cols-[300px] ${leads.length === 1 ? 'grid-rows-1' : leads.length === 2 ? 'grid-rows-2' : 'grid-rows-3'}`}>
+            <div
+              className={`grid gap-3 grid-flow-col auto-cols-[300px] ${
+                leads.length === 1
+                  ? 'grid-rows-1'
+                  : leads.length === 2
+                  ? 'grid-rows-2'
+                  : 'grid-rows-3'
+              }`}
+            >
               {leads.map((lead) => (
                 <KanbanCard
                   key={lead.lead_campaign_id}

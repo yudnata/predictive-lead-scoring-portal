@@ -11,7 +11,7 @@ const create = async (noteData) => {
     `,
     values: [lead_id, user_id, note_content, campaign_id || null],
   };
-  
+
   const { rows } = await db.query(query);
   const newNoteId = rows[0].notes_id;
 
@@ -21,7 +21,7 @@ const create = async (noteData) => {
 const findAllByLeadId = async (leadId) => {
   const query = {
     text: `
-      SELECT 
+      SELECT
         n.notes_id,
         n.note_content,
         n.created_at,
@@ -43,7 +43,7 @@ const findAllByLeadId = async (leadId) => {
 const findByIdJoined = async (noteId) => {
   const query = {
     text: `
-      SELECT 
+      SELECT
         n.notes_id,
         n.note_content,
         n.created_at,
@@ -62,9 +62,7 @@ const findByIdJoined = async (noteId) => {
 };
 
 const findRawById = async (noteId) => {
-  const { rows } = await db.query('SELECT * FROM tb_notes WHERE notes_id = $1', [
-    noteId,
-  ]);
+  const { rows } = await db.query('SELECT * FROM tb_notes WHERE notes_id = $1', [noteId]);
   return rows[0];
 };
 
@@ -76,5 +74,5 @@ module.exports = {
   create,
   findAllByLeadId,
   findRawById,
-  deleteById, 
+  deleteById,
 };

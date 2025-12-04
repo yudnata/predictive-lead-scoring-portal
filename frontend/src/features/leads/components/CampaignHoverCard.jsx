@@ -50,7 +50,9 @@ const CampaignHoverCard = ({ leadId, children }) => {
       }}
     >
       <div className="p-4">
-        <h3 className="mb-3 text-sm font-semibold text-white border-b pb-3 border-white/10 text-center">Tracked in Campaigns</h3>
+        <h3 className="mb-3 text-sm font-semibold text-white border-b pb-3 border-white/10 text-center">
+          Tracked in Campaigns
+        </h3>
 
         {loading ? (
           <div className="py-4 text-sm text-center text-gray-400">Loading...</div>
@@ -61,14 +63,14 @@ const CampaignHoverCard = ({ leadId, children }) => {
                 key={campaign.campaign_id}
                 className="transition-colors rounded-md hover:bg-gray-700/50"
               >
-                <div className="font-medium text-white/80 text-sm text-center">{campaign.campaign_name}</div>
+                <div className="font-medium text-white/80 text-sm text-center">
+                  {campaign.campaign_name}
+                </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="py-4 text-sm text-center text-gray-400">
-            Not tracked in any campaign
-          </div>
+          <div className="py-4 text-sm text-center text-gray-400">Not tracked in any campaign</div>
         )}
       </div>
     </div>

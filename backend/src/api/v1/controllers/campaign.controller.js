@@ -17,10 +17,7 @@ exports.createCampaign = async (req, res, next) => {
 exports.updateCampaign = async (req, res, next) => {
   try {
     const { campaignId } = req.params;
-    const campaign = await campaignService.updateCampaignById(
-      campaignId,
-      req.body
-    );
+    const campaign = await campaignService.updateCampaignById(campaignId, req.body);
     res.status(200).json({
       status: 'success',
       message: 'Campaign berhasil diupdate',
@@ -46,7 +43,6 @@ exports.deleteCampaign = async (req, res, next) => {
 
 exports.getAllCampaigns = async (req, res, next) => {
   try {
-    // Show all campaigns for shared tracker view
     const result = await campaignService.queryCampaigns(req.query, null);
     res.status(200).json({
       status: 'success',
@@ -66,6 +62,18 @@ exports.getCampaignById = async (req, res, next) => {
       status: 'success',
       message: 'Detail campaign berhasil diambil',
       data: campaign,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getCampaignOptions = async (req, res, next) => {
+  try {
+    const options = await campaignService.getCampaignOptions();
+    res.status(200).json({
+      status: 'success',
+      data: options,
     });
   } catch (error) {
     next(error);

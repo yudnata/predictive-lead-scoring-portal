@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 
 const LeadDetailModal = ({ isOpen, onClose, lead }) => {
-  const [activeTab, setActiveTab] = useState('notes'); // Default tab
+  const [activeTab, setActiveTab] = useState('notes');
 
   if (!isOpen || !lead) return null;
 
-  // Helper untuk format mata uang (IDR)
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -15,18 +14,17 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
     }).format(amount || 0);
   };
 
-  // Helper untuk warna skor
   const getScoreColor = (score) => {
     const val = score * 100;
-    if (val >= 80) return 'text-[#66BB6A] bg-[#66BB6A]/10'; // Hijau
-    if (val >= 50) return 'text-[#FFCA28] bg-[#FFCA28]/10'; // Kuning
-    if (val > 0) return 'text-[#EF5350] bg-[#EF5350]/10';   // Merah
+    if (val >= 80) return 'text-[#66BB6A] bg-[#66BB6A]/10';
+    if (val >= 50) return 'text-[#FFCA28] bg-[#FFCA28]/10';
+    if (val > 0) return 'text-[#EF5350] bg-[#EF5350]/10';
     return 'text-gray-400 bg-gray-700/50';
   };
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm h-screen">
-      {/* Modal Container */}        
+      {/* Modal Container */}
       <div className="bg-[#1E1E1E] border border-white/10 w-full max-w-2xl rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-auto">
         {/* HEADER */}
         <div className="flex items-start justify-between p-6 border-b border-white/10">
@@ -37,26 +35,40 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
             <div>
               <div className="flex items-center gap-3">
                 <h2 className="text-xl font-bold text-white">{lead.lead_name}</h2>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreColor(lead.lead_score)}`}>
+                <span
+                  className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreColor(
+                    lead.lead_score
+                  )}`}
+                >
                   {(lead.lead_score * 100).toFixed(0)}%
                 </span>
               </div>
               <p className="mt-1 text-xs text-gray-400">ID: #{lead.lead_id}</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full p-1.5"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
         {/* BODY - SCROLLABLE */}
         <div className="p-6 overflow-y-auto custom-scrollbar">
-          
           {/* Contact Info */}
           <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
             <div className="flex items-center gap-2 text-sm">
@@ -79,18 +91,24 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
             </div>
             <div>
               <p className="mb-1 text-xs text-gray-400">Education</p>
-              <p className="font-semibold text-white capitalize">{lead.education_level || 'Unknown'}</p>
+              <p className="font-semibold text-white capitalize">
+                {lead.education_level || 'Unknown'}
+              </p>
             </div>
             <div>
               <p className="mb-1 text-xs text-gray-400">Has Housing Loan?</p>
-              <p className={`font-semibold ${lead.lead_housing_loan ? 'text-brand' : 'text-white'}`}>
+              <p
+                className={`font-semibold ${lead.lead_housing_loan ? 'text-brand' : 'text-white'}`}
+              >
                 {lead.lead_housing_loan ? 'Yes' : 'No'}
               </p>
             </div>
-            
+
             <div>
               <p className="mb-1 text-xs text-gray-400">Marital Status</p>
-              <p className="font-semibold text-white capitalize">{lead.marital_status || 'Unknown'}</p>
+              <p className="font-semibold text-white capitalize">
+                {lead.marital_status || 'Unknown'}
+              </p>
             </div>
             <div>
               <p className="mb-1 text-xs text-gray-400">Age</p>
@@ -112,14 +130,22 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
           {/* TABS SECTION (Optional visual placeholder based on reference) */}
           <div className="mt-8">
             <div className="flex mb-4 border-b border-white/10">
-              <button 
-                className={`pb-2 px-1 text-sm font-medium mr-6 transition-colors ${activeTab === 'history' ? 'text-brand border-b-2 border-brand' : 'text-gray-400 hover:text-white'}`}
+              <button
+                className={`pb-2 px-1 text-sm font-medium mr-6 transition-colors ${
+                  activeTab === 'history'
+                    ? 'text-brand border-b-2 border-brand'
+                    : 'text-gray-400 hover:text-white'
+                }`}
                 onClick={() => setActiveTab('history')}
               >
                 Campaign History
               </button>
-              <button 
-                className={`pb-2 px-1 text-sm font-medium transition-colors ${activeTab === 'notes' ? 'text-brand border-b-2 border-brand' : 'text-gray-400 hover:text-white'}`}
+              <button
+                className={`pb-2 px-1 text-sm font-medium transition-colors ${
+                  activeTab === 'notes'
+                    ? 'text-brand border-b-2 border-brand'
+                    : 'text-gray-400 hover:text-white'
+                }`}
                 onClick={() => setActiveTab('notes')}
               >
                 Notes
@@ -127,12 +153,12 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
             </div>
 
             {activeTab === 'history' ? (
-               <div className="py-8 text-sm text-center text-gray-500 border border-dashed rounded-lg bg-white/5 border-white/10">
-                 No campaign history yet.
-               </div>
+              <div className="py-8 text-sm text-center text-gray-500 border border-dashed rounded-lg bg-white/5 border-white/10">
+                No campaign history yet.
+              </div>
             ) : (
               <div className="bg-[#2C2C2C] p-4 rounded-lg border border-white/5">
-                <textarea 
+                <textarea
                   className="w-full text-sm text-white placeholder-gray-500 bg-transparent resize-none focus:outline-none"
                   rows="3"
                   placeholder="Write a note about this lead..."
@@ -145,13 +171,12 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
               </div>
             )}
           </div>
-
         </div>
 
         {/* FOOTER */}
         <div className="p-5 border-t border-white/10 bg-[#242424] flex justify-end gap-3">
-           <button
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="px-4 py-2 text-sm font-semibold text-white transition-colors rounded-lg hover:bg-white/10"
           >
             Close
@@ -162,7 +187,7 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
         </div>
       </div>
     </div>,
-    document.body 
+    document.body
   );
 };
 

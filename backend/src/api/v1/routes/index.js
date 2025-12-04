@@ -8,7 +8,7 @@ const campaignRoutes = require('./campaign.routes');
 const dashboardRoutes = require('./dashboard.routes');
 const historyRoutes = require('./history.routes');
 const metaRoutes = require('./meta.routes');
-const noteRoutes = require('./note.routes')
+const noteRoutes = require('./note.routes');
 const campaignLeadRoutes = require('./campaignLead.routes');
 const leadsTrackerRoutes = require('./leadsTracker.routes');
 
@@ -19,7 +19,7 @@ router.use('/campaigns', campaignRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/history', historyRoutes);
 router.use('/meta', metaRoutes);
-router.use('/note', noteRoutes)
+router.use('/note', noteRoutes);
 router.use('/campaign-leads', campaignLeadRoutes);
 router.use('/leads-tracker', leadsTrackerRoutes);
 

@@ -29,7 +29,7 @@ const getNotesForLead = async (leadId) => {
   if (!lead) {
     throw new ApiError(404, 'Lead tidak ditemukan');
   }
-  
+
   return noteModel.findAllByLeadId(leadId);
 };
 

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import Lottie from 'lottie-react';
-import salesAnimation from '../assets/lottie/Sales.json';
+import authAnimation from '../assets/lottie/auth.json';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1/auth';
 
@@ -18,7 +18,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (animRef.current) {
-      animRef.current.setSpeed(0.4);
+      animRef.current.setSpeed(0.7);
       animRef.current.setDirection(1);
     }
   }, []);
@@ -69,13 +69,13 @@ const LoginPage = () => {
   return (
     <div className="flex min-h-screen text-white bg-dark-bg">
       {/* Left side animation */}
-      <div className="flex-1 hidden w-1/2 overflow-hidden md:flex items-center justify-center mb-10 ml-24">
+      <div className="flex-1 hidden w-1/2 overflow-hidden md:flex items-center justify-center pl-16 ml-24">
         <Lottie
           lottieRef={animRef}
-          animationData={salesAnimation}
+          animationData={authAnimation}
           loop={false}
           onComplete={handleComplete}
-          className="w-full max-w-3xl"
+          className="w-full max-w-2xl"
         />
       </div>
 

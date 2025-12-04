@@ -46,7 +46,7 @@ const LeadService = {
       lead_id: leadId,
       campaign_id: campaignId,
       user_id: userId,
-      status_id: 3, // Uncontacted status for Leads Tracker
+      status_id: 3,
     });
     return response.data;
   },

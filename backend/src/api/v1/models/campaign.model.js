@@ -12,9 +12,9 @@ const create = async (campaignData) => {
 
   const query = {
     text: `
-      INSERT INTO tb_campaigns 
+      INSERT INTO tb_campaigns
         (campaign_name, campaign_start_date, campaign_end_date, campaign_desc, campaign_is_active, created_at, updated_at)
-      VALUES 
+      VALUES
         ($1, $2, $3, $4, $5, NOW(), NOW())
       RETURNING *
     `,
@@ -31,106 +31,102 @@ const create = async (campaignData) => {
 };
 
 const findAll = async (options) => {
-  const { limit, offset, search, userId } = options; // Ambil userId
+  const { limit, offset, search, userId, isActive, startDate, endDate } = options;
 
   let queryText = `SELECT c.* FROM tb_campaigns c`;
   const queryValues = [];
   let paramIndex = 1;
   let whereClauses = [];
 
-  // 1. LOGIKA FILTER SALES ASSIGNMENT
   if (userId) {
     queryText += ` JOIN tb_campaign_assignments ca ON c.campaign_id = ca.campaign_id`;
     whereClauses.push(`ca.user_id = $${paramIndex++}`);
     queryValues.push(userId);
   }
 
-  // 2. LOGIKA SEARCH
   if (search) {
     whereClauses.push(`c.campaign_name ILIKE $${paramIndex++}`);
-    queryValues.push(`%${search}%`);
-  }
-  
-  // Apply WHERE clauses
+    queryValues.push(`%${search}%`);
+  }
+
+  if (isActive !== undefined && isActive !== null && isActive !== '') {
+    whereClauses.push(`c.campaign_is_active = $${paramIndex++}`);
+    queryValues.push(isActive === 'true' || isActive === true);
+  }
+
+  if (startDate) {
+    whereClauses.push(`DATE(c.campaign_start_date) <= $${paramIndex++}`);
+    queryValues.push(startDate);
+  }
+
+  if (endDate) {
+    whereClauses.push(`DATE(c.campaign_end_date) >= $${paramIndex++}`);
+    queryValues.push(endDate);
+  }
+
   if (whereClauses.length > 0) {
     queryText += ` WHERE ${whereClauses.join(' AND ')}`;
   }
 
-  // 3. LOGIKA PAGINASI & URUTAN
-  queryText += ` ORDER BY c.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
-  queryValues.push(limit, offset);
+  queryText += ` ORDER BY c.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+  queryValues.push(limit, offset);
 
-  const { rows } = await db.query(queryText, queryValues);
-  return rows;
+  const { rows } = await db.query(queryText, queryValues);
+  return rows;
 };
-
-//   if (search) {
-//     queryText += ` WHERE campaign_name ILIKE $${paramIndex++}`;
-//     queryValues.push(`%${search}%`);
-//   }
-
-//   queryText += ` ORDER BY created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
-//   queryValues.push(limit, offset);
-
-//   const { rows } = await db.query(queryText, queryValues);
-//   return rows;
-// };
 
 const countAll = async (options) => {
-  const { search, userId } = options; // Ambil userId
-  
-  let queryText = `SELECT COUNT(c.campaign_id) FROM tb_campaigns c`;
-  const queryValues = [];
-  let paramIndex = 1;
+  const { search, userId, isActive, startDate, endDate } = options;
+
+  let queryText = `SELECT COUNT(c.campaign_id) FROM tb_campaigns c`;
+  const queryValues = [];
+  let paramIndex = 1;
   let whereClauses = [];
 
-  // 1. LOGIKA FILTER SALES ASSIGNMENT
-  if (userId) {
-    queryText += ` JOIN tb_campaign_assignments ca ON c.campaign_id = ca.campaign_id`;
-    whereClauses.push(`ca.user_id = $${paramIndex++}`);
-    queryValues.push(userId);
-  }
+  if (userId) {
+    queryText += ` JOIN tb_campaign_assignments ca ON c.campaign_id = ca.campaign_id`;
+    whereClauses.push(`ca.user_id = $${paramIndex++}`);
+    queryValues.push(userId);
+  }
 
-  // 2. LOGIKA SEARCH
-  if (search) {
-    whereClauses.push(`c.campaign_name ILIKE $${paramIndex++}`);
-    queryValues.push(`%${search}%`);
-  }
+  if (search) {
+    whereClauses.push(`c.campaign_name ILIKE $${paramIndex++}`);
+    queryValues.push(`%${search}%`);
+  }
 
-  // Apply WHERE clauses
+  if (isActive !== undefined && isActive !== null && isActive !== '') {
+    whereClauses.push(`c.campaign_is_active = $${paramIndex++}`);
+    queryValues.push(isActive === 'true' || isActive === true);
+  }
+
+  if (startDate) {
+    whereClauses.push(`DATE(c.campaign_start_date) <= $${paramIndex++}`);
+    queryValues.push(startDate);
+  }
+  if (endDate) {
+    whereClauses.push(`DATE(c.campaign_end_date) >= $${paramIndex++}`);
+    queryValues.push(endDate);
+  }
+
   if (whereClauses.length > 0) {
     queryText += ` WHERE ${whereClauses.join(' AND ')}`;
   }
 
-  const { rows } = await db.query(queryText, queryValues);
-  return parseInt(rows[0].count, 10);
+  const { rows } = await db.query(queryText, queryValues);
+  return parseInt(rows[0].count, 10);
 };
-
-// const countAll = async (options) => {
-//   const { search } = options;
-//   let queryText = 'SELECT COUNT(*) FROM tb_campaigns';
-//   const queryValues = [];
-
-//   if (search) {
-//     queryText += ' WHERE campaign_name ILIKE $1';
-//     queryValues.push(`%${search}%`);
-//   }
-
-//   const { rows } = await db.query(queryText, queryValues);
-//   return parseInt(rows[0].count, 10);
-// };
 
 const findById = async (campaignId) => {
   const query = {
     text: `
-      SELECT 
+      SELECT
         c.*,
         COALESCE(
           json_agg(
             json_build_object(
               'user_id', u.user_id,
-              'full_name', u.full_name, 
-              'user_email', u.user_email 
+              'full_name', u.full_name,
+              'user_email', u.user_email
             )
           ) FILTER (WHERE u.user_id IS NOT NULL),
          '[]'
@@ -148,7 +144,6 @@ const findById = async (campaignId) => {
   return rows[0];
 };
 
-
 const update = async (campaignId, campaignData) => {
   const {
     campaign_name,
@@ -161,7 +156,7 @@ const update = async (campaignId, campaignData) => {
   const query = {
     text: `
       UPDATE tb_campaigns
-      SET 
+      SET
         campaign_name = $1,
         campaign_start_date = $2,
         campaign_end_date = $3,
@@ -199,6 +194,14 @@ const deleteById = async (campaignId) => {
   return rows[0];
 };
 
+const findActiveOptions = async () => {
+  const query = {
+    text: 'SELECT campaign_id, campaign_name FROM tb_campaigns WHERE campaign_is_active = TRUE ORDER BY created_at DESC',
+  };
+  const { rows } = await db.query(query);
+  return rows;
+};
+
 module.exports = {
   create,
   findAll,
@@ -206,4 +209,5 @@ module.exports = {
   findById,
   update,
   deleteById,
+  findActiveOptions,
 };

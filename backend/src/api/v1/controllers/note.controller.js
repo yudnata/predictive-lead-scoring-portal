@@ -4,9 +4,9 @@ exports.createNote = async (req, res, next) => {
   try {
     const { leadId } = req.params;
     const userId = req.user.user_id;
-    
+
     const note = await noteService.createNoteForLead(leadId, userId, req.body);
-    
+
     res.status(201).json({
       status: 'success',
       message: 'Catatan berhasil ditambahkan',
@@ -17,13 +17,12 @@ exports.createNote = async (req, res, next) => {
   }
 };
 
-
 exports.getAllNotesForLead = async (req, res, next) => {
   try {
     const { leadId } = req.params;
-    
+
     const notes = await noteService.getNotesForLead(leadId);
-    
+
     res.status(200).json({
       status: 'success',
       count: notes.length,
@@ -40,7 +39,7 @@ exports.deleteNote = async (req, res, next) => {
     const user = req.user;
 
     await noteService.deleteNoteById(noteId, user);
-    
+
     res.status(204).json({
       status: 'success',
       data: null,

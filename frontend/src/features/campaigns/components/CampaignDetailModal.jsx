@@ -7,9 +7,19 @@ const CampaignDetailModal = ({ open, onClose, campaign }) => {
   return createPortal(
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
       <div className="bg-[#242424] w-full max-w-lg rounded-xl p-6">
-        <h2 className="text-xl font-bold text-white mb-4">
-          Sales Assigned — {campaign.campaign_name}
-        </h2>
+        <h2 className="text-xl font-bold text-white mb-4">Detail — {campaign.campaign_name}</h2>
+
+        <div className="mb-4 text-sm text-gray-300">
+          <p>
+            <strong>Description:</strong> {campaign.campaign_desc || '-'}
+          </p>
+          <p>
+            <strong>Duration:</strong> {new Date(campaign.campaign_start_date).toLocaleDateString()}{' '}
+            - {new Date(campaign.campaign_end_date).toLocaleDateString()}
+          </p>
+        </div>
+
+        <h3 className="text-lg font-semibold text-white mb-2">Assigned Sales</h3>
 
         <ul className="space-y-2">
           {campaign.assigned_sales?.length > 0 ? (

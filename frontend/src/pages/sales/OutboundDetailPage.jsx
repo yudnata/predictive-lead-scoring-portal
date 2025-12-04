@@ -6,6 +6,8 @@ import CampaignService from '../../features/campaigns/api/campaign-service';
 import LeadsTrackerService from '../../features/tracker/api/tracker-service';
 import toast from 'react-hot-toast';
 
+import OutboundFilter from '../../features/outbound/components/OutboundFilter';
+
 const OutboundDetailPage = () => {
   const outletContext = useOutletContext?.() || {};
   const user = outletContext.user || outletContext || {};
@@ -18,8 +20,10 @@ const OutboundDetailPage = () => {
   const [selectedLead, setSelectedLead] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [campaignFilter, setCampaignFilter] = useState('');
-  const [campaigns, setCampaigns] = useState([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState({
+    campaignId: '',
+  });
 
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -38,7 +42,7 @@ const OutboundDetailPage = () => {
           page: currentPage,
           limit: limit,
           search: search,
-          campaignFilter: campaignFilter || null,
+          campaignFilter: appliedFilters.campaignId || null,
         },
         user.user_id,
         'NOT_BELUM_DIHUBUNGI'
@@ -54,30 +58,11 @@ const OutboundDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, limit, search, campaignFilter, user.user_id]);
+  }, [currentPage, limit, search, appliedFilters, user.user_id]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  useEffect(() => {
-    if (!user.user_id) return;
-    const loadCampaigns = async () => {
-      try {
-        const res = await CampaignService.getAll(1, 100);
-
-        if (Array.isArray(res.data)) {
-          const activeCampaigns = res.data.filter((c) => c.campaign_is_active === true);
-          setCampaigns(activeCampaigns);
-        } else {
-          setCampaigns([]);
-        }
-      } catch (error) {
-        console.error('Failed to load campaigns for filter:', error);
-      }
-    };
-    loadCampaigns();
-  }, [user.user_id]);
 
   const openModal = (lead) => {
     setSelectedLead(lead);
@@ -95,55 +80,83 @@ const OutboundDetailPage = () => {
     setCurrentPage(1);
   };
 
-  const handleCampaignFilterChange = (e) => {
-    setCampaignFilter(e.target.value);
+  const handleFilterApply = (newFilters) => {
+    setAppliedFilters(newFilters);
     setCurrentPage(1);
+    setIsFilterOpen(false);
   };
 
   return (
     <div className="text-white">
-      <div className="flex items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Outbound Detail</h1>
-        <div className="relative ml-6">
-          <input
-            type="text"
-            placeholder="Search..."
-            value={search}
-            onChange={handleSearchChange}
-            className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20"
-          />
-          <img
-            src="/search.png"
-            className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
-          />
+      <div className="flex flex-col gap-4 mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <h1 className="text-3xl font-bold text-white">Outbound Detail</h1>
+            <div className="flex items-center ml-6 space-x-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={search}
+                  onChange={handleSearchChange}
+                  className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/10 focus:outline-none focus:border-white/50 transition-colors"
+                />
+                <img
+                  src="/search.png"
+                  className="absolute w-auto h-4 transform -translate-y-1/2 opacity-50 left-3 top-1/2"
+                  alt="Search"
+                />
+              </div>
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className={`px-4 py-1 rounded-lg transition-all flex items-center gap-2 ${
+                  isFilterOpen
+                    ? 'bg-blue-600 border border-white/10 text-white'
+                    : 'bg-[#242424] border border-white/10 text-gray-400 hover:bg-[#2a2a2a]'
+                }`}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
+                </svg>
+                Filter
+                {appliedFilters.campaignId && (
+                  <span className="flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
+                    !
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="flex items-center mb-5 gap-9">
-        <span className="text-lg text-white/100">Campaign</span>
-        <select
-          value={campaignFilter}
-          onChange={handleCampaignFilterChange}
-          className="p-2 text-sm rounded-lg bg-[#242424] border border-white/20 text-white"
-        >
-          <option value="">All Campaign</option>
-          {campaigns.map((c) => (
-            <option
-              key={c.campaign_id}
-              value={c.campaign_id}
-            >
-              {c.campaign_name}
-            </option>
-          ))}
-        </select>
-      </div>
+
+      <OutboundFilter
+        isOpen={isFilterOpen}
+        initialFilters={appliedFilters}
+        onApply={handleFilterApply}
+      />
       <div className="overflow-hidden rounded-lg shadow-lg bg-dark-bg">
         <div className="overflow-x-auto">
           <table className="min-w-full text-center text-white table-auto">
             <thead>
               <tr className="text-sm uppercase border-b border-white/30 text-gray hover:cursor-default">
                 <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">ID</th>
-                <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Lead Name</th>
-                <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Campaign</th>
+                <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">
+                  Lead Name
+                </th>
+                <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">
+                  Campaign
+                </th>
                 <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Score</th>
                 <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Status</th>
                 <th className="px-4 py-5 font-bold tracking-wider">Action</th>
@@ -166,12 +179,18 @@ const OutboundDetailPage = () => {
                     key={lead.lead_campaign_id}
                     className="text-sm transition-colors border-t border-b border-white/10 hover:bg-white/5 hover:cursor-default"
                   >
-                    <td className="px-4 py-3 text-white/80 hover:cursor-default">#{lead.lead_id}</td>
+                    <td className="px-4 py-3 text-white/80 hover:cursor-default">
+                      #{lead.lead_id}
+                    </td>
                     <td className="px-4 py-3 hover:cursor-default">
                       <p className="font-semibold truncate text-white/80">{lead.lead_name}</p>
                     </td>
-                    <td className="px-4 py-3 text-white/80 hover:cursor-default">{lead.campaign_name}</td>
-                    <td className="px-4 py-3 text-white/80 hover:cursor-default">{lead.score ?? '-'}</td>
+                    <td className="px-4 py-3 text-white/80 hover:cursor-default">
+                      {lead.campaign_name}
+                    </td>
+                    <td className="px-4 py-3 text-white/80 hover:cursor-default">
+                      {lead.score ?? '-'}
+                    </td>
 
                     <td className="px-4 py-3 hover:cursor-default">
                       <span

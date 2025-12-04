@@ -14,7 +14,7 @@ const ActionDropdown = ({ userId, onEdit, onDelete }) => {
   useEffect(() => {
     const handleClick = (e) => {
       if (
-        dropdownRef.current && 
+        dropdownRef.current &&
         !dropdownRef.current.contains(e.target) &&
         buttonRef.current &&
         !buttonRef.current.contains(e.target)
@@ -100,6 +100,8 @@ const ActionDropdown = ({ userId, onEdit, onDelete }) => {
   );
 };
 
+import SalesFilter from '../../features/sales/components/SalesFilter';
+
 const SalesPage = () => {
   const [salesUsers, setSalesUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -112,10 +114,17 @@ const SalesPage = () => {
 
   const [limit, setLimit] = useState(14);
 
+  const [showFilters, setShowFilters] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState({
+    isActive: '',
+    minLeadsHandled: '',
+    maxLeadsHandled: '',
+  });
+
   const fetchSales = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await UserService.getAllSales(currentPage, limit, search);
+      const result = await UserService.getAllSales(currentPage, limit, search, appliedFilters);
       setSalesUsers(result.data);
       setTotalPages(result.meta.totalPages);
       setTotalResults(result.meta.total);
@@ -124,11 +133,16 @@ const SalesPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, search, limit]);
+  }, [currentPage, search, limit, appliedFilters]);
 
   useEffect(() => {
     fetchSales();
   }, [fetchSales]);
+
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters);
+    setCurrentPage(1);
+  };
 
   const handleOpenEditModal = async (id) => {
     setLoading(true);
@@ -151,36 +165,91 @@ const SalesPage = () => {
 
   return (
     <div>
-      <div className="flex items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Sales</h1>
-        <div className="relative ml-6">
-          <input
-            type="text"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20 focus:outline-none"
-          />
-          <img
-            src="/search.png"
-            className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
-          />
-        </div>
-      </div>
+      <div className="flex flex-col gap-4 mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <h1 className="text-3xl font-bold text-white">Sales</h1>
+            <div className="flex items-center ml-6 space-x-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/10 focus:outline-none focus:border-white/50 transition-colors"
+                />
+                <img
+                  src="/search.png"
+                  className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-4 py-1 rounded-lg transition-all flex items-center gap-2 ${
+                  showFilters
+                    ? 'bg-blue-600 border border-white/10 text-white'
+                    : 'bg-[#242424] border border-white/10 text-gray-400 hover:bg-[#2a2a2a]'
+                }`}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
+                </svg>
+                Filters
+                {(appliedFilters.isActive ||
+                  appliedFilters.minLeadsHandled ||
+                  appliedFilters.maxLeadsHandled) && (
+                  <span className="flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
+                    !
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
 
-      <div className="flex justify-end mb-6">
-        <button
-          onClick={() => {
-            setEditingUser(null);
-            setModalOpen(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2 font-semibold text-black transition-all bg-white rounded-lg shadow hover:bg-gray-100"
-        >
-          Add Sales
-        </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setEditingUser(null);
+                setModalOpen(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-semibold text-black transition-all bg-white rounded-lg shadow-lg hover:bg-gray-200 border border-white/20"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Add Sales
+            </button>
+          </div>
+        </div>
+
+        <SalesFilter
+          isOpen={showFilters}
+          initialFilters={appliedFilters}
+          onApply={handleApplyFilters}
+        />
       </div>
 
       <div className="p-4 rounded-lg shadow-lg bg-dark-bg">
@@ -205,7 +274,7 @@ const SalesPage = () => {
               {salesUsers.map((user) => (
                 <tr
                   key={user.user_id}
-                  className="text-sm border-b border-white/10"
+                  className="text-sm border-b border-white/5"
                 >
                   <td className="px-4 py-4">
                     <p className="font-semibold text-white/80">{user.full_name}</p>

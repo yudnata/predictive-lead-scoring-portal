@@ -1,14 +1,15 @@
-/* eslint-disable no-irregular-whitespace */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import LeadsTrackerService from '../../features/tracker/api/tracker-service';
-import CampaignService from "../../features/campaigns/api/campaign-service";
+import CampaignService from '../../features/campaigns/api/campaign-service';
 import KanbanColumn from '../../features/tracker/components/KanbanColumn';
 
 const KANBAN_STATUSES = [
   { name: 'Uncontacted', id: 3 },
   { name: 'Contacted', id: 4 },
 ];
+
+import TrackerFilter from '../../features/tracker/components/TrackerFilter';
 
 const LeadsTrackerPage = () => {
   const navigate = useNavigate();
@@ -21,58 +22,42 @@ const LeadsTrackerPage = () => {
   const [totalResults, setTotalResults] = useState(0);
 
   const [search, setSearch] = useState('');
-  const [campaignFilter, setCampaignFilter] = useState('');
 
-  const [campaigns, setCampaigns] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState({
+    campaignId: '',
+    minScore: '',
+    maxScore: '',
+  });
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    if (!user.user_id) {
-      setLoading(false);
-      return;
-    }
-    try {
-      const res = await LeadsTrackerService.getAll( 
-        1, 
-        500, 
-        search, 
-        campaignFilter || null, 
-        user.user_id 
-      );
-      
-      setList(res.data || []);
-      setTotalResults(res.meta?.total || 0);
-    } catch (err) {
-      console.error("Gagal memuat leads tracker:", err);
-      if (err.response) { 
-          console.error(err.response.data?.message || "Gagal memuat data leads tracker.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [search, campaignFilter, user.user_id]);
+    setLoading(true);
+    if (!user.user_id) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await LeadsTrackerService.getAll(1, 500, search, appliedFilters, user.user_id);
+
+      setList(res.data || []);
+      setTotalResults(res.meta?.total || 0);
+    } catch (err) {
+      console.error('Gagal memuat leads tracker:', err);
+      if (err.response) {
+        console.error(err.response.data?.message || 'Gagal memuat data leads tracker.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [search, appliedFilters, user.user_id]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  useEffect(() => {
-  if (!user.user_id) return;
-
-  const loadCampaigns = async () => {
-    try {
-      const res = await CampaignService.getAssignedForUser();
-      setCampaigns(res.data || []);
-    } catch (err) {
-      console.error("Gagal memuat campaign filter:", err);
-      setCampaigns([]);
-    }
+  const handleApplyFilters = (newFilters) => {
+    setAppliedFilters(newFilters);
   };
-
-  loadCampaigns();
-}, [user.user_id]);
-
-
 
   const handleChangeStatus = async (leadCampaignId, newStatusId) => {
     try {
@@ -106,7 +91,6 @@ const LeadsTrackerPage = () => {
     const lead = list.find((l) => l.lead_campaign_id === leadCampaignId);
     if (!lead) return;
 
-    // Get current status ID from the lead
     const currentStatusMap = {
       Uncontacted: 3,
       Contacted: 4,
@@ -115,17 +99,13 @@ const LeadsTrackerPage = () => {
     };
     const currentStatusId = currentStatusMap[lead.status];
 
-    // Don't update if dropping in the same column
     if (currentStatusId === newStatusId) return;
 
-    // Update status
     handleChangeStatus(leadCampaignId, newStatusId);
   };
 
-  // Group leads by status for Kanban view and sort by score (highest first)
   const groupedLeads = KANBAN_STATUSES.reduce((acc, status) => {
     const leadsInStatus = list.filter((lead) => lead.status === status.name);
-    // Sort by score descending (highest score first)
     acc[status.name] = leadsInStatus.sort((a, b) => {
       const scoreA = a.score ?? 0;
       const scoreB = b.score ?? 0;
@@ -137,47 +117,69 @@ const LeadsTrackerPage = () => {
   return (
     <div>
       {/* Header Section */}
-      <div className="flex items-center mb-6">
-        <h1 className="text-3xl font-bold text-white">Leads Tracker</h1>
-
-        <div className="relative ml-6">
-          <input
-            type="text"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-            }}
-            className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20"
-          />
-          <img
-            src="/search.png"
-            className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
-          />
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <h1 className="text-3xl font-bold text-white">Leads Tracker</h1>
+            <div className="flex items-center ml-6 space-x-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                  }}
+                  className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/10 focus:outline-none focus:border-white/50 transition-colors"
+                />
+                <img
+                  src="/search.png"
+                  className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-4 py-1 rounded-lg border transition-all flex items-center gap-2 ${
+                  showFilters
+                    ? 'bg-blue-600 border border-white/10 text-white'
+                    : 'bg-[#242424] border border-white/10 text-gray-400 hover:bg-[#2a2a2a]'
+                }`}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
+                </svg>
+                Filters
+                {(appliedFilters.campaignId ||
+                  appliedFilters.minScore ||
+                  appliedFilters.maxScore) && (
+                  <span className="flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
+                    !
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
+
+        <TrackerFilter
+          isOpen={showFilters}
+          initialFilters={appliedFilters}
+          onApply={handleApplyFilters}
+          userId={user.user_id}
+        />
       </div>
 
-      {/* Filter Section */}
       <div className="flex items-center mb-5 gap-9">
-        <span className="text-lg text-white/100">Campaign</span>
-        <select
-          value={campaignFilter}
-          onChange={(e) => {
-            setCampaignFilter(e.target.value);
-          }}
-          className="p-2 text-sm rounded-lg bg-[#242424] border border-white/20 text-white"
-        >
-          <option value="">All Campaign</option>
-          {campaigns.map((c) => (
-            <option
-              key={c.campaign_id}
-              value={c.campaign_id}
-            >
-              {c.campaign_name}
-            </option>
-          ))}
-        </select>
-
         <div className="ml-auto text-sm text-gray-400">
           Total: <span className="text-white font-semibold">{totalResults}</span> leads
         </div>

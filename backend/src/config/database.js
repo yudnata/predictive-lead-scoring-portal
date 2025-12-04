@@ -1,4 +1,6 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+
+types.setTypeParser(1082, (str) => str);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

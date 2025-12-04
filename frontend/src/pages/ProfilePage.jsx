@@ -60,34 +60,30 @@ const ProfilePage = ({ user }) => {
           </div>
         </div>
       </div>
-
-import { createPortal } from 'react-dom';
-
-// ... inside component ...
-
-      {showLogoutModal && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-[#1E1E1E] w-full max-w-sm p-6 rounded-2xl shadow-lg text-white">
-            <h3 className="mb-4 text-xl font-bold">Logout Confirmation</h3>
-            <p className="mb-6 text-gray-300">Are you sure you want to logout?</p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowLogoutModal(false)}
-                className="px-3 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmLogout}
-                className="px-3 py-2 bg-red-600 rounded-lg hover:bg-red-700"
-              >
-                Logout
-              </button>
+      {showLogoutModal &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+            <div className="bg-[#1E1E1E] w-full max-w-sm p-6 rounded-2xl shadow-lg text-white">
+              <h3 className="mb-4 text-xl font-bold">Logout Confirmation</h3>
+              <p className="mb-6 text-gray-300">Are you sure you want to logout?</p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowLogoutModal(false)}
+                  className="px-3 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="px-3 py-2 bg-red-600 rounded-lg hover:bg-red-700"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

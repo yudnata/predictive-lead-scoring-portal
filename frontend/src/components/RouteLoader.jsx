@@ -31,7 +31,7 @@ const RouteLoader = ({ children }) => {
         `}
       </style>
       {loading && (
-        <div className="fixed left-64 bottom-0 right-0 h-0.5 bg-gray-900 z-50 overflow-hidden">
+        <div className="fixed left-64 top-0 right-0 h-0.5 bg-gray-900 z-50 overflow-hidden">
           <div className="h-full w-1/2 bg-gradient-to-r from-transparent via-white to-transparent animate-slide-right"></div>
         </div>
       )}

@@ -1,8 +1,17 @@
 import axiosClient from '../../../api/axiosClient';
 
 const UserService = {
-  getAllSales: async (page = 1, limit = 14, search = '') => {
-    const response = await axiosClient.get(`/users?page=${page}&limit=${limit}&search=${search}`);
+  getAllSales: async (page = 1, limit = 14, search = '', filters = {}) => {
+    const params = new URLSearchParams();
+    params.append('page', page);
+    params.append('limit', limit);
+    if (search) params.append('search', search);
+
+    if (filters.isActive !== '') params.append('is_active', filters.isActive);
+    if (filters.minLeads) params.append('min_leads', filters.minLeads);
+    if (filters.maxLeads) params.append('max_leads', filters.maxLeads);
+
+    const response = await axiosClient.get(`/users?${params.toString()}`);
     return response.data;
   },
 

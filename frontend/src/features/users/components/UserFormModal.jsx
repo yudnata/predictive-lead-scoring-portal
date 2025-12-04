@@ -23,8 +23,8 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const result = await CampaignService.getAll(1, 100);
-        setCampaigns(result.data);
+        const result = await CampaignService.getOptions();
+        setCampaigns(result);
       } catch (err) {
         console.error('Failed to load campaigns', err);
       }
@@ -214,9 +214,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
 
           {activeTab === 'campaigns' && (
             <>
-              <p className="text-sm text-gray-400">
-                Select campaigns to be handled by this Sales:
-              </p>
+              <p className="text-sm text-gray-400">Select campaigns to be handled by this Sales:</p>
 
               <div className="space-y-2">
                 {campaigns.length === 0 ? (
@@ -242,9 +240,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                           <p className="text-sm font-semibold text-white">
                             {campaign.campaign_name}
                           </p>
-                          <p className="text-xs text-gray-400">
-                            {campaign.campaign_is_active ? 'Active' : 'Inactive'}
-                          </p>
+                          <p className="text-xs text-green-400">Active</p>
                         </div>
                       </div>
                     </label>

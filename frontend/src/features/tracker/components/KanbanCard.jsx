@@ -34,7 +34,6 @@ const ActionDropdown = ({ lead, onAddOutbound, onDelete, onChangeStatus }) => {
     }
   }, [open]);
 
-  // Get available status transitions based on current status
   const getAvailableStatuses = () => {
     const currentStatus = lead.status;
     const KANBAN_STATUSES = [
@@ -52,7 +51,6 @@ const ActionDropdown = ({ lead, onAddOutbound, onDelete, onChangeStatus }) => {
         { name: 'Reject', id: 6 },
       ];
     }
-    // Deal and Reject are final statuses
     return [];
   };
 
@@ -187,8 +185,7 @@ const KanbanCard = ({ lead, onAddOutbound, onDelete, onDragStart, onChangeStatus
       if (currentMouseY > viewportHeight - scrollThreshold) {
         window.scrollBy(0, scrollSpeed);
         scrollInterval = requestAnimationFrame(autoScroll);
-      }
-      else if (currentMouseY < scrollThreshold) {
+      } else if (currentMouseY < scrollThreshold) {
         window.scrollBy(0, -scrollSpeed);
         scrollInterval = requestAnimationFrame(autoScroll);
       } else {
@@ -224,7 +221,7 @@ const KanbanCard = ({ lead, onAddOutbound, onDelete, onDragStart, onChangeStatus
     <div
       draggable
       onDragStart={handleDragStart}
-      className="bg-[#242424] border border-white/10 rounded-lg p-3 cursor-move hover:border-white/30 hover:shadow-lg transition-all group"
+      className="bg-[#2C2C2C] rounded-xl p-3 cursor-move hover:border-white/30 hover:shadow-lg transition-all group"
     >
       <div className="flex items-start justify-between mb-1.5">
         <div className="flex-1">

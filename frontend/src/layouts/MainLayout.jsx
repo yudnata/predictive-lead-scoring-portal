@@ -19,7 +19,10 @@ const MainLayout = ({ user }) => {
       </style>
       <Sidebar user={user} />
       <main className="flex-1 w-full h-screen p-8 ml-64 overflow-y-auto">
-        <div key={location.pathname} className="animate-slide-right-fade">
+        <div
+          key={location.pathname}
+          className="animate-slide-right-fade"
+        >
           <Outlet context={{ user }} />
         </div>
       </main>

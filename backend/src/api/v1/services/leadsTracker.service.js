@@ -1,4 +1,5 @@
 const leadsTrackerModel = require('../models/leadsTracker.model');
+const leadModel = require('../models/lead.model');
 const ApiError = require('../utils/apiError');
 
 const queryLeadsForSales = async (queryOptions, userId, minStatusName = null) => {
@@ -6,14 +7,18 @@ const queryLeadsForSales = async (queryOptions, userId, minStatusName = null) =>
   const limit = parseInt(queryOptions.limit, 10) || 10;
   const offset = (page - 1) * limit;
   const search = queryOptions.search || '';
-  const campaignId = queryOptions.campaign_id || null;
+  const campaignId = queryOptions.campaign_id || queryOptions.campaignId || null;
+  const minScore = queryOptions.min_score || queryOptions.minScore || null;
+  const maxScore = queryOptions.max_score || queryOptions.maxScore || null;
 
-  const options = { 
-    limit, 
-    offset, 
-    search, 
-    campaignId, 
-    minStatusName
+  const options = {
+    limit,
+    offset,
+    search,
+    campaignId,
+    minStatusName,
+    minScore,
+    maxScore,
   };
 
   const leads = await leadsTrackerModel.findAllBySales(options);
@@ -32,28 +37,56 @@ const queryLeadsForSales = async (queryOptions, userId, minStatusName = null) =>
 };
 
 const updateLeadStatus = async (leadCampaignId, statusId, userId) => {
-    if (!statusId) {
-        throw new ApiError(400, 'Status ID harus diisi');
+  if (!statusId) {
+    throw new ApiError(400, 'Status ID harus diisi');
+  }
+
+  const isDeal = parseInt(statusId) === 5;
+  const isReject = parseInt(statusId) === 6;
+
+  if (isDeal || isReject) {
+    let poutcomeName = isDeal ? 'Success' : 'Failure';
+
+    const poutcome = await leadsTrackerModel.findPoutcomeByName(poutcomeName);
+    let poutcomeId = poutcome ? poutcome.poutcome_id : null;
+    if (!poutcomeId) {
+      const otherPoutcome = await leadsTrackerModel.findPoutcomeByName('Other');
+      poutcomeId = otherPoutcome ? otherPoutcome.poutcome_id : null;
+    }
+  }
+
+  const updatedLead = await leadsTrackerModel.updateStatus(leadCampaignId, statusId, userId);
+
+  if (!updatedLead) {
+    throw new ApiError(404, 'Lead campaign tidak ditemukan atau Anda tidak memiliki akses');
+  }
+
+  await leadsTrackerModel.createStatusHistory(
+    updatedLead.lead_id,
+    updatedLead.campaign_id,
+    statusId,
+    userId
+  );
+
+  if (isDeal || isReject) {
+    let poutcomeName = isDeal ? 'Success' : 'Failure';
+    const poutcome = await leadsTrackerModel.findPoutcomeByName(poutcomeName);
+    let poutcomeId = poutcome ? poutcome.poutcome_id : null;
+
+    if (!poutcomeId) {
+      const otherPoutcome = await leadsTrackerModel.findPoutcomeByName('Other');
+      poutcomeId = otherPoutcome ? otherPoutcome.poutcome_id : null;
     }
 
-    // 2. Update status di tb_campaign_leads
-    const updatedLead = await leadsTrackerModel.updateStatus(leadCampaignId, statusId, userId);
-
-    if (!updatedLead) {
-         throw new ApiError(404, 'Lead campaign tidak ditemukan atau Anda tidak memiliki akses');
+    if (poutcomeId) {
+      await leadModel.update(updatedLead.lead_id, {}, { poutcome_id: poutcomeId });
     }
 
-    // 3. Catat ke history (tb_lead_status_history)
-    await leadsTrackerModel.createStatusHistory(
-        updatedLead.lead_id, 
-        updatedLead.campaign_id, 
-        statusId, 
-        userId
-    );
+    await leadsTrackerModel.deleteById(leadCampaignId);
+  }
 
-    return updatedLead;
+  return updatedLead;
 };
-
 
 module.exports = {
   queryLeadsForSales,

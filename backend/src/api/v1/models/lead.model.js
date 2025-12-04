@@ -2,11 +2,6 @@
 const db = require('../../../config/database');
 const ApiError = require('../utils/apiError');
 
-/**
- * insertSingleLeadWithClient
- * - digunakan oleh bulk insert dalam satu client (transaksi)
- * - expect lead object contains lead fields and detail fields already mapped
- */
 const insertSingleLeadWithClient = async (client, lead) => {
   const {
     lead_name,
@@ -16,7 +11,6 @@ const insertSingleLeadWithClient = async (client, lead) => {
     job_id,
     marital_id,
     education_id,
-    // detail fields
     lead_default,
     lead_balance,
     lead_housing_loan,
@@ -63,7 +57,7 @@ const insertSingleLeadWithClient = async (client, lead) => {
     `,
     values: [
       newLeadId,
-      lead_default === true, // boolean
+      lead_default === true,
       lead_balance !== undefined ? lead_balance : null,
       lead_housing_loan === true,
       lead_loan === true,
@@ -90,34 +84,34 @@ const insertSingleLeadWithClient = async (client, lead) => {
 
 const fullLeadQuery = `
   SELECT
-    l.lead_id, 
-    l.lead_name, 
-    l.lead_phone_number, 
-    l.lead_email, 
-    l.lead_age, 
-    l.created_at, 
+    l.lead_id,
+    l.lead_name,
+    l.lead_phone_number,
+    l.lead_email,
+    l.lead_age,
+    l.created_at,
     l.updated_at,
 
-    j.job_id, 
+    j.job_id,
     j.job_name,
 
-    m.marital_id, 
+    m.marital_id,
     m.marital_status,
 
-    e.education_id, 
+    e.education_id,
     e.education_level,
 
-    d.leads_detail_id, 
-    d.lead_balance, 
-    d.lead_housing_loan, 
-    d.lead_loan, 
+    d.leads_detail_id,
+    d.lead_balance,
+    d.lead_housing_loan,
+    d.lead_loan,
     d.poutcome_id,
 
     po.poutcome_name,
 
     ls.lead_score,
 
-    CASE 
+    CASE
       WHEN EXISTS (
         SELECT 1 FROM tb_campaign_leads cl WHERE cl.lead_id = l.lead_id
       ) THEN 'Tracked'
@@ -214,15 +208,15 @@ const create = async (leadData, detailData, score = 0.0) => {
 };
 
 const findAll = async (options) => {
-  const { 
-    limit = 10, 
-    offset = 0, 
+  const {
+    limit = 10,
+    offset = 0,
     search = '',
     minScore,
     maxScore,
     jobId,
     maritalId,
-    educationId
+    educationId,
   } = options;
 
   let queryText = fullLeadQuery;
@@ -280,21 +274,14 @@ const findAll = async (options) => {
 };
 
 const countAll = async (options) => {
-  const { 
-    search = '',
-    minScore,
-    maxScore,
-    jobId,
-    maritalId,
-    educationId
-  } = options;
+  const { search = '', minScore, maxScore, jobId, maritalId, educationId } = options;
 
   let queryText = `
-    SELECT COUNT(l.lead_id) AS count 
+    SELECT COUNT(l.lead_id) AS count
     FROM tb_leads l
     LEFT JOIN tb_leads_score ls ON l.lead_id = ls.lead_id
   `;
-  
+
   const queryValues = [];
   let idx = 1;
   const conditions = [];

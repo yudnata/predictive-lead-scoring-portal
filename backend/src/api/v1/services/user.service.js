@@ -19,7 +19,7 @@ const createSalesUser = async (userBody) => {
   const newUserdata = {
     ...userBody,
     password: hashedPassword,
-    roles_id: 2, // Role Sales
+    roles_id: 2,
     is_active: is_active !== undefined ? is_active : true,
   };
 
@@ -39,7 +39,11 @@ const querySalesUsers = async (queryOptions) => {
   const offset = (page - 1) * limit;
   const search = queryOptions.search || '';
 
-  const options = { limit, offset, search };
+  const isActive = queryOptions.is_active || queryOptions.isActive;
+  const minLeadsHandled = queryOptions.min_leads || queryOptions.minLeadsHandled;
+  const maxLeadsHandled = queryOptions.max_leads || queryOptions.maxLeadsHandled;
+
+  const options = { limit, offset, search, isActive, minLeadsHandled, maxLeadsHandled };
 
   const users = await userModel.findAllSales(options);
   const totalUsers = await userModel.countAllSales(options);
@@ -63,7 +67,7 @@ const getSalesUserById = async (userId) => {
   }
 
   const assignedCampaignIds = await userModel.getAssignments(userId);
-  
+
   delete user.password;
   return { ...user, campaign_ids: assignedCampaignIds };
 };
@@ -86,7 +90,7 @@ const updateSalesUserById = async (userId, updateBody) => {
     delete userData.password;
   }
 
-  delete userData.roles_id; 
+  delete userData.roles_id;
 
   const updatedUser = await userModel.update(userId, userData);
 

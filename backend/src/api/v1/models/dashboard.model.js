@@ -6,12 +6,11 @@ const getStats = async () => {
       SELECT
         (SELECT COUNT(lead_id) FROM tb_leads) AS "totalLeads",
         (SELECT COALESCE(AVG(lead_score) * 100, 0)::int FROM tb_leads_score) AS "averageLeadsScore",
-        
         (
-          SELECT 
+          SELECT
             CASE WHEN COUNT(*) = 0 THEN 0
             ELSE (
-              (COUNT(CASE WHEN status_id = 3 THEN 1 END)::float) / 
+              (COUNT(CASE WHEN status_id = 3 THEN 1 END)::float) /
               (NULLIF(COUNT(CASE WHEN status_id != 1 THEN 1 END), 0)::float)
             ) * 100
             END
@@ -19,19 +18,19 @@ const getStats = async () => {
         ) AS "conversionRate",
 
         (
-          SELECT COUNT(campaign_id) 
-          FROM tb_campaigns 
-          WHERE campaign_is_active = true 
+          SELECT COUNT(campaign_id)
+          FROM tb_campaigns
+          WHERE campaign_is_active = true
         ) AS "activeCampaigns",
 
         (
           WITH leads_contact_again AS (
             SELECT DISTINCT lead_id FROM tb_lead_status_history WHERE status_id = 5
           )
-          SELECT 
+          SELECT
             CASE WHEN COUNT(lca.lead_id) = 0 THEN 0
             ELSE (
-              (COUNT(CASE WHEN cl.status_id = 4 THEN 1 END)::float) / 
+              (COUNT(CASE WHEN cl.status_id = 4 THEN 1 END)::float) /
               (COUNT(lca.lead_id)::float)
             ) * 100
             END
@@ -59,7 +58,7 @@ const getScoreDistribution = async () => {
   const rawResult = [
     { label: 'Skor Tinggi', value: parseInt(rows[0]['Skor Tinggi'] || 0), color: '#4ade80' },
     { label: 'Skor Sedang', value: parseInt(rows[0]['Skor Sedang'] || 0), color: '#facc15' },
-    { label: 'Skor Rendah', value: parseInt(rows[0]['Skor Rendah'] || 0), color: '#f87171' }, 
+    { label: 'Skor Rendah', value: parseInt(rows[0]['Skor Rendah'] || 0), color: '#f87171' },
   ];
 
   const total = rawResult.reduce((acc, curr) => acc + curr.value, 0);
@@ -91,7 +90,7 @@ const getTopCampaigns = async () => {
         c.campaign_name as name,
         CASE WHEN COUNT(cl.lead_id) = 0 THEN 0
         ELSE (
-          (COUNT(CASE WHEN cl.status_id = 3 THEN 1 END)::float) / 
+          (COUNT(CASE WHEN cl.status_id = 3 THEN 1 END)::float) /
           (COUNT(cl.lead_id)::float)
         ) * 100
         END AS rate
@@ -116,7 +115,7 @@ const getConversionRateTrend = async () => {
         TO_CHAR(changed_at, 'YYYY-MM-DD') AS "date",
         CASE WHEN COUNT(*) = 0 THEN 0
         ELSE (
-          (COUNT(CASE WHEN status_id = 3 THEN 1 END)::float) / 
+          (COUNT(CASE WHEN status_id = 3 THEN 1 END)::float) /
           (COUNT(*)::float)
         ) * 100
         END AS "rate"

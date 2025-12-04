@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import CampaignService from '../api/campaign-service';
 import toast from 'react-hot-toast';
 import UserService from '../../users/api/user-service';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
@@ -12,15 +14,15 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
 
   const [formData, setFormData] = useState({
     campaign_name: '',
-    campaign_start_date: '',
-    campaign_end_date: '',
     campaign_desc: '',
     campaign_status: true,
   });
 
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [dateError, setDateError] = useState('');
 
   useEffect(() => {
     const loadSales = async () => {
@@ -39,33 +41,37 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
     if (isOpen) loadSales();
   }, [isOpen, isEdit, initialData]);
 
+  const parseDateSafe = (dateString) => {
+    if (!dateString) return null;
+    const datePart = dateString.includes('T') ? dateString.split('T')[0] : dateString;
+    const [year, month, day] = datePart.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   useEffect(() => {
     if (isOpen) {
       if (isEdit && initialData) {
         setFormData({
           campaign_name: initialData.campaign_name || '',
-          campaign_start_date: initialData.campaign_start_date || '',
-          campaign_end_date: initialData.campaign_end_date || '',
           campaign_desc: initialData.campaign_desc || '',
           campaign_status: initialData.campaign_is_active,
         });
 
-        setSelectedSales(initialData.assigned_sales?.map(s => s.user_id) || []);
+        const start = parseDateSafe(initialData.campaign_start_date);
+        const end = parseDateSafe(initialData.campaign_end_date);
+        setDateRange([start, end]);
 
+        setSelectedSales(initialData.assigned_sales?.map((s) => s.user_id) || []);
       } else {
         setFormData({
           campaign_name: '',
-          campaign_start_date: '',
-          campaign_end_date: '',
           campaign_desc: '',
           campaign_status: true,
         });
-        
-        setSelectedSales([]); 
-
+        setDateRange([null, null]);
+        setSelectedSales([]);
       }
       setError('');
-      setDateError('');
     }
   }, [initialData, isEdit, isOpen]);
 
@@ -73,21 +79,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    const updated = { ...formData, [name]: value };
-    setFormData(updated);
-
-    if (name === 'campaign_start_date' || name === 'campaign_end_date') {
-      if (
-        updated.campaign_start_date &&
-        updated.campaign_end_date &&
-        updated.campaign_end_date < updated.campaign_start_date
-      ) {
-        setDateError('End date cannot be earlier than start date');
-      } else {
-        setDateError('');
-      }
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleToggleStatus = () => {
@@ -98,11 +90,15 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   };
 
   const isFormValid =
-    formData.campaign_name.trim() &&
-    formData.campaign_start_date &&
-    formData.campaign_end_date &&
-    formData.campaign_desc.trim() &&
-    !dateError;
+    formData.campaign_name.trim() && startDate && endDate && formData.campaign_desc.trim();
+
+  const formatDateToString = (date) => {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -114,6 +110,8 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
     try {
       const payload = {
         ...formData,
+        campaign_start_date: formatDateToString(startDate),
+        campaign_end_date: formatDateToString(endDate),
         campaign_is_active: formData.campaign_status,
         assigned_sales: selectedSales,
       };
@@ -137,7 +135,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-      <div className="bg-[#1E1E1E] w-full max-w-xl rounded-2xl shadow-2xl p-8 text-white border border-white/10 relative overflow-hidden">
+      <div className="bg-dark-card w-full max-w-xl rounded-2xl shadow-2xl p-8 text-white border border-white/10 relative overflow-visible">
         <h2 className="mb-4 text-2xl font-bold tracking-wide">
           {isEdit ? 'Edit Campaign' : 'Add Campaign'}
         </h2>
@@ -146,12 +144,6 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         {error && (
           <div className="p-3 mb-6 text-sm text-red-200 border rounded-lg border-red-500/50 bg-red-900/20">
             {error}
-          </div>
-        )}
-
-        {dateError && (
-          <div className="p-3 mb-6 text-sm text-yellow-300 border border-yellow-600 rounded bg-yellow-900/30">
-            {dateError}
           </div>
         )}
 
@@ -170,36 +162,29 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
               className="w-full p-2.5 bg-[#2C2C2C] rounded-lg text-white focus:ring-1 focus:ring-brand outline-none"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block mb-1 text-sm font-medium text-gray-300">
-                Campaign Start Date*
-              </label>
-              <input
-                type="date"
-                name="campaign_start_date"
-                value={formData.campaign_start_date}
-                onChange={handleChange}
-                required
-                placeholder="Select date"
-                className="w-full p-2.5 bg-[#2C2C2C] rounded-lg text-white focus:ring-1 focus:ring-brand outline-none datepicker-white"
-              />
-            </div>
-            <div>
-              <label className="block mb-1 text-sm font-medium text-gray-300">
-                Campaign End Date*
-              </label>
-              <input
-                type="date"
-                name="campaign_end_date"
-                value={formData.campaign_end_date}
-                onChange={handleChange}
-                required
-                placeholder="Select date"
-                className="w-full p-2.5 bg-[#2C2C2C] rounded-lg text-white focus:ring-1 focus:ring-brand outline-none datepicker-white"
+
+          {/* Unified Date Range Input */}
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-300">
+              Campaign Duration*
+            </label>
+            <div className="relative w-full">
+              <DatePicker
+                selectsRange={true}
+                startDate={startDate}
+                endDate={endDate}
+                onChange={(update) => {
+                  setDateRange(update);
+                }}
+                isClearable={true}
+                placeholderText="Select date range"
+                className="w-full p-2.5 bg-[#2C2C2C] rounded-lg text-white focus:ring-1 focus:ring-brand outline-none cursor-pointer"
+                wrapperClassName="w-full"
+                dateFormat="yyyy-MM-dd"
               />
             </div>
           </div>
+
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-300">Description*</label>
             <textarea

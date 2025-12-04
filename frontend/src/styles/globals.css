@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
 * {
   margin: 0;
   padding: 0;

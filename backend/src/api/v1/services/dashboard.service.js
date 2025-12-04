@@ -1,19 +1,15 @@
 const dashboardModel = require('../models/dashboard.model');
 
 const getDashboardData = async (user) => {
-  const [
-    stats,
-    scoreDistribution,
-    topLeads,
-    topCampaigns,
-    conversionRateTrend,
-  ] = await Promise.all([
-    dashboardModel.getStats(),
-    dashboardModel.getScoreDistribution(),
-    dashboardModel.getTopLeads(),
-    dashboardModel.getTopCampaigns(),
-    dashboardModel.getConversionRateTrend(),
-  ]);
+  const [stats, scoreDistribution, topLeads, topCampaigns, conversionRateTrend] = await Promise.all(
+    [
+      dashboardModel.getStats(),
+      dashboardModel.getScoreDistribution(),
+      dashboardModel.getTopLeads(),
+      dashboardModel.getTopCampaigns(),
+      dashboardModel.getConversionRateTrend(),
+    ]
+  );
 
   return {
     ...stats,

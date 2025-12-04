@@ -162,7 +162,6 @@ const LeadsPage = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailLead, setDetailLead] = useState(null);
 
-  // Filters State
   const [showFilters, setShowFilters] = useState(false);
 
   const [appliedFilters, setAppliedFilters] = useState({
@@ -183,14 +182,12 @@ const LeadsPage = () => {
         ...appliedFilters,
       };
 
-      // Clean up empty filters
       Object.keys(queryParams).forEach((key) => {
         if (queryParams[key] === '' || queryParams[key] === null) {
           delete queryParams[key];
         }
       });
 
-      // Convert percentage to decimal for API
       if (queryParams.minScore) {
         queryParams.minScore = parseFloat(queryParams.minScore) / 100;
       }
@@ -298,7 +295,7 @@ const LeadsPage = () => {
                       setSearch(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/20 focus:outline-none focus:border-white/50 transition-colors"
+                    className="w-80 p-1 pl-10 bg-[#242424] border border-white/10 text-white rounded-lg focus:outline-none focus:border-white/50 transition-colors"
                   />
                   <img
                     src="/search.png"
@@ -308,10 +305,10 @@ const LeadsPage = () => {
                 </div>
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`px-3 py-1 rounded-lg border transition-all flex items-center gap-2 ${
+                  className={`px-4 py-1 rounded-lg border transition-all flex items-center gap-2 ${
                     showFilters
-                      ? 'bg-blue-600 border-blue-500 text-white'
-                      : 'bg-[#242424] border-white/20 text-gray-300 hover:bg-[#2a2a2a]'
+                      ? 'bg-blue-600 border border-white/10 text-white'
+                      : 'bg-[#242424] border border-white/10 text-gray-400 hover:bg-[#2a2a2a]'
                   }`}
                 >
                   <svg
@@ -464,7 +461,7 @@ const LeadsPage = () => {
                 ? leads.map((lead, index) => (
                     <tr
                       key={lead.lead_id}
-                      className="text-sm transition-colors border-t border-b border-white/10 hover:bg-white/5 select-none animate-row cursor-pointer"
+                      className="text-sm transition-colors border-t border-b border-white/5 hover:bg-white/5 select-none animate-row cursor-pointer"
                       style={{ animationDelay: `${index * 0.03}s` }}
                       onClick={(e) => {
                         if (e.target.closest('button')) return;

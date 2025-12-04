@@ -3,7 +3,6 @@ const { comparePassword } = require('../utils/password.helper');
 const { generateToken } = require('../utils/jwt.helper');
 const ApiError = require('../utils/apiError');
 
-
 const loginUser = async (email, password) => {
   const user = await userModel.findByEmail(email);
   if (!user) {
@@ -16,9 +15,9 @@ const loginUser = async (email, password) => {
   }
 
   if (!user.is_active) {
-      throw new ApiError(403, 'Akun Anda non-aktif. Silakan hubungi admin.');
+    throw new ApiError(403, 'Akun Anda non-aktif. Silakan hubungi admin.');
   }
-  
+
   const token = generateToken(user.user_id, user.role_name);
   delete user.password;
 

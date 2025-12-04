@@ -24,7 +24,7 @@ export default {
           hover: '#242424',
         },
         brand: {
-          DEFAULT: '#388E3C',
+          DEFAULT: '#66BB6A',
           hover: '#2C6B28',
         },
       },

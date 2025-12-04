@@ -52,11 +52,18 @@ const deleteById = async (campaignLeadId) => {
   return rowCount > 0;
 };
 
+const deleteByCampaign = async (campaignId) => {
+  const { rowCount } = await db.query('DELETE FROM tb_campaign_leads WHERE campaign_id = $1', [
+    campaignId,
+  ]);
+  return rowCount;
+};
+
 const findAllForSalesUser = async (options) => {
   const { userId, limit, offset, search, campaignId } = options;
 
   let queryText = `
-    SELECT 
+    SELECT
       cl.campaignleads_id,
       cl.updated_at,
       l.lead_id,
@@ -130,4 +137,5 @@ module.exports = {
   findAllForSalesUser,
   countAllForSalesUser,
   deleteById,
+  deleteByCampaign,
 };

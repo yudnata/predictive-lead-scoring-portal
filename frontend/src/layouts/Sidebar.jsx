@@ -9,19 +9,19 @@ const Sidebar = ({ user }) => {
   const isSales = userRole === 'sales';
 
   const adminNavItems = [
-    { name: 'Main', path: '/admin/dashboard', iconUrl: '/home.png' },
-    { name: 'Leads', path: '/admin/leads', iconUrl: '/leads.png' },
-    { name: 'History', path: '/admin/history', iconUrl: '/history.png' },
+    { name: 'Dashboard', path: '/admin/dashboard', iconUrl: '/home.png' },
+    { name: 'All Leads', path: '/admin/leads', iconUrl: '/leads.png' },
+    { name: 'Outcome', path: '/admin/history', iconUrl: '/history.png' },
     { name: 'Campaigns', path: '/admin/campaigns', iconUrl: '/campaign.png' },
     { name: 'Sales Management', path: '/admin/sales-management', iconUrl: '/sales.png' },
   ];
 
   const salesNavItems = [
     { name: 'Main', path: '/sales/dashboard', iconUrl: '/home.png' },
-    { name: 'Leads', path: '/sales/leads', iconUrl: '/leads.png' },
+    { name: 'All Leads', path: '/sales/leads', iconUrl: '/leads.png' },
     { name: 'Leads Tracker', path: '/sales/leads-tracker', iconUrl: '/tracker.png' },
     { name: 'Outbound Detail', path: '/sales/outbound-detail', iconUrl: '/outbound.png' },
-    { name: 'History', path: '/sales/history', iconUrl: '/history.png' },
+    { name: 'Outcome', path: '/sales/history', iconUrl: '/history.png' },
   ];
 
   const currentNavItems = isAdmin ? adminNavItems : isSales ? salesNavItems : [];

@@ -5,7 +5,10 @@ const NotFoundPage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 text-white bg-dark-bg">
       <div className="w-full max-w-lg">
-        <Lottie animationData={notFoundAnimation} loop={true} />
+        <Lottie
+          animationData={notFoundAnimation}
+          loop={true}
+        />
       </div>
       <div className="text-center">
         <h2 className="mb-2 text-3xl font-semibold">Page Not Found</h2>

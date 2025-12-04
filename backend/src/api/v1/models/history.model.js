@@ -16,8 +16,8 @@ const create = async (historyData) => {
 };
 
 const findAll = async (options) => {
-  const { role, userId, limit, offset, search, campaignId } = options;
-  
+  const { role, userId, limit, offset, search, campaignId, startDate, endDate, statusId } = options;
+
   let queryText = `
     SELECT 
       h.history_id,
@@ -26,33 +26,45 @@ const findAll = async (options) => {
       l.lead_id,
       u.full_name AS sales_name,
       c.campaign_name,
+      c.campaign_id,
       s.status
     FROM tb_lead_status_history h
     JOIN tb_leads l ON h.lead_id = l.lead_id
     JOIN tb_users u ON h.changed_by = u.user_id
     JOIN tb_campaigns c ON h.campaign_id = c.campaign_id
     JOIN tb_status s ON h.status_id = s.status_id
-    WHERE s.status_id IN (3, 4) -- LOGIKA BARU: Hanya status final
+    WHERE 1=1
   `;
   const queryValues = [];
   let paramIndex = 1;
   let whereClauses = [];
-
-  if (role === 'sales') {
-    whereClauses.push(`h.changed_by = $${paramIndex++}`);
-    queryValues.push(userId);
-  }
 
   if (campaignId) {
     whereClauses.push(`h.campaign_id = $${paramIndex++}`);
     queryValues.push(campaignId);
   }
 
+  if (statusId) {
+    whereClauses.push(`h.status_id = $${paramIndex++}`);
+    queryValues.push(statusId);
+  } else {
+    whereClauses.push(`h.status_id IN (5, 6)`);
+  }
+
+  if (startDate) {
+    whereClauses.push(`DATE(h.changed_at) >= $${paramIndex++}`);
+    queryValues.push(startDate);
+  }
+  if (endDate) {
+    whereClauses.push(`DATE(h.changed_at) <= $${paramIndex++}`);
+    queryValues.push(endDate);
+  }
+
   if (search) {
     whereClauses.push(`(l.lead_name ILIKE $${paramIndex++} OR u.full_name ILIKE $${paramIndex++})`);
     queryValues.push(`%${search}%`, `%${search}%`);
   }
-  
+
   if (whereClauses.length > 0) {
     queryText += ' AND ' + whereClauses.join(' AND ');
   }
@@ -65,40 +77,69 @@ const findAll = async (options) => {
 };
 
 const countAll = async (options) => {
-  const { role, userId, search, campaignId } = options;
+  const { role, userId, search, campaignId, startDate, endDate, statusId } = options;
 
   let queryText = `
     SELECT COUNT(h.history_id)
     FROM tb_lead_status_history h
     JOIN tb_leads l ON h.lead_id = l.lead_id
     JOIN tb_users u ON h.changed_by = u.user_id
-    WHERE h.status_id IN (3, 4) -- LOGIKA BARU: Hanya status final
+    WHERE 1=1
   `;
   const queryValues = [];
   let paramIndex = 1;
   let whereClauses = [];
-
-  if (role === 'sales') {
-    whereClauses.push(`h.changed_by = $${paramIndex++}`);
-    queryValues.push(userId);
-  }
 
   if (campaignId) {
     whereClauses.push(`h.campaign_id = $${paramIndex++}`);
     queryValues.push(campaignId);
   }
 
+  if (statusId) {
+    whereClauses.push(`h.status_id = $${paramIndex++}`);
+    queryValues.push(statusId);
+  } else {
+    whereClauses.push(`h.status_id IN (5, 6)`);
+  }
+
+  if (startDate) {
+    whereClauses.push(`DATE(h.changed_at) >= $${paramIndex++}`);
+    queryValues.push(startDate);
+  }
+  if (endDate) {
+    whereClauses.push(`DATE(h.changed_at) <= $${paramIndex++}`);
+    queryValues.push(endDate);
+  }
+
   if (search) {
     whereClauses.push(`(l.lead_name ILIKE $${paramIndex++} OR u.full_name ILIKE $${paramIndex++})`);
     queryValues.push(`%${search}%`, `%${search}%`);
   }
-  
+
   if (whereClauses.length > 0) {
     queryText += ' AND ' + whereClauses.join(' AND ');
   }
 
   const { rows } = await db.query(queryText, queryValues);
   return parseInt(rows[0].count, 10);
+};
+
+const findById = async (historyId) => {
+  const query = {
+    text: 'SELECT * FROM tb_lead_status_history WHERE history_id = $1',
+    values: [historyId],
+  };
+  const { rows } = await db.query(query);
+  return rows[0];
+};
+
+const deleteById = async (historyId) => {
+  const query = {
+    text: 'DELETE FROM tb_lead_status_history WHERE history_id = $1 RETURNING *',
+    values: [historyId],
+  };
+  const { rows } = await db.query(query);
+  return rows[0];
 };
 
 const deleteFinalStatus = async (leadId, campaignId, statusId) => {
@@ -109,7 +150,13 @@ const deleteFinalStatus = async (leadId, campaignId, statusId) => {
     `,
     values: [leadId, campaignId, statusId],
   };
-  await db.query(query);
+};
+
+const deleteByCampaign = async (campaignId) => {
+  const { rowCount } = await db.query('DELETE FROM tb_lead_status_history WHERE campaign_id = $1', [
+    campaignId,
+  ]);
+  return rowCount;
 };
 
 module.exports = {
@@ -117,4 +164,7 @@ module.exports = {
   findAll,
   countAll,
   deleteFinalStatus,
+  deleteById,
+  findById,
+  deleteByCampaign,
 };

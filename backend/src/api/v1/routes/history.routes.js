@@ -9,5 +9,6 @@ router.use(protect);
 router.use(authorize('admin', 'sales'));
 
 router.get('/', historyController.getHistory);
+router.delete('/:historyId', authorize('admin'), historyController.deleteHistory);
 
 module.exports = router;
