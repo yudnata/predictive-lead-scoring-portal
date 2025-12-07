@@ -105,6 +105,12 @@ const fullLeadQuery = `
     d.lead_balance,
     d.lead_housing_loan,
     d.lead_loan,
+    d.last_contact_day,
+    d.month_id,
+    d.last_contact_duration_sec,
+    d.campaign_count,
+    d.pdays,
+    d.prev_contact_count,
     d.poutcome_id,
 
     po.poutcome_name,

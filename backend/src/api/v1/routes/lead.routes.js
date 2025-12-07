@@ -2,8 +2,8 @@ const express = require('express');
 const leadController = require('../controllers/lead.controller');
 const { protect } = require('../middlewares/auth.middleware');
 const { authorize } = require('../middlewares/role.middleware');
-const upload = require('../middlewares/upload.middleware'); // Impor multer
-const noteRoutes = require('./note.routes'); // Impor rute notes
+const upload = require('../middlewares/upload.middleware');
+const noteRoutes = require('./note.routes');
 
 const router = express.Router();
 router.use(protect);

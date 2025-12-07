@@ -7,7 +7,6 @@ const UnauthorizedModal = () => {
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-[#1E1E1E] border border-gray-700 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center transform transition-all scale-100">
-        {/* Icon Gembok / Warning */}
         <div className="flex justify-center mb-4">
           <div className="p-3 rounded-full bg-red-500/10">
             <svg

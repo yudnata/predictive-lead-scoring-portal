@@ -61,7 +61,6 @@ const KanbanColumn = ({
 
   return (
     <div className="bg-dark-card rounded-xl">
-      {/* Row Header */}
       <div
         className={`p-3 flex items-center gap-2 border-l-4 ${config.bgColor}`}
         style={{ borderLeftColor: config.color }}

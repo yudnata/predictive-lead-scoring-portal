@@ -82,7 +82,6 @@ const HistoryFilter = ({ isOpen, initialFilters, onApply }) => {
 
   return (
     <div className="p-6 rounded-xl bg-dark-bg border border-white/10 animate-fade-in-down mb-6 flex flex-wrap items-end gap-2">
-      {/* Date Range Filter */}
       <div className="flex flex-col space-y-1 w-full md:w-64">
         <label className="text-xs text-gray-400 ml-1">Date Range</label>
         <div className="relative w-full">
@@ -100,7 +99,6 @@ const HistoryFilter = ({ isOpen, initialFilters, onApply }) => {
         </div>
       </div>
 
-      {/* Campaign Filter */}
       <div className="flex flex-col space-y-1 w-full md:w-48">
         <label className="text-xs text-gray-400 ml-1">Campaign</label>
         <select
@@ -121,7 +119,6 @@ const HistoryFilter = ({ isOpen, initialFilters, onApply }) => {
         </select>
       </div>
 
-      {/* Status Filter */}
       <div className="flex flex-col space-y-1 w-full md:w-48">
         <label className="text-xs text-gray-400 ml-1">Status</label>
         <select
@@ -136,7 +133,6 @@ const HistoryFilter = ({ isOpen, initialFilters, onApply }) => {
         </select>
       </div>
 
-      {/* Buttons */}
       <div className="flex gap-2 ml-auto">
         <button
           onClick={clearFilters}

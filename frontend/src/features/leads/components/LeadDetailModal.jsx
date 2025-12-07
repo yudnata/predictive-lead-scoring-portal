@@ -14,6 +14,31 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
     }).format(amount || 0);
   };
 
+  const getMonthName = (monthId) => {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return months[monthId - 1] || '-';
+  };
+
+  const formatDuration = (seconds) => {
+    if (!seconds) return '-';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+  };
+
   const getScoreColor = (score) => {
     const val = score * 100;
     if (val >= 80) return 'text-[#66BB6A] bg-[#66BB6A]/10';
@@ -24,9 +49,7 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm h-screen">
-      {/* Modal Container */}
       <div className="bg-[#1E1E1E] border border-white/10 w-full max-w-2xl rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-auto">
-        {/* HEADER */}
         <div className="flex items-start justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-12 h-12 text-xl font-bold text-white bg-gray-700 rounded-full">
@@ -66,10 +89,7 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
             </svg>
           </button>
         </div>
-
-        {/* BODY - SCROLLABLE */}
         <div className="p-6 overflow-y-auto custom-scrollbar">
-          {/* Contact Info */}
           <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2">
             <div className="flex items-center gap-2 text-sm">
               <span className="w-16 text-gray-400">Phone:</span>
@@ -82,8 +102,6 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
           </div>
 
           <div className="my-4 border-t border-white/10"></div>
-
-          {/* Details Grid */}
           <div className="grid grid-cols-2 text-sm md:grid-cols-3 gap-y-6 gap-x-4">
             <div>
               <p className="mb-1 text-xs text-gray-400">Job</p>
@@ -122,12 +140,46 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
             </div>
 
             <div className="col-span-2 md:col-span-3">
-              <p className="mb-1 text-xs text-gray-400">Average Balance</p>
+              <p className="mb-1 text-xs text-gray-400">Balance</p>
               <p className="text-lg font-bold text-white">{formatCurrency(lead.lead_balance)}</p>
             </div>
-          </div>
 
-          {/* TABS SECTION (Optional visual placeholder based on reference) */}
+            <div className="col-span-2 md:col-span-3 border-t border-white/10 my-2"></div>
+            <div>
+              <p className="mb-1 text-xs text-gray-400">Last Contact Date</p>
+              <p className="font-semibold text-white">
+                {lead.last_contact_day
+                  ? `${lead.last_contact_day} ${getMonthName(lead.month_id)}`
+                  : '-'}
+              </p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs text-gray-400">Call Duration</p>
+              <p className="font-semibold text-white">
+                {formatDuration(lead.last_contact_duration_sec)}
+              </p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs text-gray-400">Campaign Contacts</p>
+              <p className="font-semibold text-white">{lead.campaign_count || 0} times</p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs text-gray-400">Days Since Last Campaign</p>
+              <p className="font-semibold text-white">
+                {lead.pdays === -1 ? 'Not Contacted' : `${lead.pdays} days`}
+              </p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs text-gray-400">Previous Contacts</p>
+              <p className="font-semibold text-white">{lead.prev_contact_count || 0} times</p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs text-gray-400">Previous Outcome</p>
+              <p className="font-semibold text-white capitalize">
+                {lead.poutcome_name || 'Unknown'}
+              </p>
+            </div>
+          </div>
           <div className="mt-8">
             <div className="flex mb-4 border-b border-white/10">
               <button
@@ -172,8 +224,6 @@ const LeadDetailModal = ({ isOpen, onClose, lead }) => {
             )}
           </div>
         </div>
-
-        {/* FOOTER */}
         <div className="p-5 border-t border-white/10 bg-[#242424] flex justify-end gap-3">
           <button
             onClick={onClose}

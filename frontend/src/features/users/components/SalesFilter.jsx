@@ -34,7 +34,6 @@ const SalesFilter = ({ isOpen, initialFilters, onApply }) => {
   return (
     <div className="p-4 rounded-lg bg-[#242424] border border-white/10 animate-fade-in-down mb-6">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {/* Is Active Filter */}
         <div className="flex flex-col space-y-1">
           <label className="text-xs text-gray-400">Status</label>
           <select
@@ -48,8 +47,6 @@ const SalesFilter = ({ isOpen, initialFilters, onApply }) => {
             <option value="false">Inactive</option>
           </select>
         </div>
-
-        {/* Leads Handled Range */}
         <div className="flex flex-col space-y-1">
           <label className="text-xs text-gray-400">Min Leads Handled</label>
           <input

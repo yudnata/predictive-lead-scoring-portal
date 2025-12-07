@@ -132,9 +132,9 @@ const getStatusBadge = (status) => {
 const getScoreColor = (score) => {
   const displayScore = score * 100;
   if (displayScore === 0) return 'bg-white/10 text-white';
-  if (displayScore >= 80) return 'text-[#66BB6A]';
-  if (displayScore >= 50) return 'text-[#FFCA28]';
-  if (displayScore < 50) return 'text-[#EF5350]';
+  if (displayScore > 70) return 'text-[#66BB6A]';
+  if (displayScore >= 20) return 'text-[#FFCA28]';
+  if (displayScore < 20) return 'text-[#EF5350]';
   return 'bg-white/10 text-white';
 };
 
@@ -517,7 +517,7 @@ const LeadsPage = () => {
                             lead.lead_score
                           )}`}
                         >
-                          {(lead.lead_score * 100).toFixed(0)}%
+                          {(lead.lead_score * 100).toFixed(2)}%
                         </span>
                       </td>
                       <td className="px-4 py-2 hover:pointer">

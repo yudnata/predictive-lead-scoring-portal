@@ -91,7 +91,6 @@ exports.uploadLeadsCSV = async (req, res, next) => {
       console.log('🚀 Sending request to ML API:', tempFilePath);
       const response = await axios.post('http://localhost:5001/predict', {
         file_path: tempFilePath,
-        limit: 1000,
       });
 
       const processedData = response.data;
@@ -108,7 +107,7 @@ exports.uploadLeadsCSV = async (req, res, next) => {
 
       const leadsToInsert = processedData.map((row, index) => {
         const realName = row.lead_name || row.nama || row.name || `Lead ${index + 1}`;
-        const realPhone = row.lead_phone_number || row.phone || row.nomor_telepon || null;
+        const realPhone = row.lead_phone_number || row.phone || row.nomor_telepon || row.telephone || null;
 
         const realEmail =
           row.lead_email || row.email || `noemail-${Date.now()}-${index}@missing.com`;

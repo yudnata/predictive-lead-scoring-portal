@@ -57,3 +57,5 @@ eslintcache
 .vercel/
 
 uploads
+.migrate.json
+node_modules

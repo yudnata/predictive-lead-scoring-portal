@@ -24,9 +24,9 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
 
   const getScoreColor = (score) => {
-    if (score >= 80) return 'text-[#66BB6A]';
-    if (score >= 50) return 'text-[#FFCA28]';
-    if (score > 0) return 'text-[#EF5350]';
+    if (score > 70) return 'text-[#66BB6A]';
+    if (score >= 20) return 'text-[#FFCA28]';
+    if (score < 20) return 'text-[#EF5350]';
     return 'text-white';
   };
 

@@ -162,8 +162,6 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
               className="w-full p-2.5 bg-[#2C2C2C] rounded-lg text-white focus:ring-1 focus:ring-brand outline-none"
             />
           </div>
-
-          {/* Unified Date Range Input */}
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-300">
               Campaign Duration*

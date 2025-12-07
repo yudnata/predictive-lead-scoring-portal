@@ -47,9 +47,9 @@ const getScoreDistribution = async () => {
   const query = {
     text: `
       SELECT
-        COUNT(CASE WHEN lead_score * 100 >= 80 THEN 1 END) AS "Skor Tinggi",
-        COUNT(CASE WHEN lead_score * 100 >= 50 AND lead_score * 100 < 80 THEN 1 END) AS "Skor Sedang",
-        COUNT(CASE WHEN lead_score * 100 < 50 THEN 1 END) AS "Skor Rendah"
+        COUNT(CASE WHEN lead_score * 100 > 70 THEN 1 END) AS "Skor Tinggi",
+        COUNT(CASE WHEN lead_score * 100 >= 20 AND lead_score * 100 <= 70 THEN 1 END) AS "Skor Sedang",
+        COUNT(CASE WHEN lead_score * 100 < 20 THEN 1 END) AS "Skor Rendah"
       FROM tb_leads_score
     `,
   };
