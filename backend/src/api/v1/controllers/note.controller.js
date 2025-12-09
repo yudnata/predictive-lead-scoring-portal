@@ -9,7 +9,7 @@ exports.createNote = async (req, res, next) => {
 
     res.status(201).json({
       status: 'success',
-      message: 'Catatan berhasil ditambahkan',
+      message: 'Note added successfully',
       data: note,
     });
   } catch (error) {

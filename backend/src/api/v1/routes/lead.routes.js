@@ -3,31 +3,51 @@ const leadController = require('../controllers/lead.controller');
 const { protect } = require('../middlewares/auth.middleware');
 const { authorize } = require('../middlewares/role.middleware');
 const upload = require('../middlewares/upload.middleware');
+const { uploadLimiter, strictLimiter } = require('../middlewares/rateLimiter.middleware');
+const {
+  createLeadValidation,
+  updateLeadValidation,
+  batchDeleteValidation,
+  queryPaginationValidation,
+  idParamValidation,
+} = require('../middlewares/validation.middleware');
 const noteRoutes = require('./note.routes');
 
 const router = express.Router();
 router.use(protect);
 
-router.get('/', authorize('admin', 'sales'), leadController.getAllLeads);
+router.get('/', authorize('admin', 'sales'), queryPaginationValidation, leadController.getAllLeads);
 
-router.post('/', authorize('admin'), leadController.createLead);
+router.post('/', authorize('admin'), createLeadValidation, leadController.createLead);
 
-router.post('/batch-delete', authorize('admin'), leadController.batchDeleteLeads);
+router.post(
+  '/batch-delete',
+  authorize('admin'),
+  strictLimiter,
+  batchDeleteValidation,
+  leadController.batchDeleteLeads
+);
 
 router.post(
   '/upload-csv',
   authorize('admin'),
+  uploadLimiter,
   upload.single('file'),
   leadController.uploadLeadsCSV
 );
 
-router.get('/:leadId/campaigns', authorize('admin', 'sales'), leadController.getCampaignsByLeadId);
+router.get(
+  '/:leadId/campaigns',
+  authorize('admin', 'sales'),
+  idParamValidation,
+  leadController.getCampaignsByLeadId
+);
 
-router.get('/:leadId', authorize('admin', 'sales'), leadController.getLeadById);
+router.get('/:leadId', authorize('admin', 'sales'), idParamValidation, leadController.getLeadById);
 
-router.patch('/:leadId', authorize('admin'), leadController.updateLead);
+router.patch('/:leadId', authorize('admin'), updateLeadValidation, leadController.updateLead);
 
-router.delete('/:leadId', authorize('admin'), leadController.deleteLead);
+router.delete('/:leadId', authorize('admin'), strictLimiter, idParamValidation, leadController.deleteLead);
 
 router.use('/:leadId/notes', noteRoutes);
 

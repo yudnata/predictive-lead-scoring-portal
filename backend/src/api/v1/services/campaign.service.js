@@ -6,7 +6,7 @@ const ApiError = require('../utils/apiError');
 
 const createCampaign = async (campaignBody) => {
   if (!campaignBody.campaign_name) {
-    throw new ApiError(400, 'Nama campaign harus diisi');
+    throw new ApiError(400, 'Campaign name is required');
   }
 
   const newCampaign = await campaignModel.create(campaignBody);
@@ -64,7 +64,7 @@ const queryCampaigns = async (queryOptions, userId = null) => {
 const getCampaignById = async (campaignId) => {
   const campaign = await campaignModel.findById(campaignId);
   if (!campaign) {
-    throw new ApiError(404, 'Campaign tidak ditemukan');
+    throw new ApiError(404, 'Campaign not found');
   }
   return campaign;
 };

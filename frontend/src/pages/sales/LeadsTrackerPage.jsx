@@ -1,107 +1,140 @@
-import React, { useState, useEffect, useCallback } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import LeadsTrackerService from '../../features/tracker/api/tracker-service';
 import CampaignService from '../../features/campaigns/api/campaign-service';
 import KanbanColumn from '../../features/tracker/components/KanbanColumn';
+import LeadDetailModal from '../../features/leads/components/LeadDetailModal';
+import SuccessModal from '../../components/SuccessModal';
+import ConfirmationModal from '../../components/ConfirmationModal';
+import TrackerFilter from '../../features/tracker/components/TrackerFilter';
+import { useTracker } from '../../features/tracker/hooks/useTracker';
+import { FaSearch } from 'react-icons/fa';
 
 const KANBAN_STATUSES = [
   { name: 'Uncontacted', id: 3 },
   { name: 'Contacted', id: 4 },
 ];
 
-import TrackerFilter from '../../features/tracker/components/TrackerFilter';
-
 const LeadsTrackerPage = () => {
   const navigate = useNavigate();
   const outletContext = useOutletContext?.() || {};
   const user = outletContext.user || outletContext || {};
 
-  const [list, setList] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const [totalResults, setTotalResults] = useState(0);
-
-  const [search, setSearch] = useState('');
+  const {
+    list,
+    setList,
+    loading,
+    setLoading,
+    totalResults,
+    search,
+    setSearch,
+    appliedFilters,
+    handleApplyFilters,
+    fetchData,
+    filterSelf,
+    setFilterSelf,
+  } = useTracker(user.user_id);
 
   const [showFilters, setShowFilters] = useState(false);
-  const [appliedFilters, setAppliedFilters] = useState({
-    campaignId: '',
-    minScore: '',
-    maxScore: '',
+
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    isDangerous: false,
   });
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    if (!user.user_id) {
-      setLoading(false);
-      return;
-    }
-    try {
-      const res = await LeadsTrackerService.getAll(1, 500, search, appliedFilters, user.user_id);
-
-      setList(res.data || []);
-      setTotalResults(res.meta?.total || 0);
-    } catch (err) {
-      console.error('Gagal memuat leads tracker:', err);
-      if (err.response) {
-        console.error(err.response.data?.message || 'Gagal memuat data leads tracker.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [search, appliedFilters, user.user_id]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const handleApplyFilters = (newFilters) => {
-    setAppliedFilters(newFilters);
-  };
-
-  const handleChangeStatus = async (leadCampaignId, newStatusId) => {
+  const executeStatusChange = async (leadCampaignId, newStatusId) => {
     try {
       await LeadsTrackerService.updateStatus(leadCampaignId, {
         status_id: newStatusId,
       });
       fetchData();
+      setSuccessModal({
+        isOpen: true,
+        message: 'Successfully changed lead status.',
+      });
     } catch (err) {
       console.error(err);
-      alert('Failed to update status.');
+      toast.error('Failed to update status.');
     }
+  };
+
+  const requestStatusChange = (leadCampaignId, newStatusId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Change Status',
+      message: "Are you sure you want to change this lead's status?",
+      isDangerous: false,
+      onConfirm: () => executeStatusChange(leadCampaignId, newStatusId),
+    });
   };
 
   const handleDelete = async (lead) => {
-    if (window.confirm('Are you sure you want to remove this lead from tracking?')) {
-      try {
-        await LeadsTrackerService.delete(lead.lead_campaign_id);
-        fetchData();
-      } catch (err) {
-        console.error(err);
-        alert('Failed to remove lead.');
-      }
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Lead',
+      message: 'Are you sure you want to delete this lead?',
+      isDangerous: true,
+      onConfirm: async () => {
+        try {
+          await LeadsTrackerService.delete(lead.lead_campaign_id);
+          fetchData();
+          setSuccessModal({
+            isOpen: true,
+            message: 'Successfully deleted this lead.',
+          });
+        } catch (err) {
+          console.error(err);
+          toast.error('Failed to remove lead.');
+        }
+      },
+    });
   };
 
   const handleAddOutbound = (lead) => {
-    navigate(`/sales/outbound/${lead.lead_campaign_id}`, { state: lead });
+    navigate('/sales/outbound-detail', { state: { lead } });
   };
 
   const handleDrop = (leadCampaignId, newStatusId) => {
     const lead = list.find((l) => l.lead_campaign_id === leadCampaignId);
     if (!lead) return;
 
+    if (lead.user_id !== user.user_id) {
+      toast.error('You do not have permission to modify this lead.');
+      return;
+    }
+
     const currentStatusMap = {
       Uncontacted: 3,
       Contacted: 4,
-      Deal: 5,
-      Reject: 6,
     };
     const currentStatusId = currentStatusMap[lead.status];
 
     if (currentStatusId === newStatusId) return;
 
-    handleChangeStatus(leadCampaignId, newStatusId);
+    if (newStatusId === 5 || newStatusId === 6) {
+      toast.error('Please use the Outbound Detail page to finalize (Deal/Reject) a lead.');
+      return;
+    }
+
+    requestStatusChange(leadCampaignId, newStatusId);
+  };
+
+  const handleCardClick = (lead) => {
+    if (lead.user_id !== user.user_id) {
+      toast.error('You can only view details of your own leads.');
+      return;
+    }
+    setSelectedLead(lead);
+    setIsModalOpen(true);
   };
 
   const groupedLeads = KANBAN_STATUSES.reduce((acc, status) => {
@@ -115,12 +148,18 @@ const LeadsTrackerPage = () => {
   }, {});
 
   return (
-    <div>
+    <div
+      className="min-h-screen"
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      }}
+    >
       {/* Header Section */}
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-3xl font-bold text-white">Leads Tracker</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Leads Tracker</h1>
             <div className="flex items-center ml-6 space-x-4">
               <div className="relative">
                 <input
@@ -130,19 +169,16 @@ const LeadsTrackerPage = () => {
                   onChange={(e) => {
                     setSearch(e.target.value);
                   }}
-                  className="w-80 p-1 pl-10 bg-[#242424] text-white rounded-lg border border-white/10 focus:outline-none focus:border-white/50 transition-colors"
+                  className="w-80 p-1 pl-10 bg-white dark:bg-[#242424] text-gray-900 dark:text-white rounded-lg border border-gray-300 dark:border-white/10 focus:outline-none focus:border-blue-500 dark:focus:border-white/50 transition-colors"
                 />
-                <img
-                  src="/search.png"
-                  className="absolute w-auto h-4 transform -translate-y-1/2 left-3 top-1/2"
-                />
+                <FaSearch className="absolute w-4 h-4 transform -translate-y-1/2 opacity-50 left-3 top-1/2 text-gray-500 dark:text-gray-400" />
               </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`px-4 py-1 rounded-lg border transition-all flex items-center gap-2 ${
                   showFilters
-                    ? 'bg-blue-600 border border-white/10 text-white'
-                    : 'bg-[#242424] border border-white/10 text-gray-400 hover:bg-[#2a2a2a]'
+                    ? 'bg-blue-600 border border-blue-600 text-white'
+                    : 'bg-white dark:bg-[#242424] border border-gray-300 dark:border-white/10 text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2a2a2a]'
                 }`}
               >
                 <svg
@@ -159,14 +195,26 @@ const LeadsTrackerPage = () => {
                   />
                 </svg>
                 Filters
-                {(appliedFilters.campaignId ||
-                  appliedFilters.minScore ||
-                  appliedFilters.maxScore) && (
-                  <span className="flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
-                    !
-                  </span>
-                )}
+
               </button>
+
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-[#242424] rounded-lg border border-gray-300 dark:border-white/10">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Only Show My Leads
+                </span>
+                <button
+                  onClick={() => setFilterSelf(!filterSelf)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                    filterSelf ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                      filterSelf ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -181,7 +229,8 @@ const LeadsTrackerPage = () => {
 
       <div className="flex items-center mb-5 gap-9">
         <div className="ml-auto text-sm text-gray-400">
-          Total: <span className="text-white font-semibold">{totalResults}</span> leads
+          Total: <span className="text-gray-900 dark:text-white font-semibold">{totalResults}</span>{' '}
+          leads
         </div>
       </div>
 
@@ -189,7 +238,7 @@ const LeadsTrackerPage = () => {
       {loading ? (
         <div className="flex items-center justify-center h-96 text-gray-400">
           <div className="text-center">
-            <div className="inline-block w-8 h-8 border-4 border-gray-400 border-t-white rounded-full animate-spin mb-2"></div>
+            <div className="inline-block w-8 h-8 border-4 border-gray-300 dark:border-gray-400 border-t-blue-600 dark:border-t-white rounded-full animate-spin mb-2"></div>
             <p>Loading leads...</p>
           </div>
         </div>
@@ -204,10 +253,36 @@ const LeadsTrackerPage = () => {
               onDrop={handleDrop}
               onAddOutbound={handleAddOutbound}
               onDelete={handleDelete}
+              onClick={handleCardClick}
             />
           ))}
         </div>
       )}
+
+      <LeadDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        lead={selectedLead}
+        showNotes={true}
+        onStatusChange={requestStatusChange}
+        user={user}
+        allowFinalize={false}
+      />
+
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+        message={successModal.message}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDangerous={confirmModal.isDangerous}
+      />
     </div>
   );
 };

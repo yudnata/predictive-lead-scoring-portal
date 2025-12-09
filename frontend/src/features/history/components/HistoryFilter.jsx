@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import CampaignService from '../../campaigns/api/campaign-service';
+import { ThemeContext } from '../../../context/ThemeContext';
 
 const HistoryFilter = ({ isOpen, initialFilters, onApply }) => {
   const [campaigns, setCampaigns] = useState([]);
@@ -81,9 +82,9 @@ const HistoryFilter = ({ isOpen, initialFilters, onApply }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="p-6 rounded-xl bg-dark-bg border border-white/10 animate-fade-in-down mb-6 flex flex-wrap items-end gap-2">
+    <div className="p-6 rounded-xl bg-white dark:bg-[#121212] border border-gray-300 dark:border-white/10 animate-fade-in-down mb-6 flex flex-wrap items-end gap-2 transition-colors">
       <div className="flex flex-col space-y-1 w-full md:w-64">
-        <label className="text-xs text-gray-400 ml-1">Date Range</label>
+        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Date Range</label>
         <div className="relative w-full">
           <DatePicker
             selectsRange={true}
@@ -92,7 +93,7 @@ const HistoryFilter = ({ isOpen, initialFilters, onApply }) => {
             onChange={handleDateChange}
             isClearable={true}
             placeholderText="Select date range"
-            className="w-full px-3 py-2 text-sm text-white bg-[#242424] rounded-xl border border-white/10 focus:border-blue-500 focus:outline-none cursor-pointer"
+            className="w-full px-3 py-2 text-sm text-gray-800 bg-gray-100 rounded-xl border border-gray-300 focus:border-blue-500 focus:outline-none cursor-pointer dark:text-white dark:bg-[#242424] dark:border-white/10 transition-colors"
             wrapperClassName="w-full"
             dateFormat="yyyy-MM-dd"
           />
@@ -100,18 +101,19 @@ const HistoryFilter = ({ isOpen, initialFilters, onApply }) => {
       </div>
 
       <div className="flex flex-col space-y-1 w-full md:w-48">
-        <label className="text-xs text-gray-400 ml-1">Campaign</label>
+        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Campaign</label>
         <select
           name="campaignId"
           value={filters.campaignId}
           onChange={handleFilterChange}
-          className="px-3 py-2 text-sm text-white bg-[#242424] rounded-xl border border-white/10 focus:border-blue-500 focus:outline-none"
+          className="px-3 py-2 text-sm text-gray-800 bg-gray-100 rounded-xl border border-gray-300 focus:border-blue-500 focus:outline-none dark:text-white dark:bg-[#242424] dark:border-white/10 transition-colors"
         >
           <option value="">All Campaigns</option>
           {campaigns.map((campaign) => (
             <option
               key={campaign.campaign_id}
               value={campaign.campaign_id}
+              className="bg-white dark:bg-[#121212]"
             >
               {campaign.campaign_name}
             </option>
@@ -120,12 +122,12 @@ const HistoryFilter = ({ isOpen, initialFilters, onApply }) => {
       </div>
 
       <div className="flex flex-col space-y-1 w-full md:w-48">
-        <label className="text-xs text-gray-400 ml-1">Status</label>
+        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Status</label>
         <select
           name="statusId"
           value={filters.statusId}
           onChange={handleFilterChange}
-          className="px-3 py-2 text-sm text-white bg-[#242424] rounded-xl border border-white/10 focus:border-blue-500 focus:outline-none"
+          className="px-3 py-2 text-sm text-gray-800 bg-gray-100 rounded-xl border border-gray-300 focus:border-blue-500 focus:outline-none dark:text-white dark:bg-[#242424] dark:border-white/10 transition-colors"
         >
           <option value="">All Statuses (Deal/Reject)</option>
           <option value="5">Deal</option>
@@ -136,7 +138,7 @@ const HistoryFilter = ({ isOpen, initialFilters, onApply }) => {
       <div className="flex gap-2 ml-auto">
         <button
           onClick={clearFilters}
-          className="px-4 py-2 text-sm text-white bg-red-600 rounded-xl hover:text-white hover:bg-red-500 transition-colors h-[38px]"
+          className="px-4 py-2 text-sm text-white bg-red-600 rounded-xl hover:bg-red-500 transition-colors h-[38px]"
         >
           Clear
         </button>

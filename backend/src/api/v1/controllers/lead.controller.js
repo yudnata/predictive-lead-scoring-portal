@@ -66,18 +66,31 @@ const mapPoutcomeToId = (p) => {
   return idx !== -1 ? idx + 1 : 4;
 };
 
+const getContactMethodId = (contact) => {
+  const methods = ['cellular', 'telephone', 'unknown'];
+  if (!contact) return 3; // unknown
+  const idx = methods.indexOf(String(contact).toLowerCase().trim());
+  return idx !== -1 ? idx + 1 : 3;
+};
+
 exports.uploadLeadsCSV = async (req, res, next) => {
-  if (!req.file) return next(new ApiError(400, 'File CSV tidak ditemukan'));
+  if (!req.file) return next(new ApiError(400, 'CSV file not found'));
+
+  if (req.file.size > 10 * 1024 * 1024) {
+    return next(new ApiError(400, 'File too large. Maximum 5MB'));
+  }
 
   const uploadsDir = path.join(__dirname, '../../../../uploads');
   if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-  const tempFilePath = path.join(uploadsDir, `temp-${Date.now()}-${req.file.originalname}`);
+  const sanitizedFilename = path.basename(req.file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+  const tempFilePath = path.join(uploadsDir, `temp-${Date.now()}-${sanitizedFilename}`);
 
   try {
     fs.writeFileSync(tempFilePath, req.file.buffer);
   } catch (err) {
-    return next(new ApiError(500, 'Gagal menyimpan file temporary'));
+    console.error('[Upload Error]', err);
+    return next(new ApiError(500, 'Failed to save temporary file'));
   }
 
   res.status(201).json({
@@ -107,7 +120,8 @@ exports.uploadLeadsCSV = async (req, res, next) => {
 
       const leadsToInsert = processedData.map((row, index) => {
         const realName = row.lead_name || row.nama || row.name || `Lead ${index + 1}`;
-        const realPhone = row.lead_phone_number || row.phone || row.nomor_telepon || row.telephone || null;
+        const realPhone =
+          row.lead_phone_number || row.phone || row.nomor_telepon || row.telephone || null;
 
         const realEmail =
           row.lead_email || row.email || `noemail-${Date.now()}-${index}@missing.com`;
@@ -147,6 +161,7 @@ exports.uploadLeadsCSV = async (req, res, next) => {
           pdays: row.pdays ? parseInt(row.pdays) : -1,
           prev_contact_count: row.previous ? parseInt(row.previous) : 0,
           poutcome_id: mapPoutcomeToId(row.poutcome),
+          contactmethod_id: getContactMethodId(row.contact),
 
           lead_score: row.ml_score !== undefined ? parseFloat(row.ml_score) : 0.0,
         };

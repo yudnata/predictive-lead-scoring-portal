@@ -1,8 +1,17 @@
 import axiosClient from '../../../api/axiosClient';
 
 const LeadsTrackerService = {
-  getAll: async (page = 1, limit = 10, search = '', filters = {}, user_id) => {
-    const params = { page, limit, search, user_id };
+  queryLeads: async (queryOptions, userId, minStatusName = null, filterSelf = false) => {
+      const params = { ...queryOptions, user_id: userId, minStatusName, filterSelf };
+      // Map frontend keys to backend expectations if needed
+      if (queryOptions.campaignFilter) params.campaignId = queryOptions.campaignFilter;
+      
+      const res = await axiosClient.get('/leads-tracker', { params });
+      return res.data;
+  },
+
+  getAll: async (page = 1, limit = 10, search = '', filters = {}, user_id, filterSelf = false) => {
+    const params = { page, limit, search, user_id, filterSelf };
 
     if (filters.campaignId) params.campaign_id = filters.campaignId;
     if (filters.minScore) params.min_score = parseFloat(filters.minScore) / 100;

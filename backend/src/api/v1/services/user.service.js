@@ -6,12 +6,12 @@ const createSalesUser = async (userBody) => {
   const { user_email, password, full_name, is_active, campaign_ids } = userBody;
 
   if (!user_email || !password || !full_name) {
-    throw new ApiError(400, 'Email, password, dan nama lengkap harus diisi');
+    throw new ApiError(400, 'Email, password, and full name are required');
   }
 
   const existingUser = await userModel.findByEmail(user_email);
   if (existingUser) {
-    throw new ApiError(400, 'Email sudah terdaftar');
+    throw new ApiError(400, 'Email already registered');
   }
 
   const hashedPassword = await hashPassword(password);
@@ -63,7 +63,7 @@ const querySalesUsers = async (queryOptions) => {
 const getSalesUserById = async (userId) => {
   const user = await userModel.findById(userId);
   if (!user || user.role_name !== 'sales') {
-    throw new ApiError(404, 'User Sales tidak ditemukan');
+    throw new ApiError(404, 'Sales user not found');
   }
 
   const assignedCampaignIds = await userModel.getAssignments(userId);
@@ -80,7 +80,7 @@ const updateSalesUserById = async (userId, updateBody) => {
   if (userData.user_email) {
     const existingUser = await userModel.findByEmail(userData.user_email);
     if (existingUser && existingUser.user_id !== parseInt(userId, 10)) {
-      throw new ApiError(400, 'Email sudah digunakan oleh user lain');
+      throw new ApiError(400, 'Email already used by another user');
     }
   }
 

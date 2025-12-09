@@ -1,21 +1,21 @@
 import axiosClient from '../../../api/axiosClient';
 
-const OutboundDetailService = {
-  getAll: async (page = 1, limit = 10, search = '', campaign_id = null, user_id) => {
-    const params = {
-      page,
-      limit,
-      search,
-      user_id,
-    };
-
-    if (campaign_id) {
-      params.campaign_id = campaign_id;
-    }
-
-    const res = await axiosClient.get('/outbound-detail', { params });
-    return res.data;
-  },
+const logActivity = async (data) => {
+  const response = await axiosClient.post('/outbound-activities', data);
+  return response.data;
 };
 
-export default OutboundDetailService;
+const getHistory = async (leadId, campaignId) => {
+  const url = campaignId 
+    ? `/outbound-activities/${leadId}?campaign_id=${campaignId}`
+    : `/outbound-activities/${leadId}`;
+  const response = await axiosClient.get(url);
+  return response.data;
+};
+
+const OutboundService = {
+  logActivity,
+  getHistory,
+};
+
+export default OutboundService;

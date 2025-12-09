@@ -36,6 +36,7 @@ const KanbanColumn = ({
   onAddOutbound,
   onDelete,
   onDragStart,
+  onClick,
 }) => {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const config = statusConfig[status] || statusConfig.Uncontacted;
@@ -60,12 +61,12 @@ const KanbanColumn = ({
   };
 
   return (
-    <div className="bg-dark-card rounded-xl">
+    <div className="bg-gray-100 dark:bg-dark-card rounded-xl">
       <div
         className={`p-3 flex items-center gap-2 border-l-4 ${config.bgColor}`}
         style={{ borderLeftColor: config.color }}
       >
-        <h3 className="text-white font-bold text-sm uppercase tracking-wide">{status}</h3>
+        <h3 className="text-gray-900 dark:text-white font-bold text-sm uppercase tracking-wide">{status}</h3>
         <span
           className="px-2 py-1 text-xs font-semibold rounded-full"
           style={{
@@ -106,6 +107,7 @@ const KanbanColumn = ({
                   onDelete={onDelete}
                   onDragStart={onDragStart}
                   onChangeStatus={onDrop}
+                  onClick={onClick}
                 />
               ))}
             </div>

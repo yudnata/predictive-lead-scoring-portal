@@ -6,7 +6,7 @@ exports.createCampaign = async (req, res, next) => {
     const campaign = await campaignService.createCampaign(req.body);
     res.status(201).json({
       status: 'success',
-      message: 'Campaign berhasil dibuat',
+      message: 'Campaign created successfully',
       data: campaign,
     });
   } catch (error) {
@@ -20,7 +20,7 @@ exports.updateCampaign = async (req, res, next) => {
     const campaign = await campaignService.updateCampaignById(campaignId, req.body);
     res.status(200).json({
       status: 'success',
-      message: 'Campaign berhasil diupdate',
+      message: 'Campaign updated successfully',
       data: campaign,
     });
   } catch (error) {
@@ -46,7 +46,7 @@ exports.getAllCampaigns = async (req, res, next) => {
     const result = await campaignService.queryCampaigns(req.query, null);
     res.status(200).json({
       status: 'success',
-      message: 'Data campaigns berhasil diambil',
+      message: 'Campaigns data retrieved successfully',
       ...result,
     });
   } catch (error) {
@@ -60,7 +60,7 @@ exports.getCampaignById = async (req, res, next) => {
     const campaign = await campaignService.getCampaignById(campaignId);
     res.status(200).json({
       status: 'success',
-      message: 'Detail campaign berhasil diambil',
+      message: 'Campaign detail retrieved successfully',
       data: campaign,
     });
   } catch (error) {

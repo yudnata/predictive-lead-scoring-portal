@@ -1,3 +1,5 @@
+/* eslint-disable no-irregular-whitespace */
+
 const Pagination = ({
   currentPage,
   totalPages,
@@ -53,13 +55,13 @@ const Pagination = ({
   const endResult = Math.min(currentPage * limit, totalResults);
 
   return (
-    <div className="flex items-center justify-between mt-6 text-sm text-black">
+    <div className="flex items-center justify-between mt-6 text-sm text-gray-700 dark:text-white">
       <div className="flex items-center gap-2">
         <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-3 py-1 text-white transition rounded-lg bg-white/5 backdrop-blur-sm disabled:opacity-30 hover:bg-white/20 hover:text-white"
-        >
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 text-gray-800 dark:text-white transition rounded-lg bg-gray-200 dark:bg-white/5 backdrop-blur-sm disabled:opacity-30 hover:bg-gray-300 dark:hover:bg-white/20"
+        >
           Back
         </button>
 
@@ -68,7 +70,7 @@ const Pagination = ({
             return (
               <span
                 key={`dots-${index}`}
-                className="flex items-center justify-center w-9 h-9 text-white/50"
+                className="flex items-center justify-center w-9 h-9 text-gray-500 dark:text-white/50"
               >
                 &#8230;
               </span>
@@ -80,11 +82,11 @@ const Pagination = ({
               key={page}
               onClick={() => onPageChange(page)}
               className={`w-9 h-9 flex items-center justify-center rounded-md text-sm transition
-          ${
+            ${
             currentPage === page
-              ? 'bg-white/20 text-white'
-              : 'bg-white/5 text-white hover:bg-white/10'
-          }
+              ? 'bg-blue-600 text-white' 
+              : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-white/5 dark:text-white dark:hover:bg-white/10' 
+            }
               `}
             >
               {page}
@@ -93,16 +95,16 @@ const Pagination = ({
         })}
 
         <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-3 py-1 text-white transition rounded-lg bg-white/5 backdrop-blur-sm disabled:opacity-30 hover:bg-white/20 hover:text-white"
-        >
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 text-gray-800 dark:text-white transition rounded-lg bg-gray-200 dark:bg-white/5 backdrop-blur-sm disabled:opacity-30 hover:bg-gray-300 dark:hover:bg-white/20"
+        >
           Next
         </button>
       </div>
 
       <div className="flex items-center gap-4">
-        <span className="text-white/70">
+        <span className="text-gray-500 dark:text-white/70">
           {startResult} to {endResult} of {totalResults} Result
         </span>
 
@@ -110,29 +112,29 @@ const Pagination = ({
           <select
             value={limit}
             onChange={(e) => onLimitChange(Number(e.target.value))}
-            className="p-2 pr-2 text-white border rounded-lg cursor-pointer bg-dark-card border-white/10 focus:outline-none"
+            className="p-2 pr-2 text-gray-800 dark:text-white border rounded-lg cursor-pointer bg-white dark:bg-[#1A1A1A] border-gray-300 dark:border-white/10 focus:outline-none"
           >
             <option
               value="20"
-              className="bg-[#0f0f0f]"
+              className="bg-white dark:bg-[#1A1A1A]"
             >
               Show 20
             </option>
             <option
               value="30"
-              className="bg-[#0f0f0f]"
+              className="bg-white dark:bg-[#1A1A1A]"
             >
               Show 30
             </option>
             <option
               value="50"
-              className="bg-[#0f0f0f]"
+              className="bg-white dark:bg-[#1A1A1A]"
             >
               Show 50
             </option>
             <option
               value="100"
-              className="bg-[#0f0f0f]"
+              className="bg-white dark:bg-[#1A1A1A]"
             >
               Show 100
             </option>

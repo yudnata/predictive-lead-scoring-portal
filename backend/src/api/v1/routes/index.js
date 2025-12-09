@@ -23,6 +23,9 @@ router.use('/note', noteRoutes);
 router.use('/campaign-leads', campaignLeadRoutes);
 router.use('/leads-tracker', leadsTrackerRoutes);
 
+
 router.use('/campaign-assignments', require('./campaignAssignment.route'));
+router.use('/outbound-activities', require('./outboundActivity.routes'));
+router.use('/calendar', require('./calendar.routes'));
 
 module.exports = router;

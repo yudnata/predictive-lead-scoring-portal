@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { toast } from 'react-hot-toast';
 import CampaignService from '../../campaigns/api/campaign-service';
 import LeadService from '../api/lead-service';
 
@@ -24,7 +25,7 @@ const AddToCampaignModal = ({ open, onClose, lead, user, onAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selected) return alert('Please select a campaign first.');
+    if (!selected) return toast.error('Please select a campaign first.');
     setLoading(true);
     try {
       await LeadService.addToCampaign(lead.lead_id, selected, user.user_id);
@@ -32,7 +33,8 @@ const AddToCampaignModal = ({ open, onClose, lead, user, onAdded }) => {
       onClose();
     } catch (err) {
       console.error(err);
-      alert('Failed to add lead to campaign.');
+      const errorMessage = err.response?.data?.message || 'Failed to add lead to campaign.';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

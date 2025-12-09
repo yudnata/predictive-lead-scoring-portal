@@ -5,7 +5,7 @@ const MainLayout = ({ user }) => {
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen bg-dark-bg select-none">
+    <div className="flex min-h-screen bg-white dark:bg-[#121212]"> 
       <style>
         {`
           @keyframes slideRightFade {
@@ -18,7 +18,7 @@ const MainLayout = ({ user }) => {
         `}
       </style>
       <Sidebar user={user} />
-      <main className="flex-1 w-full h-screen p-8 ml-64 overflow-y-auto">
+      <main className="flex-1 w-full h-screen p-8 ml-20 overflow-y-auto duration-300 transition-all">
         <div
           key={location.pathname}
           className="animate-slide-right-fade"

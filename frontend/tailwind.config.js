@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
@@ -22,6 +23,12 @@ export default {
           card: '#1E1E1E',
           input: '#2C2C2C',
           hover: '#242424',
+        },
+        light: {
+          bg: "#F0F2F5",
+          card: "#FAFAFA",
+          input: "#E3E3E3",
+          hover: "#DDDDDD",
         },
         brand: {
           DEFAULT: '#66BB6A',

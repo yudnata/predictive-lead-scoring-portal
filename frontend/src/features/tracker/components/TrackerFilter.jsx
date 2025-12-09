@@ -48,14 +48,14 @@ const TrackerFilter = ({ isOpen, initialFilters, onApply }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="p-6 rounded-xl bg-dark-bg border border-white/10 animate-fade-in-down mb-6 flex flex-wrap items-end gap-2">
+    <div className="p-6 rounded-xl bg-white dark:bg-dark-bg border border-gray-200 dark:border-white/10 animate-fade-in-down mb-6 flex flex-wrap items-end gap-2 shadow-sm">
       <div className="flex flex-col space-y-1 w-full md:w-48">
-        <label className="text-xs text-gray-400 ml-1">Campaign</label>
+        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Campaign</label>
         <select
           name="campaignId"
           value={filters.campaignId}
           onChange={handleFilterChange}
-          className="px-3 py-2 text-sm text-white bg-[#242424] rounded-xl border border-white/10 focus:border-blue-500 focus:outline-none"
+          className="px-3 py-2 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-[#242424] rounded-xl border border-gray-300 dark:border-white/10 focus:border-blue-500 focus:outline-none"
         >
           <option value="">All Campaigns</option>
           {campaigns.map((c) => (
@@ -69,7 +69,7 @@ const TrackerFilter = ({ isOpen, initialFilters, onApply }) => {
         </select>
       </div>
       <div className="flex flex-col space-y-1 w-full md:w-32">
-        <label className="text-xs text-gray-400 ml-1">Min Score</label>
+        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Min Score</label>
         <input
           type="number"
           name="minScore"
@@ -77,12 +77,12 @@ const TrackerFilter = ({ isOpen, initialFilters, onApply }) => {
           max="100"
           value={filters.minScore}
           onChange={handleFilterChange}
-          className="px-3 py-2 text-sm text-white bg-[#242424] rounded-xl border border-white/10 focus:border-blue-500 focus:outline-none"
+          className="px-3 py-2 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-[#242424] rounded-xl border border-gray-300 dark:border-white/10 focus:border-blue-500 focus:outline-none"
           placeholder="0"
         />
       </div>
       <div className="flex flex-col space-y-1 w-full md:w-32">
-        <label className="text-xs text-gray-400 ml-1">Max Score</label>
+        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Max Score</label>
         <input
           type="number"
           name="maxScore"
@@ -90,7 +90,7 @@ const TrackerFilter = ({ isOpen, initialFilters, onApply }) => {
           max="100"
           value={filters.maxScore}
           onChange={handleFilterChange}
-          className="px-3 py-2 text-sm text-white bg-[#242424] rounded-xl border border-white/10 focus:border-blue-500 focus:outline-none"
+          className="px-3 py-2 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-[#242424] rounded-xl border border-gray-300 dark:border-white/10 focus:border-blue-500 focus:outline-none"
           placeholder="100"
         />
       </div>

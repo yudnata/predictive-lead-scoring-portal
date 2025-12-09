@@ -6,7 +6,7 @@ exports.createSalesUser = async (req, res, next) => {
     const user = await userService.createSalesUser(req.body);
     res.status(201).json({
       status: 'success',
-      message: 'User Sales berhasil dibuat',
+      message: 'Sales user created successfully',
       data: user,
     });
   } catch (error) {
@@ -20,7 +20,7 @@ exports.updateSalesUser = async (req, res, next) => {
     const user = await userService.updateSalesUserById(userId, req.body);
     res.status(200).json({
       status: 'success',
-      message: 'User Sales berhasil diupdate',
+      message: 'Sales user updated successfully',
       data: user,
     });
   } catch (error) {
@@ -46,7 +46,7 @@ exports.getAllSalesUsers = async (req, res, next) => {
     const result = await userService.querySalesUsers(req.query);
     res.status(200).json({
       status: 'success',
-      message: 'Data user sales berhasil diambil',
+      message: 'Sales users data retrieved successfully',
       ...result,
     });
   } catch (error) {
@@ -60,7 +60,7 @@ exports.getSalesUserById = async (req, res, next) => {
     const user = await userService.getSalesUserById(userId);
     res.status(200).json({
       status: 'success',
-      message: 'Detail user sales berhasil diambil',
+      message: 'Sales user detail retrieved successfully',
       data: user,
     });
   } catch (error) {

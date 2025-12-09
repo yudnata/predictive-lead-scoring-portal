@@ -6,12 +6,12 @@ const createNoteForLead = async (leadId, userId, noteBody) => {
   const { note_content, campaign_id } = noteBody;
 
   if (!note_content) {
-    throw new ApiError(400, 'Isi catatan (note_content) tidak boleh kosong');
+    throw new ApiError(400, 'Note content cannot be empty');
   }
 
   const lead = await leadModel.findFullLeadById(leadId);
   if (!lead) {
-    throw new ApiError(404, 'Lead tidak ditemukan');
+    throw new ApiError(404, 'Lead not found');
   }
 
   const noteData = {
@@ -27,7 +27,7 @@ const createNoteForLead = async (leadId, userId, noteBody) => {
 const getNotesForLead = async (leadId) => {
   const lead = await leadModel.findFullLeadById(leadId);
   if (!lead) {
-    throw new ApiError(404, 'Lead tidak ditemukan');
+    throw new ApiError(404, 'Lead not found');
   }
 
   return noteModel.findAllByLeadId(leadId);
@@ -36,7 +36,7 @@ const getNotesForLead = async (leadId) => {
 const deleteNoteById = async (noteId, user) => {
   const note = await noteModel.findRawById(noteId);
   if (!note) {
-    throw new ApiError(404, 'Catatan tidak ditemukan');
+    throw new ApiError(404, 'Note not found');
   }
 
   if (note.user_id !== user.user_id) {

@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.2s ease-out forwards;
+    opacity: 0; /* Start hidden to avoid flash */
+  }
+}
+
+.grabbing {
+  cursor: grabbing !important;
+}
+
+.grabbing * {
+  cursor: grabbing !important;
+}
+
 input[type='date']::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
@@ -18,7 +44,6 @@ body,
 #root {
   height: 100%;
   width: 100%;
-  background: #121212;
   font-family: 'Urbanist', sans-serif;
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;

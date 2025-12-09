@@ -1,8 +1,9 @@
+/* eslint-disable no-irregular-whitespace */
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import UserService from '../api/user-service';
 import CampaignService from '../../campaigns/api/campaign-service';
-import toast from 'react-hot-toast';
+
 
 const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
@@ -88,13 +89,12 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         if (formData.password) updateData.password = formData.password;
 
         await UserService.update(initialData.user_id, updateData);
-        toast.success('Sales data updated successfully!');
+        onSuccess('Successfully updated sales account.');
       } else {
         if (!formData.password) throw new Error('Password is required for new user.');
         await UserService.create(formData);
-        toast.success('New Sales added successfully!');
+        onSuccess('Successfully added sales account.');
       }
-      onSuccess();
       onClose();
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'An error occurred.');
@@ -105,21 +105,21 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-      <div className="bg-[#1E1E1E] w-full max-w-xl rounded-2xl shadow-2xl p-8 text-white border border-white/10 relative overflow-hidden">
-        <h2 className="mb-4 text-2xl font-bold tracking-wide">
-          {isEdit ? 'Edit Sales' : 'Add New Sales'}
+      <div className="bg-white dark:bg-[#1E1E1E] w-full max-w-xl rounded-2xl shadow-2xl p-8 text-gray-900 dark:text-white border border-gray-300 dark:border-white/10 relative overflow-hidden transition-colors">
+        <h2 className="mb-4 text-2xl font-bold tracking-wide text-gray-900 dark:text-white">
+            {isEdit ? 'Edit Sales' : 'Add New Sales'}
         </h2>
-        <div className="mb-6 border-b border-white/10"></div>
+      <div className="mb-6 border-b border-gray-300 dark:border-white/10"></div>
 
-        <div className="flex mb-6 border-b border-white/10">
+        <div className="flex mb-6 border-b border-gray-300 dark:border-white/10">
           <button
             type="button"
             onClick={() => setActiveTab('details')}
             className={`px-4 py-3 text-sm font-semibold transition-all ${
               activeTab === 'details'
                 ? 'border-b-2 border-brand text-brand'
-                : 'text-gray-400 hover:text-white'
-            }`}
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white' // UBAH
+            }`}
           >
             Account Information
           </button>
@@ -128,16 +128,16 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             onClick={() => setActiveTab('campaigns')}
             className={`px-4 py-3 text-sm font-semibold transition-all ${
               activeTab === 'campaigns'
-                ? 'border-b-2 border-brand text-brand'
-                : 'text-gray-400 hover:text-white'
-            }`}
+                ? 'border-b-2 border-brand text-brand'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white' // UBAH
+            }`}
           >
             Assign Campaign ({formData.campaign_ids.length})
           </button>
         </div>
 
         {error && (
-          <div className="p-3 mb-6 text-sm text-red-200 border rounded-lg border-red-500/50 bg-red-900/20">
+          <div className="p-3 mb-6 text-sm text-red-700 border rounded-lg border-red-500/50 bg-red-100 dark:bg-red-900/20 dark:text-red-200">
             {error}
           </div>
         )}
@@ -149,32 +149,32 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           {activeTab === 'details' && (
             <>
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">Full Name*</label>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Full Name*</label>
                 <input
                   name="full_name"
                   value={formData.full_name}
                   onChange={handleChange}
                   required
-                  className="w-full p-2.5 bg-[#2C2C2C] rounded-lg text-white focus:ring-1 focus:ring-brand outline-none"
+                  className="w-full p-2.5 bg-gray-100 text-gray-900 rounded-lg dark:bg-[#2C2C2C] dark:text-white focus:ring-1 focus:ring-brand outline-none border border-gray-300 dark:border-white/10"
                 />
               </div>
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">Email*</label>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Email*</label>
                 <input
                   name="user_email"
                   type="email"
                   value={formData.user_email}
                   onChange={handleChange}
                   required
-                  className="w-full p-2.5 bg-[#2C2C2C] rounded-lg text-white focus:ring-1 focus:ring-brand outline-none disabled:opacity-50"
+                  className="w-full p-2.5 bg-gray-100 text-gray-900 rounded-lg dark:bg-[#2C2C2C] dark:text-white focus:ring-1 focus:ring-brand outline-none disabled:opacity-50 border border-gray-300 dark:border-white/10"
                   readOnly={isEdit}
                   disabled={isEdit}
                 />
               </div>
 
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">
-                  {isEdit ? 'New Password (Optional)' : 'Password*'}
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {isEdit ? 'New Password (Optional)' : 'Password*'}
                 </label>
                 <input
                   type="password"
@@ -182,7 +182,7 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                   value={formData.password}
                   onChange={handleChange}
                   required={!isEdit}
-                  className="w-full p-2.5 bg-[#2C2C2C] rounded-lg text-white focus:ring-1 focus:ring-brand outline-none"
+                  className="w-full p-2.5 bg-gray-100 text-gray-900 rounded-lg dark:bg-[#2C2C2C] dark:text-white focus:ring-1 focus:ring-brand outline-none border border-gray-300 dark:border-white/10"
                 />
               </div>
 
@@ -207,27 +207,27 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     }`}
                   ></label>
                 </div>
-                <span className="text-sm text-white">Active Account Status</span>
+                <span className="text-sm text-gray-900 dark:text-white">Active Account Status</span>
               </div>
             </>
           )}
 
           {activeTab === 'campaigns' && (
             <>
-              <p className="text-sm text-gray-400">Select campaigns to be handled by this Sales:</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Select campaigns to be handled by this Sales:</p>
 
               <div className="space-y-2">
                 {campaigns.length === 0 ? (
-                  <p className="py-4 text-center text-gray-500">No active campaigns available.</p>
+                  <p className="py-4 text-center text-gray-600 dark:text-gray-500">No active campaigns available.</p>
                 ) : (
                   campaigns.map((campaign) => (
                     <label
                       key={campaign.campaign_id}
                       className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
                         formData.campaign_ids.includes(campaign.campaign_id)
-                          ? 'bg-brand/20 border-brand'
-                          : 'bg-[#2C2C2C] border-white/10 hover:border-gray-500'
-                      }`}
+                          ? 'bg-brand/20 border-brand' 
+                          : 'bg-gray-100 dark:bg-[#2C2C2C] border-gray-300 dark:border-white/10 hover:bg-gray-200 dark:hover:border-gray-500' 
+                      }`}
                     >
                       <div className="flex items-center gap-3">
                         <input
@@ -237,8 +237,8 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                           className="w-4 h-4 rounded accent-brand focus:ring-0"
                         />
                         <div>
-                          <p className="text-sm font-semibold text-white">
-                            {campaign.campaign_name}
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                              {campaign.campaign_name}
                           </p>
                           <p className="text-xs text-green-400">Active</p>
                         </div>
@@ -250,12 +250,12 @@ const UserFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             </>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-300 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-6 py-2.5 text-sm font-semibold text-white transition bg-[#3A3A3A] rounded-lg hover:bg-[#4A4A4A]"
+              className="px-6 py-2.5 text-sm font-semibold text-gray-900 transition bg-gray-400 rounded-lg hover:bg-gray-500 dark:bg-[#3A3A3A] dark:text-white dark:hover:bg-[#4A4A4A]"
             >
               Cancel
             </button>

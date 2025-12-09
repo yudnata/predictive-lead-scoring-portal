@@ -11,6 +11,8 @@ import NotFoundPage from '../pages/NotFoundPage';
 import ProfilePage from '../pages/ProfilePage';
 import LeadsTrackerPage from '../pages/sales/LeadsTrackerPage';
 import OutboundDetailPage from '../pages/sales/OutboundDetailPage';
+import CalendarPage from '../pages/sales/CalendarPage';
+import SettingsPage from '../pages/SettingsPage';
 
 import PrivateRoute from '../features/auth/components/PrivateRoute';
 import MainLayout from '../layouts/MainLayout';
@@ -32,7 +34,7 @@ const AppRoutes = ({ userProfile }) => (
         element={<NotFoundPage message="Halaman tidak ditemukan" />}
       />
 
-      {/* Routes untuk Admin */}
+      {/* ADMIN */}
       <Route element={<PrivateRoute allowedRoles={['admin']} />}>
         <Route element={<MainLayout user={userProfile} />}>
           <Route
@@ -59,10 +61,14 @@ const AppRoutes = ({ userProfile }) => (
             path="/admin/profile"
             element={<ProfilePage user={userProfile} />}
           />
+          <Route
+            path="/admin/settings"
+            element={<SettingsPage />}
+          />
         </Route>
       </Route>
 
-      {/* Routes untuk Sales */}
+      {/* SALES */}
       <Route element={<PrivateRoute allowedRoles={['sales']} />}>
         <Route element={<MainLayout user={userProfile} />}>
           <Route
@@ -86,8 +92,16 @@ const AppRoutes = ({ userProfile }) => (
             element={<OutboundDetailPage />}
           />
           <Route
+            path="/sales/calendar"
+            element={<CalendarPage />}
+          />
+          <Route
             path="/sales/profile"
             element={<ProfilePage user={userProfile} />}
+          />
+          <Route
+            path="/sales/settings"
+            element={<SettingsPage />}
           />
         </Route>
       </Route>

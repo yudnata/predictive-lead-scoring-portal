@@ -17,7 +17,7 @@ exports.assignSalesToCampaign = async (req, res, next) => {
 
     res.status(201).json({
       status: 'success',
-      message: 'Sales berhasil di-assign ke campaign',
+      message: 'Sales successfully assigned to campaign',
       data: results,
     });
   } catch (error) {

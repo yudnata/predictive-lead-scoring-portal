@@ -10,21 +10,23 @@ const protect = async (req, res, next) => {
     }
 
     if (!token) {
-      return next(new ApiError(401, 'Unauthorized: Anda harus login'));
+      return next(new ApiError(401, 'Unauthorized: You must be logged in'));
     }
 
     const payload = verifyToken(token);
     if (!payload) {
-      return next(new ApiError(401, 'Unauthorized: Token tidak valid atau kedaluwarsa'));
+      return next(new ApiError(401, 'Unauthorized: Invalid or expired token'));
     }
 
     const currentUser = await userModel.findById(payload.sub);
     if (!currentUser) {
-      return next(new ApiError(401, 'Unauthorized: User pemilik token ini sudah tidak ada'));
+      return next(
+        new ApiError(401, 'Unauthorized: User associated with this token no longer exists')
+      );
     }
 
     if (!currentUser.is_active) {
-      return next(new ApiError(403, 'Forbidden: Akun Anda non-aktif'));
+      return next(new ApiError(403, 'Forbidden: Your account is inactive'));
     }
 
     req.user = currentUser;

@@ -3,18 +3,24 @@ const db = require('../../../config/database');
 const getStats = async () => {
   const query = {
     text: `
+      WITH stats_counts AS (
+        SELECT
+          (SELECT COUNT(*) FROM tb_campaign_leads) AS "active_count",
+          (SELECT COUNT(*) FROM tb_lead_status_history WHERE status_id = 5) AS "deal_count",
+          (SELECT COUNT(*) FROM tb_lead_status_history WHERE status_id = 6) AS "reject_count"
+      )
       SELECT
         (SELECT COUNT(lead_id) FROM tb_leads) AS "totalLeads",
         (SELECT COALESCE(AVG(lead_score) * 100, 0)::int FROM tb_leads_score) AS "averageLeadsScore",
         (
           SELECT
-            CASE WHEN COUNT(*) = 0 THEN 0
+            CASE WHEN (active_count + deal_count + reject_count) = 0 THEN 0
             ELSE (
-              (COUNT(CASE WHEN status_id = 3 THEN 1 END)::float) /
-              (NULLIF(COUNT(CASE WHEN status_id != 1 THEN 1 END), 0)::float)
+              (deal_count::float) /
+              (active_count + deal_count + reject_count)::float
             ) * 100
             END
-          FROM tb_campaign_leads
+          FROM stats_counts
         ) AS "conversionRate",
 
         (
@@ -24,19 +30,15 @@ const getStats = async () => {
         ) AS "activeCampaigns",
 
         (
-          WITH leads_contact_again AS (
-            SELECT DISTINCT lead_id FROM tb_lead_status_history WHERE status_id = 5
-          )
           SELECT
-            CASE WHEN COUNT(lca.lead_id) = 0 THEN 0
+            CASE WHEN (active_count + deal_count + reject_count) = 0 THEN 0
             ELSE (
-              (COUNT(CASE WHEN cl.status_id = 4 THEN 1 END)::float) /
-              (COUNT(lca.lead_id)::float)
+              (reject_count::float) /
+              (active_count + deal_count + reject_count)::float
             ) * 100
             END
-          FROM leads_contact_again lca
-          JOIN tb_campaign_leads cl ON lca.lead_id = cl.lead_id
-        ) AS "reboundRate"
+          FROM stats_counts
+        ) AS "rejectRate"
     `,
   };
   const { rows } = await db.query(query);
@@ -86,17 +88,33 @@ const getTopLeads = async () => {
 const getTopCampaigns = async () => {
   const query = {
     text: `
+      WITH campaign_stats AS (
+        SELECT
+          c.campaign_name,
+          COALESCE(COUNT(DISTINCT cl.lead_id), 0) AS active_count,
+          COALESCE((
+            SELECT COUNT(*)
+            FROM tb_lead_status_history lsh
+            WHERE lsh.campaign_id = c.campaign_id AND lsh.status_id = 5
+          ), 0) AS deal_count,
+          COALESCE((
+            SELECT COUNT(*)
+            FROM tb_lead_status_history lsh
+            WHERE lsh.campaign_id = c.campaign_id AND lsh.status_id = 6
+          ), 0) AS reject_count
+        FROM tb_campaigns c
+        LEFT JOIN tb_campaign_leads cl ON c.campaign_id = cl.campaign_id
+        GROUP BY c.campaign_id, c.campaign_name
+      )
       SELECT
-        c.campaign_name as name,
-        CASE WHEN COUNT(cl.lead_id) = 0 THEN 0
+        campaign_name as name,
+        CASE WHEN (active_count + deal_count + reject_count) = 0 THEN 0
         ELSE (
-          (COUNT(CASE WHEN cl.status_id = 3 THEN 1 END)::float) /
-          (COUNT(cl.lead_id)::float)
+          (deal_count::float) /
+          (active_count + deal_count + reject_count)::float
         ) * 100
         END AS rate
-      FROM tb_campaigns c
-      JOIN tb_campaign_leads cl ON c.campaign_id = cl.campaign_id
-      GROUP BY c.campaign_name
+      FROM campaign_stats
       ORDER BY rate DESC
       LIMIT 3
     `,
@@ -113,12 +131,18 @@ const getConversionRateTrend = async () => {
     text: `
       SELECT
         TO_CHAR(changed_at, 'YYYY-MM-DD') AS "date",
-        CASE WHEN COUNT(*) = 0 THEN 0
+        CASE WHEN (COUNT(CASE WHEN status_id = 5 THEN 1 END) + COUNT(CASE WHEN status_id = 6 THEN 1 END)) = 0 THEN 0
         ELSE (
-          (COUNT(CASE WHEN status_id = 3 THEN 1 END)::float) /
-          (COUNT(*)::float)
+          (COUNT(CASE WHEN status_id = 5 THEN 1 END)::float) /
+          ((COUNT(CASE WHEN status_id = 5 THEN 1 END) + COUNT(CASE WHEN status_id = 6 THEN 1 END))::float)
         ) * 100
-        END AS "rate"
+        END AS "rate",
+        CASE WHEN (COUNT(CASE WHEN status_id = 5 THEN 1 END) + COUNT(CASE WHEN status_id = 6 THEN 1 END)) = 0 THEN 0
+        ELSE (
+          (COUNT(CASE WHEN status_id = 6 THEN 1 END)::float) /
+          ((COUNT(CASE WHEN status_id = 5 THEN 1 END) + COUNT(CASE WHEN status_id = 6 THEN 1 END))::float)
+        ) * 100
+        END AS "rejectRate"
       FROM tb_lead_status_history
       WHERE changed_at >= NOW() - INTERVAL '30 days'
       GROUP BY 1

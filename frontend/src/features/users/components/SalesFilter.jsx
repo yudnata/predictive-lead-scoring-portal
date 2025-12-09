@@ -32,15 +32,15 @@ const SalesFilter = ({ isOpen, initialFilters, onApply }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="p-4 rounded-lg bg-[#242424] border border-white/10 animate-fade-in-down mb-6">
+    <div className="p-4 rounded-lg bg-white dark:bg-[#242424] border border-gray-300 dark:border-white/10 animate-fade-in-down mb-6 transition-colors">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="flex flex-col space-y-1">
-          <label className="text-xs text-gray-400">Status</label>
+          <label className="text-xs text-gray-600 dark:text-gray-400">Status</label>
           <select
             name="isActive"
             value={filters.isActive || ''}
             onChange={handleFilterChange}
-            className="px-3 py-2 text-sm text-white bg-dark-bg rounded border border-white/10 focus:border-blue-500 focus:outline-none"
+            className="px-3 py-2 text-sm text-gray-800 bg-gray-100 rounded border border-gray-300 focus:border-blue-500 focus:outline-none dark:text-white dark:bg-[#1A1A1A] dark:border-white/10 transition-colors"
           >
             <option value="">All</option>
             <option value="true">Active</option>
@@ -48,26 +48,26 @@ const SalesFilter = ({ isOpen, initialFilters, onApply }) => {
           </select>
         </div>
         <div className="flex flex-col space-y-1">
-          <label className="text-xs text-gray-400">Min Leads Handled</label>
+          <label className="text-xs text-gray-600 dark:text-gray-400">Min Leads Handled</label>
           <input
             type="number"
             name="minLeads"
             min="0"
             value={filters.minLeads || ''}
             onChange={handleFilterChange}
-            className="px-3 py-2 text-sm text-white bg-dark-bg rounded border border-white/10 focus:border-blue-500 focus:outline-none"
+            className="px-3 py-2 text-sm text-gray-800 bg-gray-100 rounded border border-gray-300 focus:border-blue-500 focus:outline-none dark:text-white dark:bg-[#1A1A1A] dark:border-white/10 transition-colors"
             placeholder="0"
           />
         </div>
         <div className="flex flex-col space-y-1">
-          <label className="text-xs text-gray-400">Max Leads Handled</label>
+          <label className="text-xs text-gray-600 dark:text-gray-400">Max Leads Handled</label>
           <input
             type="number"
             name="maxLeads"
             min="0"
             value={filters.maxLeads || ''}
             onChange={handleFilterChange}
-            className="px-3 py-2 text-sm text-white bg-dark-bg rounded border border-white/10 focus:border-blue-500 focus:outline-none"
+            className="px-3 py-2 text-sm text-gray-800 bg-gray-100 rounded border border-gray-300 focus:border-blue-500 focus:outline-none dark:text-white dark:bg-[#1A1A1A] dark:border-white/10 transition-colors"
             placeholder="100"
           />
         </div>

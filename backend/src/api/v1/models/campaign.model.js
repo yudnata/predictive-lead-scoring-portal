@@ -177,7 +177,7 @@ const update = async (campaignId, campaignData) => {
   };
   const { rows } = await db.query(query);
   if (rows.length === 0) {
-    throw new ApiError(404, 'Campaign tidak ditemukan');
+    throw new ApiError(404, 'Campaign not found');
   }
   return rows[0];
 };
@@ -189,7 +189,7 @@ const deleteById = async (campaignId) => {
   };
   const { rows } = await db.query(query);
   if (rows.length === 0) {
-    throw new ApiError(404, 'Campaign tidak ditemukan');
+    throw new ApiError(404, 'Campaign not found');
   }
   return rows[0];
 };

@@ -4,7 +4,7 @@ const ApiError = require('../utils/apiError');
 exports.assignSalesToCampaign = async (userId, campaignId) => {
   console.log('SERVICE userId:', userId, 'campaignId:', campaignId);
   if (!userId || !campaignId) {
-    throw new ApiError(400, 'user_id dan campaign_id wajib diisi');
+    throw new ApiError(400, 'user_id and campaign_id are required');
   }
 
   return assignmentModel.create(userId, campaignId);

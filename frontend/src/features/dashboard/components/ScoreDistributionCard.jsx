@@ -5,8 +5,8 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const { name, value, color } = payload[0].payload;
     return (
-      <div className="p-3 border border-gray-700 rounded shadow-xl bg-gray-900/95 backdrop-blur-sm">
-        <p className="text-sm font-semibold text-white">{name}</p>
+      <div className="p-3 border border-gray-200 dark:border-gray-700 rounded shadow-xl bg-white dark:bg-[#1E1E1E] backdrop-blur-sm">
+        <p className="text-sm font-semibold text-gray-900 dark:text-white">{name}</p>
         <p
           className="text-sm font-bold"
           style={{ color: color }}
@@ -22,7 +22,7 @@ const CustomTooltip = ({ active, payload }) => {
 const ScoreDistributionCard = ({ data }) => {
   if (!data || !Array.isArray(data)) {
     return (
-      <div className="flex items-center justify-center h-full p-5 rounded-lg shadow-lg bg-dark-card">
+      <div className="flex items-center justify-center h-full p-5 rounded-lg shadow-lg bg-white dark:bg-[#1E1E1E]">
         <p className="text-base text-gray-500">Data tidak tersedia</p>
       </div>
     );
@@ -36,8 +36,8 @@ const ScoreDistributionCard = ({ data }) => {
   }));
 
   return (
-    <div className="flex flex-col justify-center h-full p-6 rounded-lg shadow-lg bg-dark-card">
-      <h3 className="mb-6 text-xl font-bold text-center text-white">Distribution Leads Score</h3>
+    <div className="flex flex-col justify-center h-full p-6 rounded-lg shadow-lg bg-white dark:bg-[#1E1E1E]">
+      <h3 className="mb-6 text-xl font-bold text-center text-gray-900 dark:text-white/80">Distribution Leads Score</h3>
 
       <div className="flex flex-col items-center justify-center flex-grow gap-4 lg:flex-row">
         <div className="flex items-center justify-center w-full h-64 lg:w-1/2">
@@ -80,9 +80,9 @@ const ScoreDistributionCard = ({ data }) => {
                     className="flex-shrink-0 w-4 h-4 rounded-full"
                     style={{ backgroundColor: item.color }}
                   ></span>
-                  <span className="text-base text-gray-300 truncate">{item.name}</span>
+                  <span className="text-base text-gray-600 dark:text-gray-300 truncate">{item.name}</span>
                 </div>
-                <span className="text-lg font-bold text-white">{item.displayPercentage}</span>
+                <span className="text-lg font-bold text-gray-900 dark:text-white">{item.displayPercentage}</span>
               </li>
             ))}
           </ul>

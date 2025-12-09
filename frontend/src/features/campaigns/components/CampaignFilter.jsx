@@ -66,14 +66,14 @@ const CampaignFilter = ({ isOpen, initialFilters, onApply }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="p-6 rounded-xl bg-dark-bg border border-white/10 animate-fade-in-down mb-6 flex flex-wrap items-end gap-2">
+    <div className="p-6 rounded-xl bg-gray-100 dark:bg-[#121212] border border-gray-300 dark:border-white/10 animate-fade-in-down mb-6 flex flex-wrap items-end gap-2 transition-colors">
       <div className="flex flex-col space-y-1 w-full md:w-48">
-        <label className="text-xs text-gray-400 ml-1">Status</label>
+        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Status</label>
         <select
           name="isActive"
           value={filters.isActive}
           onChange={handleFilterChange}
-          className="px-3 py-2 text-sm text-white bg-[#242424] rounded-xl border border-white/10 focus:border-blue-500 focus:outline-none"
+          className="px-3 py-2 text-sm text-gray-800 bg-white rounded-xl border border-gray-300 focus:border-blue-500 focus:outline-none dark:bg-[#242424] dark:text-white dark:border-white/10"
         >
           <option value="">All Statuses</option>
           <option value="true">Active</option>
@@ -81,7 +81,7 @@ const CampaignFilter = ({ isOpen, initialFilters, onApply }) => {
         </select>
       </div>
       <div className="flex flex-col space-y-1 w-full md:w-64">
-        <label className="text-xs text-gray-400 ml-1">Date Range (Active During)</label>
+        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Date Range (Active During)</label>
         <div className="relative w-full">
           <DatePicker
             selectsRange={true}
@@ -90,7 +90,7 @@ const CampaignFilter = ({ isOpen, initialFilters, onApply }) => {
             onChange={handleDateChange}
             isClearable={true}
             placeholderText="Select date range"
-            className="w-full px-3 py-2 text-sm text-white bg-[#242424] rounded-xl border border-white/10 focus:border-blue-500 focus:outline-none cursor-pointer"
+            className="w-full px-3 py-2 text-sm text-gray-800 bg-white rounded-xl border border-gray-300 focus:border-blue-500 focus:outline-none cursor-pointer dark:bg-[#242424] dark:text-white dark:border-white/10"
             wrapperClassName="w-full"
             dateFormat="yyyy-MM-dd"
           />
@@ -99,7 +99,7 @@ const CampaignFilter = ({ isOpen, initialFilters, onApply }) => {
       <div className="flex gap-2 ml-auto">
         <button
           onClick={clearFilters}
-          className="px-4 py-2 text-sm text-white bg-red-600 rounded-xl hover:text-white hover:bg-red-500 transition-colors h-[38px]"
+          className="px-4 py-2 text-sm text-white bg-red-600 rounded-xl hover:bg-red-500 transition-colors h-[38px]"
         >
           Clear
         </button>

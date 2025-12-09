@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import LeadService from '../api/lead-service';
-import toast from 'react-hot-toast';
+import { ThemeContext } from '../../../context/ThemeContext';
+import { useLeadOptions } from '../hooks/useLeadOptions';
+import { formatNumber } from '../../../utils/formatters';
 
 const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
@@ -12,18 +14,8 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const [uploadProgress, setUploadProgress] = useState(false);
   const [error, setError] = useState('');
 
-  const jobOptions = [
-    { id: 1, name: 'Mahasiswa' },
-    { id: 2, name: 'Karyawan' },
-  ];
-  const maritalOptions = [
-    { id: 1, status: 'Single' },
-    { id: 2, status: 'Menikah' },
-  ];
-  const educationOptions = [
-    { id: 1, level: 'SMA' },
-    { id: 2, level: 'S1' },
-  ];
+  const { jobOptions, maritalOptions, educationOptions, poutcomeOptions, contactMethodOptions } =
+    useLeadOptions();
 
   useEffect(() => {
     if (isEdit && initialData) {
@@ -38,6 +30,16 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         lead_balance: initialData.lead_balance || '',
         lead_housing_loan: initialData.lead_housing_loan || false,
         lead_loan: initialData.lead_loan || false,
+        contactmethod_id: initialData.contactmethod_id || '',
+        last_contact_day:
+          typeof initialData.last_contact_day === 'string' && initialData.last_contact_day.includes('-')
+            ? initialData.last_contact_day.split('T')[0]
+            : '',
+        last_contact_duration_sec: initialData.last_contact_duration_sec || '',
+        campaign_count: initialData.campaign_count || '',
+        pdays: initialData.pdays || '',
+        prev_contact_count: initialData.prev_contact_count || '',
+        poutcome_id: initialData.poutcome_id || '',
       });
     } else {
       setFormData({
@@ -51,6 +53,13 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         lead_balance: '',
         lead_housing_loan: false,
         lead_loan: false,
+        contactmethod_id: '',
+        last_contact_day: '',
+        last_contact_duration_sec: '',
+        campaign_count: '',
+        pdays: '',
+        prev_contact_count: '',
+        poutcome_id: '',
       });
       setCsvFile(null);
     }
@@ -58,11 +67,6 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   }, [initialData, isEdit, isOpen]);
 
   if (!isOpen) return null;
-
-  const formatNumber = (num) => {
-    if (!num) return '';
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  };
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -118,30 +122,42 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           marital_id: formData.marital_id ? parseInt(formData.marital_id) : null,
           education_id: formData.education_id ? parseInt(formData.education_id) : null,
         };
+
+        const contactDate = new Date(formData.last_contact_day || new Date());
+
         const detailData = {
           lead_balance: formData.lead_balance ? parseFloat(formData.lead_balance) : 0,
           lead_housing_loan: formData.lead_housing_loan,
           lead_loan: formData.lead_loan,
+
+          last_contact_day: contactDate.getDate(),
+          month_id: contactDate.getMonth() + 1,
+          last_contact_duration_sec:
+            formData.last_contact_duration_sec !== ''
+              ? parseInt(formData.last_contact_duration_sec)
+              : 0,
+          campaign_count: formData.campaign_count !== '' ? parseInt(formData.campaign_count) : 0,
+          pdays: formData.pdays !== '' ? parseInt(formData.pdays) : 0,
+          prev_contact_count:
+            formData.prev_contact_count !== '' ? parseInt(formData.prev_contact_count) : 0,
+          poutcome_id: formData.poutcome_id ? parseInt(formData.poutcome_id) : null,
+          contactmethod_id: formData.contactmethod_id ? parseInt(formData.contactmethod_id) : null,
         };
 
         if (isEdit) {
           await LeadService.update(initialData.lead_id, leadData, detailData);
-          toast.success('Lead updated successfully!');
+          onSuccess('Successfully updated lead.');
         } else {
           await LeadService.create(leadData, detailData);
-          toast.success('Lead added successfully!');
+          onSuccess('Successfully added lead.');
         }
       } else if (activeTab === 'csv') {
         if (!csvFile) throw new Error('Please select a CSV file first');
         setUploadProgress(true);
         await LeadService.uploadCSV(csvFile);
-        toast.success('Upload Successful! Data is being processed in the background.', {
-          duration: 5000,
-          icon: '🚀',
-        });
+        onSuccess('Successfully uploaded and processed leads.');
       }
 
-      onSuccess();
       onClose();
     } catch (err) {
       setError(
@@ -154,7 +170,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm transition-colors duration-300">
       {uploadProgress && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80 rounded-2xl backdrop-blur-md">
           <div className="flex flex-col items-center p-6 space-y-4">
@@ -178,31 +194,30 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             </div>
 
             <div className="text-center">
-              <h3 className="text-xl font-bold text-white animate-pulse">Uploading Data...</h3>
+              <h3 className="text-xl font-bold text-white animate-pulse">
+                Processing lead scoring with AI/ML...
+              </h3>
               <p className="mt-2 text-sm text-gray-400">
                 Please do not close this page until upload is complete.
-              </p>
-              <p className="mt-1 text-xs text-gray-500">
-                (AI process will run automatically after this)
               </p>
             </div>
           </div>
         </div>
       )}
 
-      <div className="bg-[#1E1E1E] w-full max-w-2xl rounded-2xl shadow-2xl p-8 text-white border border-white/10 relative overflow-hidden">
-        <h2 className="mb-4 text-2xl font-bold tracking-wide">
+      <div className="bg-white dark:bg-[#1E1E1E] w-full max-w-2xl rounded-2xl shadow-2xl p-8 text-gray-900 dark:text-white border border-gray-300 dark:border-white/10 relative overflow-hidden transition-colors duration-300 max-h-[90vh] overflow-y-auto">
+        <h2 className="mb-4 text-2xl font-bold tracking-wide text-gray-900 dark:text-white">
           {isEdit ? 'Edit Lead' : 'Add Leads'}
         </h2>
-        <div className="mb-6 border-b border-white/10"></div>
+        <div className="mb-6 border-b border-gray-300 dark:border-white/10"></div>
 
-        <div className="flex mb-6 border-b border-white/10">
+        <div className="flex mb-6 border-b border-gray-300 dark:border-white/10">
           <button
             type="button"
             className={`px-4 py-3 text-sm font-semibold transition-all ${
               activeTab === 'manual'
                 ? 'border-b-2 border-brand text-brand'
-                : 'text-gray-400 hover:text-white'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
             onClick={() => setActiveTab('manual')}
           >
@@ -213,7 +228,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             className={`px-4 py-3 text-sm font-semibold transition-all ${
               activeTab === 'csv'
                 ? 'border-b-2 border-brand text-brand'
-                : 'text-gray-400 hover:text-white'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
             onClick={() => setActiveTab('csv')}
           >
@@ -222,7 +237,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         </div>
 
         {error && (
-          <div className="p-3 mb-6 text-sm text-red-200 border rounded-lg border-red-500/50 bg-red-900/20">
+          <div className="p-3 mb-6 text-sm text-red-700 border rounded-lg border-red-500/50 bg-red-100 dark:bg-red-900/20 dark:text-red-200">
             {error}
           </div>
         )}
@@ -234,7 +249,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           {activeTab === 'manual' && (
             <>
               <div className="p-3.5 rounded-lg mt-3">
-                <h3 className="mb-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+                <h3 className="mb-2 text-xs font-bold tracking-wider text-gray-600 dark:text-gray-400 uppercase">
                   Basic Information
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
@@ -244,7 +259,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     onChange={handleChange}
                     placeholder="Full Name*"
                     required
-                    className="p-2.5 bg-[#2C2C2C] rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all placeholder:text-gray-500"
+                    className="p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all placeholder:text-gray-500 dark:bg-[#2C2C2C] dark:text-white border border-gray-300 dark:border-white/10"
                   />
                   <input
                     name="lead_email"
@@ -253,28 +268,30 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     type="email"
                     placeholder="Email*"
                     required
-                    className="p-2.5 bg-[#2C2C2C] rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all placeholder:text-gray-500"
+                    className="p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all placeholder:text-gray-500 dark:bg-[#2C2C2C] dark:text-white border border-gray-300 dark:border-white/10"
                   />
                   <input
                     name="lead_phone_number"
                     value={formData.lead_phone_number}
                     onChange={handleChange}
                     placeholder="Phone Number"
-                    className="p-2.5 bg-[#2C2C2C] rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all placeholder:text-gray-500"
+                    className="p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all placeholder:text-gray-500 dark:bg-[#2C2C2C] dark:text-white border border-gray-300 dark:border-white/10"
                   />
                   <input
                     name="lead_age"
+                    type="number"
                     value={formData.lead_age}
                     onChange={handleChange}
-                    type="number"
                     placeholder="Age"
-                    className="p-2.5 bg-[#2C2C2C] rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all placeholder:text-gray-500"
+                    min="18"
+                    max="120"
+                    className="p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all placeholder:text-gray-500 dark:bg-[#2C2C2C] dark:text-white border border-gray-300 dark:border-white/10"
                   />
                 </div>
               </div>
 
               <div className="p-3.5 rounded-lg mb-[-20px]">
-                <h3 className="mb-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+                <h3 className="mb-2 text-xs font-bold tracking-wider text-gray-600 dark:text-gray-400 uppercase">
                   Demographic Data
                 </h3>
                 <div className="grid grid-cols-3 gap-3">
@@ -282,15 +299,16 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     name="job_id"
                     value={formData.job_id}
                     onChange={handleChange}
-                    className="p-2.5 bg-[#2C2C2C] rounded-lg focus:ring-1 focus:ring-brand outline-none cursor-pointer"
+                    className="p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none cursor-pointer border border-gray-300 dark:border-white/10 dark:bg-[#2C2C2C] dark:text-white"
                   >
                     <option value="">-- Job --</option>
                     {jobOptions.map((job) => (
                       <option
-                        key={job.id}
-                        value={job.id}
+                        key={job.job_id}
+                        value={job.job_id}
+                        className="bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white"
                       >
-                        {job.name}
+                        {job.job_name}
                       </option>
                     ))}
                   </select>
@@ -298,15 +316,16 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     name="marital_id"
                     value={formData.marital_id}
                     onChange={handleChange}
-                    className="p-2.5 bg-[#2C2C2C] rounded-lg focus:ring-1 focus:ring-brand outline-none cursor-pointer"
+                    className="p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none cursor-pointer border border-gray-300 dark:border-white/10 dark:bg-[#2C2C2C] dark:text-white"
                   >
                     <option value="">-- Status --</option>
                     {maritalOptions.map((m) => (
                       <option
-                        key={m.id}
-                        value={m.id}
+                        key={m.marital_id}
+                        value={m.marital_id}
+                        className="bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white"
                       >
-                        {m.status}
+                        {m.marital_status}
                       </option>
                     ))}
                   </select>
@@ -314,15 +333,16 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                     name="education_id"
                     value={formData.education_id}
                     onChange={handleChange}
-                    className="p-2.5 bg-[#2C2C2C] rounded-lg focus:ring-1 focus:ring-brand outline-none cursor-pointer"
+                    className="p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none cursor-pointer border border-gray-300 dark:border-white/10 dark:bg-[#2C2C2C] dark:text-white"
                   >
                     <option value="">-- Education --</option>
                     {educationOptions.map((e) => (
                       <option
-                        key={e.id}
-                        value={e.id}
+                        key={e.education_id}
+                        value={e.education_id}
+                        className="bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white"
                       >
-                        {e.level}
+                        {e.education_level}
                       </option>
                     ))}
                   </select>
@@ -330,13 +350,13 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
               </div>
 
               <div className="p-3.5 rounded-lg mb-[-20px]">
-                <h3 className="mb-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+                <h3 className="mb-2 text-xs font-bold tracking-wider text-gray-600 dark:text-gray-400 uppercase">
                   Financial Data
                 </h3>
                 <div className="space-y-5">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <span className="font-semibold text-gray-400">$</span>
+                      <span className="font-semibold text-gray-500 dark:text-gray-400">$</span>
                     </div>
                     <input
                       name="lead_balance"
@@ -344,7 +364,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                       value={formData.lead_balance ? formatNumber(formData.lead_balance) : ''}
                       onChange={handleBalanceChange}
                       placeholder="0"
-                      className="p-2.5 pl-12 w-full bg-[#2C2C2C] rounded-lg focus:ring-1 focus:ring-brand outline-none font-mono tracking-wide"
+                      className="p-2.5 pl-12 w-full bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none font-mono tracking-wide dark:bg-[#2C2C2C] dark:text-white border border-gray-300 dark:border-white/10"
                     />
                   </div>
 
@@ -355,9 +375,9 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                         name="lead_housing_loan"
                         checked={formData.lead_housing_loan}
                         onChange={handleChange}
-                        className="w-4 h-4 border-gray-600 rounded bg-[#2C2C2C] accent-brand focus:ring-0"
+                        className="w-4 h-4 border-gray-400 rounded bg-white accent-brand focus:ring-0 dark:bg-[#2C2C2C] dark:border-gray-600"
                       />
-                      <span className="text-sm text-gray-300 transition-colors group-hover:text-white">
+                      <span className="text-sm text-gray-700 dark:text-gray-300 transition-colors group-hover:text-gray-900 dark:group-hover:text-white">
                         Housing Loan
                       </span>
                     </label>
@@ -367,12 +387,128 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                         name="lead_loan"
                         checked={formData.lead_loan}
                         onChange={handleChange}
-                        className="w-4 h-4 border-gray-600 rounded bg-[#2C2C2C] accent-brand focus:ring-0"
+                        className="w-4 h-4 border-gray-400 rounded bg-white accent-brand focus:ring-0 dark:bg-[#2C2C2C] dark:border-gray-600"
                       />
-                      <span className="text-sm text-gray-300 transition-colors group-hover:text-white">
-                        Other Loan
+                      <span className="text-sm text-gray-700 dark:text-gray-300 transition-colors group-hover:text-gray-900 dark:group-hover:text-white">
+                        Personal Loan
                       </span>
                     </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-lg mb-[-20px]">
+                <h3 className="mb-2 text-xs font-bold tracking-wider text-gray-600 dark:text-gray-400 uppercase">
+                  Campaign History (Optional)
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500 dark:text-gray-400">
+                      Last Contact Date
+                    </label>
+                    <input
+                      name="last_contact_day"
+                      type="date"
+                      value={formData.last_contact_day}
+                      onChange={handleChange}
+                      className="w-full p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all dark:bg-[#2C2C2C] dark:text-white border border-gray-300 dark:border-white/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500 dark:text-gray-400">
+                      Call Duration (sec)
+                    </label>
+                    <input
+                      name="last_contact_duration_sec"
+                      type="number"
+                      placeholder="0"
+                      value={formData.last_contact_duration_sec}
+                      onChange={handleChange}
+                      className="w-full p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all dark:bg-[#2C2C2C] dark:text-white border border-gray-300 dark:border-white/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500 dark:text-gray-400">
+                      Campaign Contacts
+                    </label>
+                    <input
+                      name="campaign_count"
+                      type="number"
+                      placeholder="0"
+                      value={formData.campaign_count}
+                      onChange={handleChange}
+                      className="w-full p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all dark:bg-[#2C2C2C] dark:text-white border border-gray-300 dark:border-white/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500 dark:text-gray-400">
+                      Days Since Last Campaign
+                    </label>
+                    <input
+                      name="pdays"
+                      type="number"
+                      placeholder="0"
+                      value={formData.pdays}
+                      onChange={handleChange}
+                      className="w-full p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all dark:bg-[#2C2C2C] dark:text-white border border-gray-300 dark:border-white/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500 dark:text-gray-400">
+                      Previous Contacts
+                    </label>
+                    <input
+                      name="prev_contact_count"
+                      type="number"
+                      placeholder="0"
+                      value={formData.prev_contact_count}
+                      onChange={handleChange}
+                      className="w-full p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none transition-all dark:bg-[#2C2C2C] dark:text-white border border-gray-300 dark:border-white/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500 dark:text-gray-400">
+                      Previous Outcome
+                    </label>
+                    <select
+                      name="poutcome_id"
+                      value={formData.poutcome_id}
+                      onChange={handleChange}
+                      className="w-full p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none cursor-pointer border border-gray-300 dark:border-white/10 dark:bg-[#2C2C2C] dark:text-white"
+                    >
+                      <option value="">-- Unknown --</option>
+                      {poutcomeOptions.map((p) => (
+                        <option
+                          key={p.poutcome_id}
+                          value={p.poutcome_id}
+                          className="bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white"
+                        >
+                          {p.poutcome_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs text-gray-500 dark:text-gray-400">
+                      Contact Method
+                    </label>
+                    <select
+                      name="contactmethod_id"
+                      value={formData.contactmethod_id}
+                      onChange={handleChange}
+                      className="w-full p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none cursor-pointer border border-gray-300 dark:border-white/10 dark:bg-[#2C2C2C] dark:text-white"
+                    >
+                      <option value="">-- Unknown --</option>
+                      {contactMethodOptions.map((c) => (
+                        <option
+                          key={c.contactmethod_id}
+                          value={c.contactmethod_id}
+                          className="bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white"
+                        >
+                          {c.contact_method_name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -380,11 +516,11 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           )}
 
           {activeTab === 'csv' && (
-            <div className="p-8 text-center border-2 border-dashed border-white/20 rounded-xl bg-dark-bg/30">
+            <div className="p-8 text-center border-2 border-dashed border-gray-300/50 dark:border-white/20 rounded-xl bg-gray-100/50 dark:bg-dark-bg/30 transition-colors">
               <div className="space-y-4">
                 <div className="flex flex-col items-center">
                   <svg
-                    className="w-12 h-12 mb-3 text-gray-400"
+                    className="w-12 h-12 mb-3 text-gray-500 dark:text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -396,18 +532,20 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                       d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     ></path>
                   </svg>
-                  <label className="block text-sm font-medium text-gray-300">Upload CSV File</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Upload CSV File
+                  </label>
                 </div>
                 <input
                   type="file"
                   accept=".csv"
                   onChange={handleCsvChange}
-                  className="block w-full text-sm text-gray-400 cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand file:text-white hover:file:bg-brand-hover"
+                  className="block w-full text-sm text-gray-500 dark:text-gray-400 cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
                 />
                 <button
                   type="button"
                   onClick={downloadTemplate}
-                  className="text-sm text-brand hover:text-brand-hover hover:underline"
+                  className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
                 >
                   Download CSV Template
                 </button>
@@ -415,11 +553,11 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-300 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 text-sm font-semibold text-white transition bg-[#3A3A3A] rounded-lg hover:bg-[#4A4A4A]"
+              className="px-6 py-2.5 text-sm font-semibold text-gray-900 transition bg-gray-400 rounded-lg hover:bg-gray-500 dark:bg-[#3A3A3A] dark:text-white dark:hover:bg-[#4A4A4A]"
             >
               Cancel
             </button>

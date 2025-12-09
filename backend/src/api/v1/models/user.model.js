@@ -147,7 +147,7 @@ const countAllSales = async (options) => {
 const update = async (userId, userData) => {
   const currentUser = await findById(userId);
   if (!currentUser) {
-    throw new ApiError(404, 'User tidak ditemukan');
+    throw new ApiError(404, 'User not found');
   }
   const {
     full_name = currentUser.full_name,
@@ -181,7 +181,7 @@ const update = async (userId, userData) => {
 const deleteById = async (userId) => {
   const { rowCount } = await db.query('DELETE FROM tb_users WHERE user_id = $1', [userId]);
   if (rowCount === 0) {
-    throw new ApiError(404, 'User tidak ditemukan');
+    throw new ApiError(404, 'User not found');
   }
 };
 

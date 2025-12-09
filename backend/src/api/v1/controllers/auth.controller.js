@@ -5,14 +5,14 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      throw new ApiError(400, 'Email dan password harus diisi');
+      throw new ApiError(400, 'Email and password are required');
     }
 
     const { user, token } = await authService.loginUser(email, password);
 
     res.status(200).json({
       status: 'success',
-      message: 'Login berhasil',
+      message: 'Login successful',
       data: {
         token,
         user: {

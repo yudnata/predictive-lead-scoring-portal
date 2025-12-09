@@ -2,6 +2,31 @@
 const db = require('../../../config/database');
 const ApiError = require('../utils/apiError');
 
+const ALLOWED_LEAD_FIELDS = [
+  'lead_name',
+  'lead_phone_number',
+  'lead_email',
+  'lead_age',
+  'job_id',
+  'marital_id',
+  'education_id',
+];
+
+const ALLOWED_DETAIL_FIELDS = [
+  'lead_default',
+  'lead_balance',
+  'lead_housing_loan',
+  'lead_loan',
+  'last_contact_day',
+  'month_id',
+  'last_contact_duration_sec',
+  'campaign_count',
+  'pdays',
+  'prev_contact_count',
+  'poutcome_id',
+  'contactmethod_id',
+];
+
 const insertSingleLeadWithClient = async (client, lead) => {
   const {
     lead_name,
@@ -22,6 +47,7 @@ const insertSingleLeadWithClient = async (client, lead) => {
     pdays,
     prev_contact_count,
     poutcome_id,
+    contactmethod_id,
   } = lead;
 
   const leadQuery = {
@@ -50,9 +76,9 @@ const insertSingleLeadWithClient = async (client, lead) => {
         lead_id, lead_default, lead_balance, lead_housing_loan, lead_loan,
         last_contact_day, month_id, last_contact_duration_sec,
         campaign_count, pdays, prev_contact_count,
-        poutcome_id, updated_at
+        poutcome_id, contactmethod_id, updated_at
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW()
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW()
       )
     `,
     values: [
@@ -68,6 +94,7 @@ const insertSingleLeadWithClient = async (client, lead) => {
       pdays !== undefined ? pdays : null,
       prev_contact_count !== undefined ? prev_contact_count : null,
       poutcome_id !== undefined ? poutcome_id : null,
+      contactmethod_id !== undefined ? contactmethod_id : null,
     ],
   };
 
@@ -112,8 +139,11 @@ const fullLeadQuery = `
     d.pdays,
     d.prev_contact_count,
     d.poutcome_id,
+    d.contactmethod_id,
+    d.updated_at as detail_updated_at,
 
     po.poutcome_name,
+    cm.contact_method_name,
 
     ls.lead_score,
 
@@ -130,6 +160,7 @@ const fullLeadQuery = `
   LEFT JOIN tb_education e ON l.education_id = e.education_id
   LEFT JOIN tb_leads_detail d ON l.lead_id = d.lead_id
   LEFT JOIN tb_poutcome po ON d.poutcome_id = po.poutcome_id
+  LEFT JOIN tb_contact_method cm ON d.contactmethod_id = cm.contactmethod_id
   LEFT JOIN tb_leads_score ls ON l.lead_id = ls.lead_id
 `;
 
@@ -205,7 +236,7 @@ const create = async (leadData, detailData, score = 0.0) => {
   } catch (error) {
     await client.query('ROLLBACK');
     if (error.code === '23505' && error.constraint === 'tb_leads_lead_email_key') {
-      throw new ApiError(400, 'Email sudah terdaftar');
+      throw new ApiError(400, 'Email already registered');
     }
     throw error;
   } finally {
@@ -223,6 +254,7 @@ const findAll = async (options) => {
     jobId,
     maritalId,
     educationId,
+    crmStatus,
   } = options;
 
   let queryText = fullLeadQuery;
@@ -266,6 +298,16 @@ const findAll = async (options) => {
     idx++;
   }
 
+  if (crmStatus) {
+    if (crmStatus === 'Tracked') {
+      conditions.push(`EXISTS (SELECT 1 FROM tb_campaign_leads cl WHERE cl.lead_id = l.lead_id)`);
+    } else if (crmStatus === 'Available') {
+      conditions.push(
+        `NOT EXISTS (SELECT 1 FROM tb_campaign_leads cl WHERE cl.lead_id = l.lead_id)`
+      );
+    }
+  }
+
   if (conditions.length > 0) {
     queryText += ` WHERE ${conditions.join(' AND ')}`;
   }
@@ -280,7 +322,7 @@ const findAll = async (options) => {
 };
 
 const countAll = async (options) => {
-  const { search = '', minScore, maxScore, jobId, maritalId, educationId } = options;
+  const { search = '', minScore, maxScore, jobId, maritalId, educationId, crmStatus } = options;
 
   let queryText = `
     SELECT COUNT(l.lead_id) AS count
@@ -328,6 +370,16 @@ const countAll = async (options) => {
     idx++;
   }
 
+  if (crmStatus) {
+    if (crmStatus === 'Tracked') {
+      conditions.push(`EXISTS (SELECT 1 FROM tb_campaign_leads cl WHERE cl.lead_id = l.lead_id)`);
+    } else if (crmStatus === 'Available') {
+      conditions.push(
+        `NOT EXISTS (SELECT 1 FROM tb_campaign_leads cl WHERE cl.lead_id = l.lead_id)`
+      );
+    }
+  }
+
   if (conditions.length > 0) {
     queryText += ` WHERE ${conditions.join(' AND ')}`;
   }
@@ -348,8 +400,19 @@ const update = async (leadId, leadData, detailData) => {
     await client.query('BEGIN');
 
     if (leadData && Object.keys(leadData).length > 0) {
-      const fields = Object.keys(leadData);
-      const values = Object.values(leadData);
+      const allLeadFields = Object.keys(leadData);
+      const fields = allLeadFields.filter((f) => ALLOWED_LEAD_FIELDS.includes(f));
+
+      if (fields.length === 0) {
+        throw new ApiError(400, 'No valid fields to update in lead data');
+      }
+
+      const filteredOut = allLeadFields.filter((f) => !ALLOWED_LEAD_FIELDS.includes(f));
+      if (filteredOut.length > 0) {
+        console.warn(`[Security] Filtered invalid lead fields: ${filteredOut.join(', ')}`);
+      }
+
+      const values = fields.map((f) => leadData[f]);
       const set = fields.map((f, i) => `${f} = $${i + 1}`).join(', ');
       const q = {
         text: `UPDATE tb_leads SET ${set}, updated_at = NOW() WHERE lead_id = $${
@@ -361,8 +424,19 @@ const update = async (leadId, leadData, detailData) => {
     }
 
     if (detailData && Object.keys(detailData).length > 0) {
-      const fields = Object.keys(detailData);
-      const values = Object.values(detailData);
+      const allDetailFields = Object.keys(detailData);
+      const fields = allDetailFields.filter((f) => ALLOWED_DETAIL_FIELDS.includes(f));
+
+      if (fields.length === 0) {
+        throw new ApiError(400, 'No valid fields to update in detail data');
+      }
+
+      const filteredOut = allDetailFields.filter((f) => !ALLOWED_DETAIL_FIELDS.includes(f));
+      if (filteredOut.length > 0) {
+        console.warn(`[Security] Filtered invalid detail fields: ${filteredOut.join(', ')}`);
+      }
+
+      const values = fields.map((f) => detailData[f]);
       const set = fields.map((f, i) => `${f} = $${i + 1}`).join(', ');
       const q = {
         text: `UPDATE tb_leads_detail SET ${set}, updated_at = NOW() WHERE lead_id = $${
@@ -378,7 +452,7 @@ const update = async (leadId, leadData, detailData) => {
   } catch (error) {
     await client.query('ROLLBACK');
     if (error.code === '23505' && error.constraint === 'tb_leads_lead_email_key') {
-      throw new ApiError(400, 'Email sudah digunakan oleh lead lain');
+      throw new ApiError(400, 'Email already used by another lead');
     }
     throw error;
   } finally {
@@ -389,7 +463,7 @@ const update = async (leadId, leadData, detailData) => {
 const deleteById = async (leadId) => {
   const { rowCount } = await db.query('DELETE FROM tb_leads WHERE lead_id = $1', [leadId]);
   if (rowCount === 0) {
-    throw new ApiError(404, 'Lead tidak ditemukan');
+    throw new ApiError(404, 'Lead not found');
   }
 };
 
@@ -414,7 +488,7 @@ const bulkInsert = async (leads) => {
 
     if (failureCount > 0) {
       await client.query('ROLLBACK');
-      throw new ApiError(400, `${failureCount} dari ${leads.length} data gagal`, errors);
+      throw new ApiError(400, `${failureCount} of ${leads.length} records failed`, errors);
     }
 
     await client.query('COMMIT');

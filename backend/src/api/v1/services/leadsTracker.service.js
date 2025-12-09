@@ -16,9 +16,10 @@ const queryLeadsForSales = async (queryOptions, userId, minStatusName = null) =>
     offset,
     search,
     campaignId,
-    minStatusName,
+    minStatusName: minStatusName || queryOptions.minStatusName,
     minScore,
     maxScore,
+    userId,
   };
 
   const leads = await leadsTrackerModel.findAllBySales(options);
@@ -38,7 +39,7 @@ const queryLeadsForSales = async (queryOptions, userId, minStatusName = null) =>
 
 const updateLeadStatus = async (leadCampaignId, statusId, userId) => {
   if (!statusId) {
-    throw new ApiError(400, 'Status ID harus diisi');
+    throw new ApiError(400, 'Status ID is required');
   }
 
   const isDeal = parseInt(statusId) === 5;
@@ -58,7 +59,7 @@ const updateLeadStatus = async (leadCampaignId, statusId, userId) => {
   const updatedLead = await leadsTrackerModel.updateStatus(leadCampaignId, statusId, userId);
 
   if (!updatedLead) {
-    throw new ApiError(404, 'Lead campaign tidak ditemukan atau Anda tidak memiliki akses');
+    throw new ApiError(404, 'Lead campaign not found or you do not have access');
   }
 
   await leadsTrackerModel.createStatusHistory(
@@ -67,6 +68,24 @@ const updateLeadStatus = async (leadCampaignId, statusId, userId) => {
     statusId,
     userId
   );
+
+  if (parseInt(statusId) === 4) {
+    const now = new Date();
+    const day = now.getDate();
+    const monthIndex = now.getMonth();
+    const monthId = monthIndex + 1;
+
+    const currentLead = await leadModel.findFullLeadById(updatedLead.lead_id);
+
+    const updateData = {
+      last_contact_day: day,
+      month_id: monthId,
+      pdays: 0,
+      prev_contact_count: (currentLead.prev_contact_count || 0) + 1,
+    };
+
+    await leadModel.update(updatedLead.lead_id, {}, updateData);
+  }
 
   if (isDeal || isReject) {
     let poutcomeName = isDeal ? 'Success' : 'Failure';

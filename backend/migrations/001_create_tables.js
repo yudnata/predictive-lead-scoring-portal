@@ -118,6 +118,7 @@ exports.up = (pgm) => {
     prev_contact_count: { type: 'integer' },
 
     poutcome_id: { type: 'integer', references: 'tb_poutcome' },
+    contactmethod_id: { type: 'integer', references: 'tb_contact_method' },
     updated_at: { type: 'timestamptz', default: pgm.func('NOW()') },
   });
 

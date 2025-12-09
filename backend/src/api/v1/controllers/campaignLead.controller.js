@@ -12,7 +12,7 @@ exports.assignLead = async (req, res, next) => {
     const result = await campaignLeadService.assignLeadToCampaign(userId, req.body);
     res.status(201).json({
       status: 'success',
-      message: 'Lead berhasil ditautkan ke campaign',
+      message: 'Lead successfully linked to campaign',
       data: result,
     });
   } catch (error) {
@@ -34,7 +34,7 @@ exports.updateStatus = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'Status lead berhasil diupdate',
+      message: 'Lead status updated successfully',
       data: result,
     });
   } catch (error) {
@@ -75,7 +75,7 @@ exports.adminUpdateStatus = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'Status lead berhasil diupdate oleh Admin',
+      message: 'Lead status updated successfully by Admin',
       data: result,
     });
   } catch (error) {
@@ -96,7 +96,7 @@ exports.deleteCampaignLead = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'Lead berhasil dihapus dari tracking',
+      message: 'Lead successfully removed from tracking',
     });
   } catch (error) {
     next(error);
