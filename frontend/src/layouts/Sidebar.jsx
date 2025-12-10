@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
 import {
   FaTachometerAlt,
@@ -13,6 +13,7 @@ import {
   FaCalendarAlt,
   FaChartLine,
   FaUserFriends,
+  FaChartPie,
 } from 'react-icons/fa';
 import { useState } from 'react';
 
@@ -55,6 +56,7 @@ const Sidebar = ({ user }) => {
     },
     { name: 'Outcome', path: '/sales/history', icon: <FaHistory className="w-5 h-5" /> },
     { name: 'Calendar', path: '/sales/calendar', icon: <FaCalendarAlt className="w-5 h-5" /> },
+    { name: 'Segment Analysis', path: '/sales/segments', icon: <FaChartPie className="w-5 h-5" /> },
   ];
 
   const currentNavItems = isAdmin ? adminNavItems : isSales ? salesNavItems : [];

@@ -4,15 +4,12 @@ import { toast } from 'react-hot-toast';
 import UserFormModal from '../../features/users/components/UserFormModal';
 import UserService from '../../features/users/api/user-service';
 import Pagination from '../../components/Pagination';
-import { ThemeContext } from '../../context/ThemeContext';
 import SuccessModal from '../../components/SuccessModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import SalesFilter from '../../features/sales/components/SalesFilter';
 import ActionDropdown from '../../features/sales/components/ActionDropdown';
 import StatusBadgeWithDropdown from '../../features/sales/components/StatusBadgeWithDropdown';
 import { useSales } from '../../features/sales/hooks/useSales';
-
-import { createPortal } from 'react-dom';
 import { FaSearch } from 'react-icons/fa';
 
 const SalesPage = () => {
@@ -194,7 +191,12 @@ const SalesPage = () => {
 
       <div className="p-4 rounded-lg shadow-lg bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10">
         {loading ? (
-          <p className="text-gray-500 dark:text-white">Loading data...</p>
+          <div className="flex items-center justify-center h-48 text-gray-400">
+            <div className="text-center">
+              <div className="inline-block w-8 h-8 border-4 border-gray-300 dark:border-gray-400 border-t-blue-600 dark:border-t-white rounded-full animate-spin mb-2"></div>
+              <p>Loading sales data...</p>
+            </div>
+          </div>
         ) : salesUsers.length === 0 ? (
           <p className="text-gray-500 dark:text-gray-400">No Sales Found.</p>
         ) : (

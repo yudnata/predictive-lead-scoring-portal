@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import MetaService from '../../../api/meta-service';
+import LeadService from '../api/lead-service';
 
 export const useLeadOptions = () => {
   const [jobOptions, setJobOptions] = useState([]);
@@ -7,22 +8,25 @@ export const useLeadOptions = () => {
   const [educationOptions, setEducationOptions] = useState([]);
   const [poutcomeOptions, setPoutcomeOptions] = useState([]);
   const [contactMethodOptions, setContactMethodOptions] = useState([]);
+  const [segmentOptions, setSegmentOptions] = useState([]);
 
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [jobs, marital, education, poutcomes, contactMethods] = await Promise.all([
+        const [jobs, marital, education, poutcomes, contactMethods, segments] = await Promise.all([
           MetaService.getJobs(),
           MetaService.getMaritalStatus(),
           MetaService.getEducationLevels(),
           MetaService.getPoutcomes(),
           MetaService.getContactMethods(),
+          LeadService.getSegments(),
         ]);
         setJobOptions(jobs);
         setMaritalOptions(marital);
         setEducationOptions(education);
         setPoutcomeOptions(poutcomes);
         setContactMethodOptions(contactMethods);
+        setSegmentOptions(segments);
       } catch (err) {
         console.error('Failed to fetch options:', err);
       }
@@ -37,5 +41,6 @@ export const useLeadOptions = () => {
     educationOptions,
     poutcomeOptions,
     contactMethodOptions,
+    segmentOptions,
   };
 };

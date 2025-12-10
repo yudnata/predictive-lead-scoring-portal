@@ -3,7 +3,9 @@ import axios from 'axios';
 import Lottie from 'lottie-react';
 import authAnimation from '../assets/lottie/auth.json';
 
-const API_BASE_URL = 'http://localhost:5000/api/v1/auth';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  ? `${import.meta.env.VITE_API_BASE_URL}/auth`
+  : 'http://localhost:5000/api/v1/auth';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -68,7 +70,6 @@ const LoginPage = () => {
 
   return (
     <div className="flex min-h-screen text-white bg-dark-bg">
-      {/* Left side animation */}
       <div className="flex-1 hidden w-1/2 overflow-hidden md:flex items-center justify-center pl-16 ml-24">
         <Lottie
           lottieRef={animRef}
@@ -79,7 +80,6 @@ const LoginPage = () => {
         />
       </div>
 
-      {/* Right side form */}
       <div className="relative flex flex-1 w-full h-screen px-8 py-10 md:w-1/2 md:px-20">
         <div className="absolute flex items-center space-x-2 top-8 right-8">
           <img

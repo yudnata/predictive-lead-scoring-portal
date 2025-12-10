@@ -1,4 +1,3 @@
-import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const CustomTooltip = ({ active, payload }) => {
@@ -37,7 +36,9 @@ const ScoreDistributionCard = ({ data }) => {
 
   return (
     <div className="flex flex-col justify-center h-full p-6 rounded-lg shadow-lg bg-white dark:bg-[#1E1E1E]">
-      <h3 className="mb-6 text-xl font-bold text-center text-gray-900 dark:text-white/80">Distribution Leads Score</h3>
+      <h3 className="mb-6 text-xl font-bold text-center text-gray-900 dark:text-white/80">
+        Distribution Leads Score
+      </h3>
 
       <div className="flex flex-col items-center justify-center flex-grow gap-4 lg:flex-row">
         <div className="flex items-center justify-center w-full h-64 lg:w-1/2">
@@ -80,9 +81,13 @@ const ScoreDistributionCard = ({ data }) => {
                     className="flex-shrink-0 w-4 h-4 rounded-full"
                     style={{ backgroundColor: item.color }}
                   ></span>
-                  <span className="text-base text-gray-600 dark:text-gray-300 truncate">{item.name}</span>
+                  <span className="text-base text-gray-600 dark:text-gray-300 truncate">
+                    {item.name}
+                  </span>
                 </div>
-                <span className="text-lg font-bold text-gray-900 dark:text-white">{item.displayPercentage}</span>
+                <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  {item.displayPercentage}
+                </span>
               </li>
             ))}
           </ul>

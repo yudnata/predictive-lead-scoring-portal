@@ -6,7 +6,7 @@ const logActivity = async (data) => {
 };
 
 const getHistory = async (leadId, campaignId) => {
-  const url = campaignId 
+  const url = campaignId
     ? `/outbound-activities/${leadId}?campaign_id=${campaignId}`
     : `/outbound-activities/${leadId}`;
   const response = await axiosClient.get(url);

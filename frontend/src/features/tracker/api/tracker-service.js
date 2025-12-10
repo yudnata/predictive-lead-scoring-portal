@@ -2,12 +2,11 @@ import axiosClient from '../../../api/axiosClient';
 
 const LeadsTrackerService = {
   queryLeads: async (queryOptions, userId, minStatusName = null, filterSelf = false) => {
-      const params = { ...queryOptions, user_id: userId, minStatusName, filterSelf };
-      // Map frontend keys to backend expectations if needed
-      if (queryOptions.campaignFilter) params.campaignId = queryOptions.campaignFilter;
-      
-      const res = await axiosClient.get('/leads-tracker', { params });
-      return res.data;
+    const params = { ...queryOptions, user_id: userId, minStatusName, filterSelf };
+    if (queryOptions.campaignFilter) params.campaignId = queryOptions.campaignFilter;
+
+    const res = await axiosClient.get('/leads-tracker', { params });
+    return res.data;
   },
 
   getAll: async (page = 1, limit = 10, search = '', filters = {}, user_id, filterSelf = false) => {

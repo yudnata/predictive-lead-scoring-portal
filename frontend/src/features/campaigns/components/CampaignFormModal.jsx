@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import CampaignService from '../api/campaign-service';
 
@@ -134,11 +134,11 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-      <div className="bg-white dark:bg-[#1E1E1E] w-full max-w-xl rounded-2xl shadow-2xl p-8 text-gray-900 dark:text-white border border-gray-300 dark:border-white/10 relative overflow-visible transition-colors"> 
+      <div className="bg-white dark:bg-[#1E1E1E] w-full max-w-xl rounded-2xl shadow-2xl p-8 text-gray-900 dark:text-white border border-gray-300 dark:border-white/10 relative overflow-visible transition-colors">
         <h2 className="mb-4 text-2xl font-bold tracking-wide text-gray-900 dark:text-white">
-            {isEdit ? 'Edit Campaign' : 'Add Campaign'}
+          {isEdit ? 'Edit Campaign' : 'Add Campaign'}
         </h2>
-      <div className="mb-6 border-b border-gray-300 dark:border-white/10"></div>
+        <div className="mb-6 border-b border-gray-300 dark:border-white/10"></div>
 
         {error && (
           <div className="p-3 mb-6 text-sm text-red-700 border rounded-lg border-red-500/50 bg-red-100 dark:bg-red-900/20 dark:text-red-200">
@@ -151,7 +151,9 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           className="space-y-4"
         >
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Campaign Name*</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Campaign Name*
+            </label>
             <input
               name="campaign_name"
               placeholder="Enter campaign name"
@@ -163,7 +165,7 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Campaign Duration*
+              Campaign Duration*
             </label>
             <div className="relative w-full">
               <DatePicker
@@ -183,7 +185,9 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           </div>
 
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Description*</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Description*
+            </label>
             <textarea
               name="campaign_desc"
               rows="3"
@@ -195,7 +199,9 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             ></textarea>
           </div>
           <div className="relative">
-          <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Assign Sales</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Assign Sales
+            </label>
 
             <button
               type="button"
@@ -211,7 +217,9 @@ const CampaignFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
             {openDropdown && (
               <div className="absolute z-40 w-full mt-1 bg-white dark:bg-[#2C2C2C] border border-gray-300 rounded-lg max-h-48 overflow-y-auto shadow-lg dark:border-white/20">
                 {salesList.length === 0 ? (
-                  <p className="p-3 text-gray-500 text-sm dark:text-gray-400">No sales available.</p>
+                  <p className="p-3 text-gray-500 text-sm dark:text-gray-400">
+                    No sales available.
+                  </p>
                 ) : (
                   salesList.map((s) => (
                     <label

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import CampaignService from '../../campaigns/api/campaign-service';
 
 const OutboundFilter = ({ isOpen, initialFilters, onApply }) => {

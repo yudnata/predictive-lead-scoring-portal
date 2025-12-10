@@ -1,8 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
-
 import LoginPage from '../pages/LoginPage';
 import DashboardPage from '../pages/DashboardPage';
-
 import CampaignPage from '../pages/admin/CampaignPage';
 import SalesPage from '../pages/admin/SalesPage';
 import LeadsPage from '../pages/LeadsPage';
@@ -13,7 +11,7 @@ import LeadsTrackerPage from '../pages/sales/LeadsTrackerPage';
 import OutboundDetailPage from '../pages/sales/OutboundDetailPage';
 import CalendarPage from '../pages/sales/CalendarPage';
 import SettingsPage from '../pages/SettingsPage';
-
+import SegmentAnalysisPage from '../pages/SegmentAnalysisPage';
 import PrivateRoute from '../features/auth/components/PrivateRoute';
 import MainLayout from '../layouts/MainLayout';
 import RouteLoader from '../components/RouteLoader';
@@ -102,6 +100,10 @@ const AppRoutes = ({ userProfile }) => (
           <Route
             path="/sales/settings"
             element={<SettingsPage />}
+          />
+          <Route
+            path="/sales/segments"
+            element={<SegmentAnalysisPage />}
           />
         </Route>
       </Route>

@@ -1,0 +1,9 @@
+flask
+pandas
+numpy
+tensorflow
+scikit-learn
+faker
+shap
+huggingface_hub
+python-dotenv

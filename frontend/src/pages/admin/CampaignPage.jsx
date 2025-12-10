@@ -1,11 +1,10 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import CampaignFormModal from '../../features/campaigns/components/CampaignFormModal';
 import CampaignDetailModal from '../../features/campaigns/components/CampaignDetailModal';
 import CampaignService from '../../features/campaigns/api/campaign-service';
 import Pagination from '../../components/Pagination';
-import { ThemeContext } from '../../context/ThemeContext';
 import SuccessModal from '../../components/SuccessModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import ActionDropdown from '../../features/campaigns/components/ActionDropdown';
@@ -14,6 +13,7 @@ import CampaignFilter from '../../features/campaigns/components/CampaignFilter';
 import { useCampaigns } from '../../features/campaigns/hooks/useCampaigns';
 import { formatDate } from '../../utils/formatters';
 import { FaSearch } from 'react-icons/fa';
+import { useAIContext } from '../../context/useAIContext';
 
 const CampaignPage = () => {
   const {
@@ -51,6 +51,12 @@ const CampaignPage = () => {
     onConfirm: () => {},
     isDangerous: false,
   });
+
+  const { setCampaignsContext } = useAIContext();
+
+  useEffect(() => {
+    setCampaignsContext(campaigns);
+  }, [campaigns, setCampaignsContext]);
 
   const handleOpenEditModal = async (id) => {
     setLoading(true);
@@ -186,7 +192,12 @@ const CampaignPage = () => {
 
       <div className="p-4 rounded-lg shadow-lg bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10">
         {loading ? (
-          <p className="text-gray-500 dark:text-white/80">Loading data...</p>
+          <div className="flex items-center justify-center h-48 text-gray-400">
+            <div className="text-center">
+              <div className="inline-block w-8 h-8 border-4 border-gray-300 dark:border-gray-400 border-t-blue-600 dark:border-t-white rounded-full animate-spin mb-2"></div>
+              <p>Loading campaigns...</p>
+            </div>
+          </div>
         ) : campaigns.length === 0 ? (
           <p className="text-gray-400 dark:text-gray-500">No Campaign Found</p>
         ) : (

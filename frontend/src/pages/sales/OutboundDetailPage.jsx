@@ -11,12 +11,20 @@ import { getScoreColor, getStatusBadge } from '../../utils/formatters';
 import SuccessModal from '../../components/SuccessModal';
 import { FaSearch } from 'react-icons/fa';
 
+import { useAIContext } from '../../context/useAIContext';
+
 const OutboundDetailPage = () => {
   const outletContext = useOutletContext?.() || {};
   const user = outletContext.user || outletContext || {};
 
+  const { setOutboundContext } = useAIContext();
+
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setOutboundContext(data);
+  }, [data, setOutboundContext]);
 
   const [search, setSearch] = useState('');
 
@@ -32,7 +40,7 @@ const OutboundDetailPage = () => {
   const [filterSelf, setFilterSelf] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
 
@@ -147,9 +155,8 @@ const OutboundDetailPage = () => {
                   />
                 </svg>
                 Filter
-
               </button>
-              
+
               <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-[#242424] rounded-lg border border-gray-300 dark:border-white/10">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Only Show My Leads
@@ -199,11 +206,13 @@ const OutboundDetailPage = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td
-                    colSpan={7}
-                    className="py-12 text-center text-gray-400"
-                  >
-                    Loading outbound data...
+                  <td colSpan={7} className="py-12">
+                    <div className="flex items-center justify-center text-gray-400">
+                      <div className="text-center">
+                        <div className="inline-block w-8 h-8 border-4 border-gray-300 dark:border-gray-400 border-t-blue-600 dark:border-t-white rounded-full animate-spin mb-2"></div>
+                        <p>Loading outbound data...</p>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               ) : data.length > 0 ? (

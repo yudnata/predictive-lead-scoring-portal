@@ -1,0 +1,25 @@
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  backend:
+    build:
+      target: production
+    environment:
+      NODE_ENV: production
+    volumes: []
+    command: npm start
+
+  ml-api:
+    build:
+      target: production
+    environment:
+      FLASK_ENV: production
+      FLASK_DEBUG: 0
+    volumes: []
+
+  frontend:
+    build:
+      target: production
+    volumes: []
+    ports:
+      - "80:80"

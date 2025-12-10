@@ -1,4 +1,4 @@
-/* eslint-disable no-irregular-whitespace */
+import { useState } from 'react';
 
 const Pagination = ({
   currentPage,
@@ -8,6 +8,22 @@ const Pagination = ({
   onLimitChange,
   totalResults,
 }) => {
+  const [jumpValue, setJumpValue] = useState('');
+
+  const handleJumpToPage = () => {
+    const pageNum = parseInt(jumpValue, 10);
+    if (pageNum >= 1 && pageNum <= totalPages) {
+      onPageChange(pageNum);
+      setJumpValue('');
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleJumpToPage();
+    }
+  };
+
   const renderPageNumbers = () => {
     const pages = [];
     const siblingCount = 1;
@@ -58,10 +74,10 @@ const Pagination = ({
     <div className="flex items-center justify-between mt-6 text-sm text-gray-700 dark:text-white">
       <div className="flex items-center gap-2">
         <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-3 py-1 text-gray-800 dark:text-white transition rounded-lg bg-gray-200 dark:bg-white/5 backdrop-blur-sm disabled:opacity-30 hover:bg-gray-300 dark:hover:bg-white/20"
-        >
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 text-gray-800 dark:text-white transition rounded-lg bg-gray-200 dark:bg-white/5 backdrop-blur-sm disabled:opacity-30 hover:bg-gray-300 dark:hover:bg-white/20"
+        >
           Back
         </button>
 
@@ -83,10 +99,10 @@ const Pagination = ({
               onClick={() => onPageChange(page)}
               className={`w-9 h-9 flex items-center justify-center rounded-md text-sm transition
             ${
-            currentPage === page
-              ? 'bg-blue-600 text-white' 
-              : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-white/5 dark:text-white dark:hover:bg-white/10' 
-            }
+              currentPage === page
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-white/5 dark:text-white dark:hover:bg-white/10'
+            }
               `}
             >
               {page}
@@ -95,12 +111,35 @@ const Pagination = ({
         })}
 
         <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-3 py-1 text-gray-800 dark:text-white transition rounded-lg bg-gray-200 dark:bg-white/5 backdrop-blur-sm disabled:opacity-30 hover:bg-gray-300 dark:hover:bg-white/20"
-        >
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 text-gray-800 dark:text-white transition rounded-lg bg-gray-200 dark:bg-white/5 backdrop-blur-sm disabled:opacity-30 hover:bg-gray-300 dark:hover:bg-white/20"
+        >
           Next
         </button>
+
+        <div className="flex items-center gap-2 ml-4">
+          <span className="text-gray-500 dark:text-white/70 text-sm">Go to</span>
+          <input
+            type="number"
+            min="1"
+            max={totalPages}
+            value={jumpValue}
+            onChange={(e) => setJumpValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="..."
+            className="w-16 px-2 py-1.5 text-center text-gray-800 dark:text-white border rounded-lg bg-white dark:bg-[#1A1A1A] border-gray-300 dark:border-white/10 focus:outline-none focus:border-blue-500 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <button
+            onClick={handleJumpToPage}
+            disabled={
+              !jumpValue || parseInt(jumpValue, 10) < 1 || parseInt(jumpValue, 10) > totalPages
+            }
+            className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          >
+            Go
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-4">

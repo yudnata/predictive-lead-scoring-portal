@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
   LineChart,
@@ -13,8 +13,9 @@ import axiosClient from '../api/axiosClient';
 import StatCard from '../features/dashboard/components/StatCard';
 import RankedListCard from '../features/dashboard/components/RankedListCard';
 import ScoreDistributionCard from '../features/dashboard/components/ScoreDistributionCard';
+import { useAIContext } from '../context/useAIContext';
 
-const USE_DUMMY_DATA = false;
+const USE_DUMMY_DATA = true;
 
 const generateDummyData = () => {
   const data = [];
@@ -52,6 +53,7 @@ const DashboardPage = () => {
   const { user } = useOutletContext();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { setDashboardContext } = useAIContext();
 
   const getScoreColor = (score) => {
     if (score > 70) return 'text-[#66BB6A]';
@@ -75,9 +77,28 @@ const DashboardPage = () => {
     fetchDashboardData();
   }, []);
 
+  useEffect(() => {
+    if (data) {
+      setDashboardContext({
+        totalLeads: data.totalLeads,
+        averageScore: data.averageLeadsScore + '%',
+        conversionRate: parseFloat(data.conversionRate).toFixed(1) + '%',
+        rejectRate: parseFloat(data.rejectRate || 0).toFixed(1) + '%',
+        activeCampaigns: data.activeCampaigns,
+        topLeads: data.topHighestLeadsScore,
+        topCampaigns: data.topCampaignByConversion,
+      });
+    }
+  }, [data, setDashboardContext]);
+
   if (loading)
     return (
-      <div className="p-8 text-center text-gray-900 dark:text-white">Loading Dashboard...</div>
+      <div className="flex items-center justify-center h-96 text-gray-400">
+        <div className="text-center">
+          <div className="inline-block w-8 h-8 border-4 border-gray-300 dark:border-gray-400 border-t-blue-600 dark:border-t-white rounded-full animate-spin mb-2"></div>
+          <p>Loading Dashboard...</p>
+        </div>
+      </div>
     );
   if (!data)
     return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
@@ -14,6 +14,9 @@ import ConfirmationModal from '../../components/ConfirmationModal';
 import SuccessModal from '../../components/SuccessModal';
 import axios from 'axios';
 import { FaPlus } from 'react-icons/fa';
+import { useAIContext } from '../../context/useAIContext';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
 
 const locales = {
   'en-US': enUS,
@@ -69,7 +72,7 @@ const CalendarPage = () => {
   const fetchEvents = useCallback(async () => {
     try {
       const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-      const response = await axios.get('http://localhost:5000/api/v1/calendar', {
+      const response = await axios.get(`${API_BASE_URL}/calendar`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -92,6 +95,12 @@ const CalendarPage = () => {
     fetchEvents();
   }, [fetchEvents]);
 
+  const { setCalendarContext } = useAIContext();
+
+  useEffect(() => {
+    setCalendarContext(events);
+  }, [events, setCalendarContext]);
+
   const handleSelectSlot = ({ start, end }) => {
     setSelectedEvent({ start, end, title: '', description: '', all_day: false, type: 'meeting' });
     setIsModalOpen(true);
@@ -113,7 +122,7 @@ const CalendarPage = () => {
 
       if (selectedEvent && selectedEvent.event_id) {
         await axios.put(
-          `http://localhost:5000/api/v1/calendar/${selectedEvent.event_id}`,
+          `${API_BASE_URL}/calendar/${selectedEvent.event_id}`,
           payload,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -121,7 +130,7 @@ const CalendarPage = () => {
         );
         setSuccessMessage('Event updated successfully!');
       } else {
-        await axios.post('http://localhost:5000/api/v1/calendar', payload, {
+        await axios.post(`${API_BASE_URL}/calendar`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSuccessMessage('Event created successfully!');
@@ -143,7 +152,7 @@ const CalendarPage = () => {
   const handleDeleteConfirm = async () => {
     try {
       const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-      await axios.delete(`http://localhost:5000/api/v1/calendar/${selectedEvent.event_id}`, {
+      await axios.delete(`${API_BASE_URL}/calendar/${selectedEvent.event_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccessMessage('Event deleted successfully!');
@@ -191,7 +200,7 @@ const CalendarPage = () => {
 
   return (
     <>
-      <div className="p-6 h-full flex flex-col bg-gray-50 dark:bg-[#0f0f0f]">
+      <div className="p-6 h-full flex flex-col bg-gray-50 dark:bg-dark-bg">
         <div className="flex justify-between items-center mb-6 px-1">
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">

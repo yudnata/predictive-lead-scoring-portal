@@ -1,5 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-// /* eslint-disable no-irregular-whitespace */
 import React, { createContext, useState, useEffect } from 'react';
 
 const getInitialTheme = () => {

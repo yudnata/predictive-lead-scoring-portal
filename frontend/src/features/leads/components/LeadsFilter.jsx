@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import MetaService from '../api/meta-service';
-import { ThemeContext } from '../../../context/ThemeContext';
 
 const LeadsFilter = ({ isOpen, initialFilters, onApply }) => {
   const [jobs, setJobs] = useState([]);
@@ -133,7 +132,7 @@ const LeadsFilter = ({ isOpen, initialFilters, onApply }) => {
       </div>
 
       <div className="flex flex-col space-y-1 w-full md:w-48">
-      <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Education</label>
+        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Education</label>
         <select
           name="educationId"
           value={filters.educationId}
@@ -176,7 +175,7 @@ const LeadsFilter = ({ isOpen, initialFilters, onApply }) => {
         </button>
         <button
           onClick={applyFilters}
-          className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-500 transition-colors h-[38px]"        
+          className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-500 transition-colors h-[38px]"
         >
           Apply
         </button>

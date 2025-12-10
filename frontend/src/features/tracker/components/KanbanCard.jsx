@@ -1,4 +1,3 @@
-import React from 'react';
 import { getScoreColor } from '../../../utils/formatters';
 
 const KanbanCard = ({ lead, onDragStart, onClick }) => {
@@ -65,7 +64,9 @@ const KanbanCard = ({ lead, onDragStart, onClick }) => {
     >
       <div className="flex items-start justify-between mb-1.5">
         <div className="flex-1">
-          <h3 className="text-gray-900 dark:text-white font-semibold text-sm truncate mb-0.5">{lead.lead_name}</h3>
+          <h3 className="text-gray-900 dark:text-white font-semibold text-sm truncate mb-0.5">
+            {lead.lead_name}
+          </h3>
           <p className="text-gray-500 dark:text-gray-400 text-xs">#{lead.lead_id}</p>
         </div>
       </div>
@@ -73,7 +74,9 @@ const KanbanCard = ({ lead, onDragStart, onClick }) => {
       <div className="space-y-1 mt-2">
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-500 dark:text-gray-400">Campaign:</span>
-          <span className="text-gray-700 dark:text-white/80 truncate ml-2 max-w-[140px]">{lead.campaign_name}</span>
+          <span className="text-gray-700 dark:text-white/80 truncate ml-2 max-w-[140px]">
+            {lead.campaign_name}
+          </span>
         </div>
         {lead.score !== null && lead.score !== undefined && (
           <div className="flex items-center justify-between text-xs">

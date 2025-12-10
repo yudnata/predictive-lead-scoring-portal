@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import AppRoutes from './routes/AppRoutes';
 import RouteLoader from './components/RouteLoader';
 import axiosClient from './api/axiosClient';
+import { UploadProgressProvider } from './context/UploadProgressContext';
+import UploadProgressToast from './components/UploadProgressToast';
 
 function App() {
   const [userProfile, setUserProfile] = useState(null);
@@ -38,13 +40,15 @@ function App() {
     );
 
   return (
-    <>
+    <UploadProgressProvider>
       <Toaster position="top-right" />
+      <UploadProgressToast />
       <RouteLoader>
         <AppRoutes userProfile={userProfile} />
       </RouteLoader>
-    </>
+    </UploadProgressProvider>
   );
 }
 
 export default App;
+

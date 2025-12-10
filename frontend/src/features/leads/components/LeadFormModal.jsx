@@ -1,21 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import LeadService from '../api/lead-service';
-import { ThemeContext } from '../../../context/ThemeContext';
 import { useLeadOptions } from '../hooks/useLeadOptions';
 import { formatNumber } from '../../../utils/formatters';
+import { useUploadProgress } from '../../../context/useUploadProgress';
 
 const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
   const isEdit = !!initialData;
   const [activeTab, setActiveTab] = useState('manual');
   const [formData, setFormData] = useState({});
   const [csvFile, setCsvFile] = useState(null);
+  const [uploadLimit, setUploadLimit] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(false);
   const [error, setError] = useState('');
 
-  const { jobOptions, maritalOptions, educationOptions, poutcomeOptions, contactMethodOptions } =
-    useLeadOptions();
+  const {
+    jobOptions,
+    maritalOptions,
+    educationOptions,
+    poutcomeOptions,
+    contactMethodOptions,
+    segmentOptions,
+  } = useLeadOptions();
+
+  const { startTracking } = useUploadProgress();
 
   useEffect(() => {
     if (isEdit && initialData) {
@@ -27,12 +36,14 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         job_id: initialData.job_id || '',
         marital_id: initialData.marital_id || '',
         education_id: initialData.education_id || '',
+        segment_id: initialData.segment_id || '',
         lead_balance: initialData.lead_balance || '',
         lead_housing_loan: initialData.lead_housing_loan || false,
         lead_loan: initialData.lead_loan || false,
         contactmethod_id: initialData.contactmethod_id || '',
         last_contact_day:
-          typeof initialData.last_contact_day === 'string' && initialData.last_contact_day.includes('-')
+          typeof initialData.last_contact_day === 'string' &&
+          initialData.last_contact_day.includes('-')
             ? initialData.last_contact_day.split('T')[0]
             : '',
         last_contact_duration_sec: initialData.last_contact_duration_sec || '',
@@ -50,6 +61,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
         job_id: '',
         marital_id: '',
         education_id: '',
+        segment_id: '',
         lead_balance: '',
         lead_housing_loan: false,
         lead_loan: false,
@@ -84,18 +96,34 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
 
   const downloadTemplate = () => {
     const headers = [
-      'lead_name',
-      'lead_phone_number',
-      'lead_email',
-      'lead_age',
-      'job_id',
-      'marital_id',
-      'education_id',
-      'lead_balance',
-      'lead_housing_loan',
-      'lead_loan',
+      'name',
+      'email',
+      'telephone',
+      'age',
+      'job',
+      'marital',
+      'education',
+      'default',
+      'balance',
+      'housing',
+      'loan',
+      'contact',
+      'day',
+      'month',
+      'duration',
+      'campaign',
+      'pdays',
+      'previous',
+      'poutcome',
+      'segment',
     ];
-    const csvContent = [headers.join(',')].join('\n');
+
+    const sampleRows = [
+      'John Doe,john.doe@example.com,628123456789,35,management,married,tertiary,no,5000,yes,no,cellular,15,may,300,1,-1,0,unknown,Responsive Young',
+      'Jane Smith,jane.smith@example.com,628987654321,42,technician,single,secondary,no,2500,no,yes,telephone,20,jun,250,2,30,1,success,High-Income Senior',
+    ];
+
+    const csvContent = [headers.join(','), ...sampleRows].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -121,6 +149,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           job_id: formData.job_id ? parseInt(formData.job_id) : null,
           marital_id: formData.marital_id ? parseInt(formData.marital_id) : null,
           education_id: formData.education_id ? parseInt(formData.education_id) : null,
+          segment_id: formData.segment_id ? parseInt(formData.segment_id) : null,
         };
 
         const contactDate = new Date(formData.last_contact_day || new Date());
@@ -151,14 +180,17 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
           await LeadService.create(leadData, detailData);
           onSuccess('Successfully added lead.');
         }
+        onClose();
       } else if (activeTab === 'csv') {
         if (!csvFile) throw new Error('Please select a CSV file first');
         setUploadProgress(true);
-        await LeadService.uploadCSV(csvFile);
-        onSuccess('Successfully uploaded and processed leads.');
+        const response = await LeadService.uploadCSV(csvFile, uploadLimit);
+        if (response?.data?.sessionId) {
+          startTracking(response.data.sessionId);
+        }
+        onSuccess('CSV upload started. Check progress in bottom-right corner.');
+        onClose();
       }
-
-      onClose();
     } catch (err) {
       setError(
         err.response?.data?.message || err.message || 'An error occurred while saving data.'
@@ -343,6 +375,23 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                         className="bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white"
                       >
                         {e.education_level}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    name="segment_id"
+                    value={formData.segment_id}
+                    onChange={handleChange}
+                    className="p-2.5 bg-gray-100 text-gray-900 rounded-lg focus:ring-1 focus:ring-brand outline-none cursor-pointer border border-gray-300 dark:border-white/10 dark:bg-[#2C2C2C] dark:text-white"
+                  >
+                    <option value="">-- Group --</option>
+                    {segmentOptions.map((s) => (
+                      <option
+                        key={s.segment_id}
+                        value={s.segment_id}
+                        className="bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white"
+                      >
+                        {s.lead_segment}
                       </option>
                     ))}
                   </select>
@@ -549,6 +598,24 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                 >
                   Download CSV Template
                 </button>
+              </div>
+              <div className="mt-4 p-4 border rounded-lg bg-gray-50 border-gray-200 dark:bg-dark-card/10 transition-colors border-none ">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Limit Leads (Optional) for Random Sampling
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 1000 (Empty = All Leads)"
+                    value={uploadLimit}
+                    onChange={(e) => setUploadLimit(e.target.value)}
+                    className="block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent dark:bg-[#1A1A1A] dark:border-white/20 dark:text-white"
+                  />
+                  <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                    If set, system will select {uploadLimit || 'ALL'} random leads from the CSV.
+                  </div>
+                </div>
               </div>
             </div>
           )}

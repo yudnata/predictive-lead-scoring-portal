@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import LeadsTrackerService from '../../features/tracker/api/tracker-service';
@@ -11,6 +11,7 @@ import ConfirmationModal from '../../components/ConfirmationModal';
 import TrackerFilter from '../../features/tracker/components/TrackerFilter';
 import { useTracker } from '../../features/tracker/hooks/useTracker';
 import { FaSearch } from 'react-icons/fa';
+import { useAIContext } from '../../context/useAIContext';
 
 const KANBAN_STATUSES = [
   { name: 'Uncontacted', id: 3 },
@@ -50,6 +51,12 @@ const LeadsTrackerPage = () => {
     onConfirm: () => {},
     isDangerous: false,
   });
+
+  const { setTrackerContext } = useAIContext();
+
+  useEffect(() => {
+    setTrackerContext(list);
+  }, [list, setTrackerContext]);
 
   const executeStatusChange = async (leadCampaignId, newStatusId) => {
     try {

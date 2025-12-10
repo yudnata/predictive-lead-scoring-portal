@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import LeadFormModal from '../features/leads/components/LeadFormModal';
@@ -11,6 +11,7 @@ import Pagination from '../components/Pagination';
 import CampaignHoverCard from '../features/leads/components/CampaignHoverCard';
 import ActionDropdown from '../features/leads/components/ActionDropdown';
 import { ThemeContext } from '../context/ThemeContext';
+import { useAIContext } from '../context/useAIContext';
 import { getScoreColor, getStatusBadge } from '../utils/formatters';
 
 import SuccessModal from '../components/SuccessModal';
@@ -40,6 +41,12 @@ const LeadsPage = () => {
     fetchLeads,
   } = useLeads();
 
+  const { setLeadsContext } = useAIContext();
+
+  useEffect(() => {
+    setLeadsContext(leads);
+  }, [leads, setLeadsContext]);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLead, setEditingLead] = useState(null);
 
@@ -65,6 +72,7 @@ const LeadsPage = () => {
     onConfirm: () => {},
     isDangerous: false,
   });
+
 
   const handleOpenAddModal = () => {
     setEditingLead(null);
@@ -228,7 +236,7 @@ const LeadsPage = () => {
             </div>
 
             {isAdmin && (
-              <div className="flex gap-3">
+              <div className="flex gap-3 items-center">
                 {selectedLeads.length > 0 && (
                   <button
                     onClick={handleBatchDelete}
@@ -323,6 +331,7 @@ const LeadsPage = () => {
                   Lead Name
                 </th>
                 <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Job</th>
+                <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Group</th>
                 <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Score</th>
                 <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Status</th>
                 {(user?.role === 'admin' || user?.role === 'sales') && (
@@ -353,7 +362,18 @@ const LeadsPage = () => {
                   }
                 `}
               </style>
-              {leads.length > 0
+              {loading ? (
+                <tr>
+                  <td colSpan={isAdmin ? 8 : 7} className="py-12">
+                    <div className="flex items-center justify-center text-gray-400">
+                      <div className="text-center">
+                        <div className="inline-block w-8 h-8 border-4 border-gray-300 dark:border-gray-400 border-t-blue-600 dark:border-t-white rounded-full animate-spin mb-2"></div>
+                        <p>Loading leads...</p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ) : leads.length > 0
                 ? leads.map((lead, index) => (
                     <tr
                       key={lead.lead_id}
@@ -418,6 +438,9 @@ const LeadsPage = () => {
                       <td className="px-4 py-2 text-gray-800 dark:text-white/80 hover:pointer">
                         {lead.job_name}
                       </td>
+                      <td className="px-4 py-2 text-gray-800 dark:text-white/80 hover:pointer">
+                        {lead.lead_segment || '-'}
+                      </td>
                       <td className="px-4 py-3 hover:pointer">
                         <span
                           className={`px-2 py-1 rounded-md text-sm font-bold ${getScoreColor(
@@ -456,10 +479,10 @@ const LeadsPage = () => {
                       )}
                     </tr>
                   ))
-                : !loading && (
+                : (
                     <tr>
                       <td
-                        colSpan={isAdmin ? 7 : 5}
+                        colSpan={isAdmin ? 8 : 7}
                         className="py-12 text-center text-gray-400"
                       >
                         No Leads Found.

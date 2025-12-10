@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { ThemeContext } from '../../../context/ThemeContext';
-
 import LeadService from '../api/lead-service';
 import NoteService from '../../notes/api/note-service';
 import ConfirmationModal from '../../../components/ConfirmationModal';
@@ -14,6 +12,7 @@ import {
   formatDuration,
   getScoreColor,
 } from '../../../utils/formatters';
+import { useAIContext } from '../../../context/useAIContext';
 
 const LeadDetailModal = ({
   isOpen,
@@ -34,6 +33,15 @@ const LeadDetailModal = ({
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, noteId: null });
   const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
   const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
+  const [explanation, setExplanation] = useState(null);
+  const [loadingExplanation, setLoadingExplanation] = useState(false);
+  const { setLeadDetailContext } = useAIContext();
+
+  React.useEffect(() => {
+    if (isOpen && lead) {
+      setLeadDetailContext(lead);
+    }
+  }, [isOpen, lead, setLeadDetailContext]);
 
   React.useEffect(() => {
     if (isOpen && lead?.lead_id && activeTab === 'notes') {
@@ -82,6 +90,16 @@ const LeadDetailModal = ({
         .catch((err) => console.error('Failed to fetch campaign history:', err));
     }
   }, [isOpen, lead]);
+
+  React.useEffect(() => {
+    if (isOpen && lead?.lead_id && activeTab === 'explain') {
+      setLoadingExplanation(true);
+      LeadService.getExplanation(lead.lead_id)
+        .then((data) => setExplanation(data))
+        .catch((err) => console.error('Failed to fetch explanation:', err))
+        .finally(() => setLoadingExplanation(false));
+    }
+  }, [isOpen, lead, activeTab]);
 
   if (!isOpen || !lead) return null;
 
@@ -157,6 +175,12 @@ const LeadDetailModal = ({
               </p>
             </div>
             <div>
+              <p className="mb-1 text-xs text-gray-600 dark:text-gray-400">Segment</p>
+              <p className="font-semibold text-gray-900 dark:text-white capitalize">
+                {lead.lead_segment || '-'}
+              </p>
+            </div>
+            <div>
               <p className="mb-1 text-xs text-gray-600 dark:text-gray-400">Education</p>
               <p className="font-semibold text-gray-900 dark:text-white capitalize">
                 {lead.education_level || 'Unknown'}
@@ -196,10 +220,9 @@ const LeadDetailModal = ({
                 {lead.lead_loan ? 'Yes' : 'No'}
               </p>
             </div>
-
-            <div className="col-span-2 md:col-span-3">
+            <div>
               <p className="mb-1 text-xs text-gray-600 dark:text-gray-400">Balance</p>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
+              <p className="font-semibold text-gray-900 dark:text-white ">
                 {formatCurrency(lead.lead_balance)}
               </p>
             </div>
@@ -249,6 +272,12 @@ const LeadDetailModal = ({
                 {lead.poutcome_name || 'Unknown'}
               </p>
             </div>
+            <div>
+              <p className="mb-1 text-xs text-gray-600 dark:text-gray-400">Contact Method</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
+                {lead.contact_method_name || 'Unknown'}
+              </p>
+            </div>
           </div>
           <div className="mt-8">
             <div className="flex mb-4 border-b border-gray-300 dark:border-white/10">
@@ -264,7 +293,7 @@ const LeadDetailModal = ({
               </button>
               {showNotes && (
                 <button
-                  className={`pb-2 px-1 text-sm font-medium transition-colors ${
+                  className={`pb-2 px-1 text-sm font-medium mr-6 transition-colors ${
                     activeTab === 'notes'
                       ? 'text-brand border-b-2 border-brand'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -274,6 +303,16 @@ const LeadDetailModal = ({
                   Notes
                 </button>
               )}
+              <button
+                className={`pb-2 px-1 text-sm font-medium transition-colors ${
+                  activeTab === 'explain'
+                    ? 'text-brand border-b-2 border-brand'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                onClick={() => setActiveTab('explain')}
+              >
+                Why This Score?
+              </button>
             </div>
 
             {activeTab === 'history' ? (
@@ -295,7 +334,7 @@ const LeadDetailModal = ({
                   </div>
                 )}
               </div>
-            ) : (
+            ) : activeTab === 'notes' ? (
               <div className="space-y-4">
                 <div className="bg-gray-100 dark:bg-[#2C2C2C] p-4 rounded-lg border border-gray-300 dark:border-white/5">
                   <textarea
@@ -369,7 +408,84 @@ const LeadDetailModal = ({
                   )}
                 </div>
               </div>
-            )}
+            ) : activeTab === 'explain' ? (
+              <div className="space-y-4">
+                {loadingExplanation ? (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                    <div className="animate-spin w-6 h-6 border-2 border-brand border-t-transparent rounded-full mx-auto mb-2"></div>
+                    Analyzing lead factors...
+                  </div>
+                ) : explanation ? (
+                  <>
+                    <div className="bg-gray-50 dark:bg-white/5 p-4 rounded-lg border border-gray-200 dark:border-white/10">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Lead Score</span>
+                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                          {lead.lead_score ? (lead.lead_score * 100).toFixed(0) : 0}%
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        Why this lead is likely to convert:
+                      </h4>
+                      <div className="space-y-3">
+                        {explanation.top_explanations?.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className={`p-3 rounded-lg border-l-4 ${
+                              item.direction === 'positive'
+                                ? 'bg-green-50 dark:bg-green-900/10 border-green-500'
+                                : 'bg-red-50 dark:bg-red-900/10 border-red-500'
+                            }`}
+                          >
+                            <div
+                              className={`text-sm font-semibold ${
+                                item.direction === 'positive'
+                                  ? 'text-green-800 dark:text-green-300'
+                                  : 'text-red-800 dark:text-red-300'
+                              }`}
+                            >
+                              {item.feature}
+                            </div>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                              {item.context}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {explanation.all_impacts && explanation.all_impacts.length > 5 && (
+                      <details className="mt-4">
+                        <summary className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-brand">
+                          + {explanation.all_impacts.length - 5} more factors
+                        </summary>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {explanation.all_impacts.slice(5).map((item, idx) => (
+                            <span
+                              key={idx}
+                              className={`text-xs px-2 py-1 rounded ${
+                                item.impact_pct > 0
+                                  ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                                  : 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                              }`}
+                            >
+                              {item.feature}
+                            </span>
+                          ))}
+                        </div>
+                      </details>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-8 text-sm">
+                    Unable to analyze this lead.
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
         <div className="p-5 border-t border-gray-300 dark:border-white/10 bg-gray-100 dark:bg-[#242424] flex justify-end gap-3">

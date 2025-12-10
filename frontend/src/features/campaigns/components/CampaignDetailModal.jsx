@@ -1,4 +1,3 @@
-import React from 'react';
 import { createPortal } from 'react-dom';
 
 const CampaignDetailModal = ({ open, onClose, campaign }) => {
@@ -7,10 +6,12 @@ const CampaignDetailModal = ({ open, onClose, campaign }) => {
   return createPortal(
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
       <div className="bg-white dark:bg-[#242424] w-full max-w-lg rounded-xl p-6 transition-colors">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Detail — {campaign.campaign_name}</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+          Detail — {campaign.campaign_name}
+        </h2>
 
         <div className="mb-4 text-sm text-gray-700 dark:text-gray-300">
-            <p>
+          <p>
             <strong>Description:</strong> {campaign.campaign_desc || '-'}
           </p>
           <p>

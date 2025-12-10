@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import KanbanCard from './KanbanCard';
 
 const statusConfig = {
@@ -66,7 +66,9 @@ const KanbanColumn = ({
         className={`p-3 flex items-center gap-2 border-l-4 ${config.bgColor}`}
         style={{ borderLeftColor: config.color }}
       >
-        <h3 className="text-gray-900 dark:text-white font-bold text-sm uppercase tracking-wide">{status}</h3>
+        <h3 className="text-gray-900 dark:text-white font-bold text-sm uppercase tracking-wide">
+          {status}
+        </h3>
         <span
           className="px-2 py-1 text-xs font-semibold rounded-full"
           style={{

@@ -1,0 +1,3 @@
+name,email,telephone,age,job,marital,education,default,balance,housing,loan,contact,day,month,duration,campaign,pdays,previous,poutcome,segment
+John Doe,john.doe@example.com,628123456789,35,management,married,tertiary,no,5000,yes,no,cellular,15,may,300,1,-1,0,unknown,Responsive Young
+Jane Smith,jane.smith@example.com,628987654321,42,technician,single,secondary,no,2500,no,yes,telephone,20,jun,250,2,30,1,success,High-Income Senior

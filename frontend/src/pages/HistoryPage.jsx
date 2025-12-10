@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { toast } from 'react-hot-toast';
@@ -12,6 +12,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import ActionDropdown from '../features/history/components/ActionDropdown';
 import { useHistory } from '../features/history/hooks/useHistory';
 import { FaSearch } from 'react-icons/fa';
+import { useAIContext } from '../context/useAIContext';
 
 const HistoryPage = () => {
   const outletContext = useOutletContext?.() || {};
@@ -49,6 +50,12 @@ const HistoryPage = () => {
     onConfirm: () => {},
     isDangerous: false,
   });
+
+  const { setHistoryContext } = useAIContext();
+
+  useEffect(() => {
+    setHistoryContext(historyList);
+  }, [historyList, setHistoryContext]);
 
   const handleRemove = (row) => {
     setConfirmModal({
@@ -155,7 +162,18 @@ const HistoryPage = () => {
             </thead>
 
             <tbody>
-              {historyList.length > 0
+              {loading ? (
+                <tr>
+                  <td colSpan={isAdmin ? 6 : 5} className="py-12">
+                    <div className="flex items-center justify-center text-gray-400">
+                      <div className="text-center">
+                        <div className="inline-block w-8 h-8 border-4 border-gray-300 dark:border-gray-400 border-t-blue-600 dark:border-t-white rounded-full animate-spin mb-2"></div>
+                        <p>Loading history...</p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ) : historyList.length > 0
                 ? historyList.map((row) => (
                     <tr
                       key={row.history_id}
@@ -198,7 +216,7 @@ const HistoryPage = () => {
                       )}
                     </tr>
                   ))
-                : !loading && (
+                : (
                     <tr>
                       <td
                         colSpan={isAdmin ? 6 : 5}

@@ -32,13 +32,16 @@ const LeadService = {
     return null;
   },
 
-  uploadCSV: async (file) => {
+  uploadCSV: async (file, limit) => {
     const formData = new FormData();
     formData.append('file', file);
+    if (limit) {
+      formData.append('limit', limit);
+    }
     const response = await axiosClient.post('/leads/upload-csv', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data.data;
+    return response.data;
   },
 
   addToCampaign: async (leadId, campaignId, userId) => {
@@ -59,6 +62,16 @@ const LeadService = {
   batchDelete: async (leadIds) => {
     const response = await axiosClient.post('/leads/batch-delete', { leadIds });
     return response.data;
+  },
+
+  getSegments: async () => {
+    const response = await axiosClient.get('/leads/segments');
+    return response.data.data;
+  },
+
+  getExplanation: async (leadId) => {
+    const response = await axiosClient.get(`/leads/${leadId}/explain`);
+    return response.data.data;
   },
 };
 

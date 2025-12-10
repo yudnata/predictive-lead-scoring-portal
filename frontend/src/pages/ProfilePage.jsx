@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
 const ProfilePage = ({ user }) => {
@@ -14,12 +14,21 @@ const ProfilePage = ({ user }) => {
     window.location.href = '/login';
   };
 
-  if (!user) return <div className="p-4 text-white">Loading profile data...</div>;
+  if (!user) return (
+    <div className="flex items-center justify-center h-96 text-gray-400">
+      <div className="text-center">
+        <div className="inline-block w-8 h-8 border-4 border-gray-300 dark:border-gray-400 border-t-blue-600 dark:border-t-white rounded-full animate-spin mb-2"></div>
+        <p>Loading profile...</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex items-center justify-center h-full dark:bg-dark-bg">
       <div className="w-full max-w-lg p-8 border shadow-xl rounded-xl bg-white dark:bg-dark-card border-gray-200 dark:border-white/10">
-        <h1 className="mb-6 text-3xl font-bold text-center text-gray-900 dark:text-white">My Profile</h1>
+        <h1 className="mb-6 text-3xl font-bold text-center text-gray-900 dark:text-white">
+          My Profile
+        </h1>
 
         <div className="space-y-4 text-base text-gray-900 dark:text-white">
           <div className="flex justify-between">
@@ -65,7 +74,9 @@ const ProfilePage = ({ user }) => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
             <div className="bg-white dark:bg-[#1E1E1E] w-full max-w-sm p-6 rounded-2xl shadow-lg text-gray-900 dark:text-white">
               <h3 className="mb-4 text-xl font-bold">Logout Confirmation</h3>
-              <p className="mb-6 text-gray-600 dark:text-gray-300">Are you sure you want to logout?</p>
+              <p className="mb-6 text-gray-600 dark:text-gray-300">
+                Are you sure you want to logout?
+              </p>
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowLogoutModal(false)}

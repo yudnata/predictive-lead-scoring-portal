@@ -1,11 +1,12 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import AIChatbot from '../features/ai/components/AIChatbot';
 
 const MainLayout = ({ user }) => {
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen bg-white dark:bg-[#121212]"> 
+    <div className="flex min-h-screen bg-white dark:bg-[#121212]">
       <style>
         {`
           @keyframes slideRightFade {
@@ -26,6 +27,7 @@ const MainLayout = ({ user }) => {
           <Outlet context={{ user }} />
         </div>
       </main>
+      {user?.role !== 'admin' && <AIChatbot />}
     </div>
   );
 };

@@ -20,7 +20,14 @@ export const useTracker = (userId) => {
       return;
     }
     try {
-      const res = await LeadsTrackerService.getAll(1, 500, search, appliedFilters, userId, filterSelf);
+      const res = await LeadsTrackerService.getAll(
+        1,
+        500,
+        search,
+        appliedFilters,
+        userId,
+        filterSelf
+      );
       setList(res.data || []);
       setTotalResults(res.meta?.total || 0);
     } catch (err) {

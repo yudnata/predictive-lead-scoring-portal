@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -81,7 +81,9 @@ const CampaignFilter = ({ isOpen, initialFilters, onApply }) => {
         </select>
       </div>
       <div className="flex flex-col space-y-1 w-full md:w-64">
-        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">Date Range (Active During)</label>
+        <label className="text-xs text-gray-600 dark:text-gray-400 ml-1">
+          Date Range (Active During)
+        </label>
         <div className="relative w-full">
           <DatePicker
             selectsRange={true}
