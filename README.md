@@ -166,6 +166,7 @@ Before running the app, you must configure the environment variables. The projec
     *   *Required for Docker Compose to set Postgres credentials and ports.*
 2.  **Backend**: Copy `.env.example` to `.env` in the `backend/` folder.
 3.  **Frontend**: Copy `.env.example` to `.env` in the `frontend/` folder.
+4.  **ML Service**: Copy `.env.example` to `.env` in the `machine-learning/` folder.
 
 | Variable | Service | Description |
 | :--- | :--- | :--- |
@@ -174,13 +175,13 @@ Before running the app, you must configure the environment variables. The projec
 | `DATABASE_URL` | Backend | Connection string (ensure it matches Docker credentials). |
 | `GROQ_API_KEY` | Backend | API Key for AI chat features. |
 | `VITE_API_BASE_URL` | Frontend | URL of backend API. |
+| `HF_REPO_ID` | ML Service | Hugging Face Repo ID to download models (e.g., `user/repo`). |
 
 ### 🐳 Running with Docker (Recommended)
 
 1.  **Clone the Repository**
     ```bash
-    git clone https://github.com/yourusername/plscore-project.git
-    cd plscore-project
+    git clone https://github.com/A25-CS073/predictive-lead-scoring-portal.git
     ```
 
 2.  **Setup Environment**
@@ -193,13 +194,13 @@ Before running the app, you must configure the environment variables. The projec
     ```
     *This will automatically start Backend (5000), Frontend (5173), ML API (5001), and PostgreSQL.*
 
-### Installation (Manual Manual)
+### Installation (Manual)
 
 1.  **Clone the Repository**
 
     ```bash
-    git clone https://github.com/yourusername/plscore-project.git
-    cd plscore-project
+    git clone https://github.com/A25-CS073/predictive-lead-scoring-portal.git
+    cd predictive-lead-scoring-portal
     ```
 
 2.  **Setup Backend**
