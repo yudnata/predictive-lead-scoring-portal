@@ -230,6 +230,15 @@ Before running the app, you must configure the environment variables. The projec
 
 Visit `http://localhost:5173` to view the app!
 
+### 🔑 Default Accounts
+
+Use these credentials to log in (populated by database seeds):
+
+| Role | Email | Password | Access |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@accenture.com` | `password123` | Full strategic access (Pipeline, Users, Campaigns). |
+| **Sales** | `sales1@accenture.com` | `password123` | Sales execution access (Leads, Outbound, Analytics). |
+
 ---
 
 ## 📸 Screenshots

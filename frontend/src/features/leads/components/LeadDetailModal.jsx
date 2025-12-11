@@ -190,10 +190,10 @@ const LeadDetailModal = ({
               <p className="mb-1 text-xs text-gray-600 dark:text-gray-400">Has Housing Loan?</p>
               <p
                 className={`font-semibold ${
-                  lead.lead_housing_loan ? 'text-brand' : 'text-gray-900 dark:text-white'
+                  lead.lead_housing_loan === 'yes' ? 'text-brand' : 'text-gray-900 dark:text-white'
                 }`}
               >
-                {lead.lead_housing_loan ? 'Yes' : 'No'}
+                {lead.lead_housing_loan === 'yes' ? 'Yes' : 'No'}
               </p>
             </div>
 
@@ -201,6 +201,16 @@ const LeadDetailModal = ({
               <p className="mb-1 text-xs text-gray-600 dark:text-gray-400">Marital Status</p>
               <p className="font-semibold text-gray-900 dark:text-white capitalize">
                 {lead.marital_status || 'Unknown'}
+              </p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs text-gray-600 dark:text-gray-400">Credit Default?</p>
+              <p
+                className={`font-semibold ${
+                  lead.lead_default === 'yes' ? 'text-red-500' : 'text-gray-900 dark:text-white'
+                }`}
+              >
+                {lead.lead_default === 'yes' ? 'Yes' : 'No'}
               </p>
             </div>
             <div>
@@ -214,10 +224,10 @@ const LeadDetailModal = ({
               <p className="mb-1 text-xs text-gray-600 dark:text-gray-400">Has Personal Loan?</p>
               <p
                 className={`font-semibold ${
-                  lead.lead_loan ? 'text-brand' : 'text-gray-900 dark:text-white'
+                  lead.lead_loan === 'yes' ? 'text-brand' : 'text-gray-900 dark:text-white'
                 }`}
               >
-                {lead.lead_loan ? 'Yes' : 'No'}
+                {lead.lead_loan === 'yes' ? 'Yes' : 'No'}
               </p>
             </div>
             <div>
@@ -421,7 +431,12 @@ const LeadDetailModal = ({
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">Lead Score</span>
                         <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                          {lead.lead_score ? (lead.lead_score * 100).toFixed(0) : 0}%
+                          {isNaN(lead.score !== undefined ? lead.score : lead.lead_score)
+                            ? '0'
+                            : (
+                                (lead.score !== undefined ? lead.score : lead.lead_score) * 100
+                              ).toFixed(0)}
+                          %
                         </span>
                       </div>
                     </div>
@@ -449,9 +464,23 @@ const LeadDetailModal = ({
                             >
                               {item.feature}
                             </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                              {item.context}
-                            </p>
+
+                            {item.narrative ? (
+                              <div className="text-xs font-medium text-gray-800 dark:text-white/80 mt-0.5">
+                                {item.narrative}
+                              </div>
+                            ) : (
+                              <>
+                                {item.feature_value && (
+                                  <div className="text-xs font-medium text-gray-800 dark:text-white mt-0.5">
+                                    {item.feature_value}
+                                  </div>
+                                )}
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                  {item.context}
+                                </p>
+                              </>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -473,6 +502,9 @@ const LeadDetailModal = ({
                               }`}
                             >
                               {item.feature}
+                              {item.feature_value && (
+                                <span className="opacity-75"> - {item.feature_value}</span>
+                              )}
                             </span>
                           ))}
                         </div>

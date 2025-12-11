@@ -6,6 +6,7 @@ import json
 import os
 import warnings
 from flask import Flask, request, jsonify
+from shap_logic.shap_service import LeadScoringSHAPService
 
 warnings.filterwarnings("ignore")
 
@@ -19,20 +20,52 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_FILE = os.path.join(BASE_DIR, 'model/BEST_MODEL.pkl')
 SCALER_FILE = os.path.join(BASE_DIR, 'model/scaler.pkl')
 ENCODER_FILE = os.path.join(BASE_DIR, 'model/onehot_encoder.pkl')
+FEATURE_NAMES_FILE = os.path.join(BASE_DIR, 'model/feature_names.pkl')
 
 model = None
 scaler = None
 encoder = None
+feature_names = []
+shap_service = None
 
 def load_artifacts():
-    global model, scaler, encoder
+    global model, scaler, encoder, feature_names, shap_service
     try:
         if not os.path.exists(MODEL_FILE):
             raise FileNotFoundError(f"Model file not found at {MODEL_FILE}")
         model = joblib.load(MODEL_FILE)
         scaler = joblib.load(SCALER_FILE)
         encoder = joblib.load(ENCODER_FILE)
+
+        if os.path.exists(FEATURE_NAMES_FILE):
+            feature_names = joblib.load(FEATURE_NAMES_FILE)
+        else:
+            print(f"⚠️ Feature names file not found. attempting to reconstruction...")
+            if hasattr(model, 'feature_names_in_'):
+                feature_names = list(model.feature_names_in_)
+                print(f"✅ Recovered {len(feature_names)} feature names from model metadata.")
+            else:
+                try:
+                    numeric_cols = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
+                    categorical_cols = ["job", "marital", "education", "default", "housing", "loan", "contact", "month", "poutcome"]
+                    if hasattr(encoder, 'get_feature_names_out'):
+                        encoded_categs = list(encoder.get_feature_names_out(categorical_cols))
+                    else:
+                        encoded_categs = list(encoder.get_feature_names(categorical_cols))
+                    feature_names = numeric_cols + encoded_categs
+                    print(f"✅ Reconstructed {len(feature_names)} feature names from encoder.")
+                except Exception as ex:
+                    print(f"❌ Failed to reconstruct feature names: {ex}")
+                    feature_names = []
+
         print(f"✅ Artifacts loaded successfully from {BASE_DIR}")
+
+        if model is not None and feature_names:
+            shap_service = LeadScoringSHAPService(model, feature_names)
+            print("✅ SHAP Service initialized.")
+        else:
+            print("⚠️ SHAP Service not initialized due to missing model or feature names.")
+
     except Exception as e:
         print(f"❌ Failed to load artifacts: {str(e)}")
         sys.exit(1)
@@ -266,31 +299,12 @@ def predict_single():
             "success": False
         }), 500
 
-shap_service = None
 
-def init_shap_service():
-    """Initialize SHAP service after model is loaded"""
-    global shap_service
-    try:
-        import shap
-        if hasattr(model, 'feature_names_in_'):
-            feature_names = list(model.feature_names_in_)
-        else:
-            feature_names = [f"feature_{i}" for i in range(100)]
-
-        shap_service = shap.TreeExplainer(model)
-        print(f"✅ SHAP explainer initialized with {len(feature_names)} features")
-        return feature_names
-    except Exception as e:
-        print(f"⚠️ SHAP initialization failed: {str(e)}")
-        return None
-
-shap_feature_names = init_shap_service()
 
 @app.route('/explain', methods=['POST'])
 def explain():
     """Generate SHAP explanation for a single lead"""
-    global shap_service, shap_feature_names
+    global shap_service
 
     if shap_service is None:
         return jsonify({"error": "SHAP service not available", "success": False}), 500
@@ -351,155 +365,8 @@ def explain():
         else:
             prediction = model.predict(X_processed)[0]
 
-        shap_values = shap_service.shap_values(X_processed)
-
-        if isinstance(shap_values, list) and len(shap_values) == 2:
-            shap_vals = shap_values[1][0]
-            base_value = float(shap_service.expected_value[1])
-        elif hasattr(shap_values, 'shape') and len(shap_values.shape) == 3:
-            shap_vals = shap_values[0, :, 1]
-            base_value = float(shap_service.expected_value[1])
-        else:
-            shap_vals = shap_values[0] if hasattr(shap_values, '__getitem__') else shap_values
-            base_value = float(shap_service.expected_value) if not isinstance(shap_service.expected_value, (list, np.ndarray)) else float(shap_service.expected_value[0])
-
-        if not isinstance(shap_vals, np.ndarray):
-            shap_vals = np.array(shap_vals)
-
-        shap_sum = float(np.sum(shap_vals))
-        calculated_prediction = base_value + shap_sum
-
-        feature_names = list(X_processed.columns) if hasattr(X_processed, 'columns') else shap_feature_names
-
-        active_features = set()
-        for num_feat in ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]:
-            active_features.add(num_feat)
-        categorical_values = {
-            'job': single_data['job'],
-            'marital': single_data['marital'],
-            'education': single_data['education'],
-            'default': single_data['default'],
-            'housing': single_data['housing'],
-            'loan': single_data['loan'],
-            'contact': single_data['contact'],
-            'month': single_data['month'],
-            'poutcome': single_data['poutcome'],
-        }
-        for cat, val in categorical_values.items():
-            active_features.add(f"{cat}_{val}")
-
-        impacts = []
-        for i, (fname, sval) in enumerate(zip(feature_names, shap_vals)):
-            if hasattr(sval, '__len__') and not isinstance(sval, str):
-                sval = float(sval[0]) if len(sval) > 0 else 0.0
-            else:
-                sval = float(sval)
-
-            impact_pct = sval * 100
-
-            if abs(impact_pct) < 0.1:
-                continue
-
-            fname_lower = fname.lower()
-            is_numeric = fname_lower in ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
-            is_active_onehot = fname_lower in active_features
-
-            if not is_numeric and not is_active_onehot:
-                continue
-
-            impacts.append({
-                "raw_feature": fname,
-                "shap_value": sval,
-                "impact_pct": float(impact_pct)
-            })
-
-        impacts_sorted = sorted(impacts, key=lambda x: abs(x["impact_pct"]), reverse=True)
-
-        feature_labels = {
-            'duration': ('Call Duration', 'Long call shows strong engagement', 'Short call suggests low interest'),
-            'balance': ('Account Balance', 'High balance indicates financial capacity', 'Low balance may limit willingness'),
-            'age': ('Customer Age', 'Age profile matches target demographic', 'Age profile less likely to convert'),
-            'campaign': ('Campaign Contacts', 'Follow-up helped build interest', 'Too many contacts may have caused fatigue'),
-            'pdays': ('Days Since Last Contact', 'Recent engagement keeps interest fresh', 'Too long since last contact'),
-            'previous': ('Previous Contacts', 'Prior relationship builds trust', 'Limited prior engagement'),
-            'day': ('Contact Day', 'Good timing for financial decisions', 'Timing was suboptimal'),
-            'poutcome_success': ('Previous Campaign Success', 'Already showed interest in our products', 'N/A'),
-            'poutcome_failure': ('Previous Campaign Rejection', 'N/A', 'Previously declined similar offers'),
-            'poutcome_unknown': ('First-Time Contact', 'Fresh prospect with no negative history', 'No prior data to predict behavior'),
-            'housing_yes': ('Has Housing Loan', 'Shows trust in financial institutions', 'Existing debt may limit new commitments'),
-            'housing_no': ('No Housing Loan', 'More capacity for new products', 'May be less engaged with banking'),
-            'loan_yes': ('Has Personal Loan', 'Active banking relationship', 'Existing debt reduces appetite'),
-            'loan_no': ('No Personal Loan', 'Lower debt, more flexibility', 'Less active banking relationship'),
-            'default_yes': ('Credit Default History', 'N/A', 'Past default indicates financial difficulties'),
-            'default_no': ('Clean Credit History', 'Good financial responsibility', 'N/A'),
-            'contact_cellular': ('Mobile Contact', 'Personal mobile shows accessibility', 'N/A'),
-            'contact_telephone': ('Landline Contact', 'Traditional contact established', 'May be harder to reach'),
-            'contact_unknown': ('Unknown Contact Method', 'N/A', 'Missing contact info limits engagement'),
-            'job_retired': ('Retired', 'Stable income and time for planning', 'May be more conservative with spending'),
-            'job_management': ('Management Role', 'Higher income and decision power', 'May be too busy'),
-            'job_technician': ('Technical Professional', 'Stable employment, good income', 'N/A'),
-            'job_admin.': ('Administrative Role', 'Regular income', 'Limited disposable income'),
-            'job_blue-collar': ('Blue-Collar Work', 'Steady employment', 'Variable income levels'),
-            'job_services': ('Services Sector', 'Customer-facing experience', 'Variable income'),
-            'job_entrepreneur': ('Entrepreneur', 'Risk-tolerant mindset', 'Variable income may limit commitment'),
-            'job_self-employed': ('Self-Employed', 'Independent decision maker', 'Unpredictable income'),
-            'job_unemployed': ('Unemployed', 'May be seeking financial solutions', 'Limited financial capacity'),
-            'job_student': ('Student', 'Future potential customer', 'Limited current income'),
-            'job_housemaid': ('Domestic Worker', 'Steady work', 'Lower income bracket'),
-            'marital_married': ('Married', 'Stable household finances', 'Joint decisions may slow process'),
-            'marital_single': ('Single', 'Quick individual decisions', 'May have other priorities'),
-            'marital_divorced': ('Divorced', 'Independent decision maker', 'May be financially cautious'),
-            'education_tertiary': ('University Educated', 'Understands complex products', 'May be more skeptical'),
-            'education_secondary': ('High School Education', 'Straightforward communication works', 'May need simpler explanations'),
-            'education_primary': ('Primary Education', 'Values simple, clear offers', 'May distrust complex products'),
-            'month_jan': ('January Contact', 'New year financial planning mindset', 'Post-holiday financial strain'),
-            'month_feb': ('February Contact', 'Quiet month for decisions', 'Low engagement period'),
-            'month_mar': ('March Contact', 'Q1 planning still active', 'N/A'),
-            'month_apr': ('April Contact', 'Spring financial review', 'Tax concerns may distract'),
-            'month_may': ('May Contact', 'Optimistic spring mindset', 'Pre-summer distractions'),
-            'month_jun': ('June Contact', 'Mid-year review timing', 'Summer vacation planning'),
-            'month_jul': ('July Contact', 'N/A', 'Peak vacation season'),
-            'month_aug': ('August Contact', 'N/A', 'Holiday distractions continue'),
-            'month_sep': ('September Contact', 'Back-to-business mindset', 'Back-to-school expenses'),
-            'month_oct': ('October Contact', 'Year-end planning begins', 'N/A'),
-            'month_nov': ('November Contact', 'Year-end financial review', 'Pre-holiday budget concerns'),
-            'month_dec': ('December Contact', 'Year-end decisions and bonuses', 'Holiday busyness'),
-        }
-
-        top_explanations = []
-        for item in impacts_sorted[:5]:
-            raw = item['raw_feature'].lower()
-            impact = item['impact_pct']
-
-            if raw in feature_labels:
-                label_data = feature_labels[raw]
-                label = label_data[0]
-                context = label_data[1] if impact > 0 else label_data[2]
-                if context == 'N/A':
-                    context = ""
-            else:
-                label = item['raw_feature'].replace('_', ' ').title()
-                context = ""
-
-            top_explanations.append({
-                "feature": label,
-                "impact": f"{abs(impact):.1f}%",
-                "impact_pct": impact,
-                "direction": "positive" if impact > 0 else "negative",
-                "context": context,
-            })
-
-        all_impacts_simplified = []
-        for item in impacts_sorted[:15]:
-            raw = item['raw_feature'].lower()
-            if raw in feature_labels:
-                label = feature_labels[raw][0]
-            else:
-                label = item['raw_feature'].replace('_', ' ').title()
-            all_impacts_simplified.append({
-                "feature": label,
-                "impact_pct": item['impact_pct']
-            })
+        print(f"DEBUG: shap_service type: {type(shap_service)}")
+        explanation = shap_service.explain(X_processed, single_data)
 
         print(f"✅ Explain completed for prediction: {prediction:.2%}")
 
@@ -507,9 +374,7 @@ def explain():
             "success": True,
             "prediction": float(prediction),
             "prediction_pct": float(prediction * 100),
-            "base_probability": float(base_value * 100),
-            "top_explanations": top_explanations,
-            "all_impacts": all_impacts_simplified
+            **explanation
         })
 
     except Exception as e:

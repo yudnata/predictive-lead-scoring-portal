@@ -120,9 +120,17 @@ const AIChatbot = () => {
     setMessages([]);
   };
 
+  const buttonWidth = 64;
+  const panelWidth = 380;
+  const gap = 16;
+
   const panelStyle = {
-    left: `${Math.max(10, Math.min(position.x - 384 + 32, window.innerWidth - 400))}px`,
-    bottom: `${Math.max(10, window.innerHeight - position.y + 10)}px`,
+    left: `${Math.max(10, position.x - panelWidth - gap)}px`,
+    bottom: `${Math.max(
+      10,
+      Math.min(window.innerHeight - 600 - 10, window.innerHeight - position.y - buttonWidth)
+    )}px`,
+    maxHeight: 'calc(100vh - 40px)',
   };
 
   return (
@@ -169,7 +177,7 @@ const AIChatbot = () => {
         createPortal(
           <div
             style={panelStyle}
-            className="fixed z-[9999] w-[510px] h-[680px] bg-white dark:bg-[#1E1E1E] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 flex flex-col overflow-hidden animate-fade-in"
+            className="fixed z-[9999] w-[380px] h-[600px] bg-white dark:bg-[#1E1E1E] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 flex flex-col overflow-hidden animate-fade-in"
           >
             <div className="bg-blue-600 border-b border-blue-700 dark:bg-dark-card dark:border-b-white/10   px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -300,7 +308,7 @@ const AIChatbot = () => {
                   onKeyPress={handleKeyPress}
                   placeholder="Type a message..."
                   disabled={isLoading}
-                  className="flex-1 px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-gray-200 dark:border-white/10 rounded-full text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-gray-200 dark:border-white/10 rounded-full text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-/20 disabled:opacity-50"
                 />
                 <button
                   onClick={handleSend}
