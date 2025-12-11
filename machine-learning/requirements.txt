@@ -1,4 +1,5 @@
 flask
+flask-cors
 pandas
 numpy
 tensorflow
@@ -7,3 +8,4 @@ faker
 shap
 huggingface_hub
 python-dotenv
+gunicorn

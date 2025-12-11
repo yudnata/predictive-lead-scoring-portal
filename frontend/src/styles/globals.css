@@ -16,7 +16,7 @@
 
   .animate-fade-in-up {
     animation: fadeInUp 0.2s ease-out forwards;
-    opacity: 0; /* Start hidden to avoid flash */
+    opacity: 0;
   }
 }
 

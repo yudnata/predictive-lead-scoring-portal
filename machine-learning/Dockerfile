@@ -13,18 +13,13 @@ COPY . .
 
 EXPOSE 5001
 
-# Development Stage
 FROM base AS development
-RUN pip install --no-cache-dir flask-cors watchdog
 
 ENV FLASK_ENV=development
 ENV FLASK_DEBUG=1
 
 CMD ["python", "ml_api.py"]
 
-# Production Stage
 FROM base AS production
-
-RUN pip install --no-cache-dir gunicorn
 
 CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "1", "--timeout", "120", "--preload", "ml_api:app"]

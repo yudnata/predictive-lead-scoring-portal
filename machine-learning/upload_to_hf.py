@@ -12,7 +12,6 @@ FILES_TO_UPLOAD = [
 
 def upload_models():
     api = HfApi(token=TOKEN)
-    
     print(f"Checking/Creating repository: {REPO_ID}...")
     try:
         create_repo(repo_id=REPO_ID, repo_type="model", token=TOKEN, exist_ok=True)

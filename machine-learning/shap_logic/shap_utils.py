@@ -80,7 +80,7 @@ def shap_value_to_prob_delta(shap_value, base_value):
 def generate_narrative(raw, val, formatted_val, label, feature_value, context):
     narrative = ""
     raw = raw.lower()
-    
+
     def clean(text):
         return text.strip().rstrip('.')
 
@@ -135,7 +135,7 @@ def generate_narrative(raw, val, formatted_val, label, feature_value, context):
                 narrative = f"{label}. {ctx}."
     else:
          narrative = f"{label}: {feature_value}."
-    
+
     return narrative
 
 def build_explanation(feature_names, shap_values, base_value, single_data):
@@ -147,7 +147,7 @@ def build_explanation(feature_names, shap_values, base_value, single_data):
 
     numeric_cols = {"age", "balance", "day", "duration", "campaign", "pdays", "previous"}
     cat_keys = ["job", "marital", "education", "default", "housing", "loan", "contact", "month", "poutcome"]
-    
+
     active_cats = {}
     for k in cat_keys:
         if k in single_data:
@@ -157,10 +157,10 @@ def build_explanation(feature_names, shap_values, base_value, single_data):
 
     for feature, shap_val in zip(feature_names, shap_values):
         fname_norm = feature.lower()
-        
+
         is_active = False
         matched_cat_key = None
-        
+
         if fname_norm in numeric_cols:
             is_active = True
         else:
@@ -171,7 +171,7 @@ def build_explanation(feature_names, shap_values, base_value, single_data):
                     suffix = fname_norm[len(prefix):]
                     s_norm = suffix.replace('.', '').replace('-', '').replace(' ', '')
                     v_norm = active_val.replace('.', '').replace('-', '').replace(' ', '')
-                    
+
                     if s_norm == v_norm:
                         is_active = True
                     break
@@ -193,7 +193,7 @@ def build_explanation(feature_names, shap_values, base_value, single_data):
         val = None
         formatted_val = ""
         feature_value = ""
-        
+
         if raw in single_data:
             val = single_data[raw]
             formatted_val = fmt_val(val, raw)
@@ -205,7 +205,7 @@ def build_explanation(feature_names, shap_values, base_value, single_data):
             val = single_data[cat_key]
             formatted_val = str(val)
             feature_value = str(val).title()
-        
+
         return val, formatted_val, feature_value
 
     top_explanations = []
@@ -241,7 +241,7 @@ def build_explanation(feature_names, shap_values, base_value, single_data):
     for item in impacts_sorted:
         raw = item['raw_feature'].lower()
         cat_key = item.get('cat_key')
-        
+
         if raw in FEATURE_LABELS:
             label = FEATURE_LABELS[raw][0]
         else:

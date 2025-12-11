@@ -152,11 +152,10 @@ graph TD
 
 ### Prerequisites
 
-- Node.js (v18+)
-- Python (3.9+)
-- PostgreSQL
-
-- PostgreSQL
+- Docker & Docker Compose (recommended)
+- Node.js (v18+) - for manual setup
+- Python (3.9+) - for manual setup
+- PostgreSQL/Supabase account - for database
 
 ### ⚙️ Configuration (First Step)
 
@@ -182,17 +181,30 @@ Before running the app, you must configure the environment variables. The projec
 1.  **Clone the Repository**
     ```bash
     git clone https://github.com/A25-CS073/predictive-lead-scoring-portal.git
+    cd predictive-lead-scoring-portal
     ```
 
-2.  **Setup Environment**
-    Ensure you have created the **Root .env** file.
-
-3.  **Start Services**
+2.  **Setup Environment Files**
     ```bash
-    # Development Mode
+    cp backend/.env.example backend/.env
+    cp machine-learning/.env.example machine-learning/.env
+    ```
+    Edit `backend/.env` with your Supabase/PostgreSQL credentials.
+
+3.  **Start All Services**
+    ```bash
     docker-compose up --build
     ```
-    *This will automatically start Backend (5000), Frontend (5173), ML API (5001), and PostgreSQL.*
+
+4.  **Access the Application**
+    - Frontend: http://localhost:5173
+    - Backend API: http://localhost:5000
+    - ML API: http://localhost:5001
+
+5.  **Production Mode**
+    ```bash
+    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+    ```
 
 ### Installation (Manual)
 

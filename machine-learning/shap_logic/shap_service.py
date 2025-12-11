@@ -2,8 +2,6 @@ import shap
 import numpy as np
 
 from .shap_utils import build_explanation
-
-
 class LeadScoringSHAPService:
     def __init__(self, model, feature_names):
         """
@@ -39,25 +37,19 @@ class LeadScoringSHAPService:
 
         shap_values = self.explainer.shap_values(X)
 
-        # Handle various SHAP output formats (list of arrays vs single tensor)
         if isinstance(shap_values, list):
-            # Binary/Multiclass: List of [n_samples, n_features] per class
-            # We assume binary and take index 1 (Positive class)
             if len(shap_values) > 1:
                 vals = shap_values[1]
             else:
                 vals = shap_values[0]
         elif isinstance(shap_values, np.ndarray) and shap_values.ndim == 3:
-             # (n_samples, n_features, n_classes) -> Take class 1
              if shap_values.shape[2] > 1:
                  vals = shap_values[:, :, 1]
              else:
                  vals = shap_values[:, :, 0]
         else:
-            # (n_samples, n_features) - e.g. regression or specific binary opt
             vals = shap_values
-        
-        # Ensure 1D array (n_features,)
+
         shap_vals_row = np.array(vals).reshape(-1)
 
         explained = build_explanation(
