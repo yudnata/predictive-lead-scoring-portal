@@ -83,11 +83,11 @@ const LoginPage = () => {
       <div className="relative flex flex-1 w-full h-screen px-8 py-10 md:w-1/2 md:px-20">
         <div className="absolute flex items-center space-x-2 top-8 right-8">
           <img
-            src="/logo.png"
-            alt="Accenture Logo"
+            src={"/lead-go-white.png"}
+            alt="LeadGo Logo"
             className="w-auto h-6"
           />
-          <span className="text-xl font-semibold">accenture</span>
+          <span className="text-xl font-semibold">LeadGo</span>
         </div>
 
         <div className="flex flex-col items-center justify-center w-full">

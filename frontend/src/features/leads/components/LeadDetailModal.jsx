@@ -123,7 +123,7 @@ const LeadDetailModal = ({
                 >
                   {isNaN(lead.score !== undefined ? lead.score : lead.lead_score)
                     ? '0'
-                    : ((lead.score !== undefined ? lead.score : lead.lead_score) * 100).toFixed(0)}
+                    : ((lead.score !== undefined ? lead.score : lead.lead_score) * 100).toFixed(2)}
                   %
                 </span>
               </div>
@@ -435,7 +435,7 @@ const LeadDetailModal = ({
                             ? '0'
                             : (
                                 (lead.score !== undefined ? lead.score : lead.lead_score) * 100
-                              ).toFixed(0)}
+                              ).toFixed(2)}
                           %
                         </span>
                       </div>

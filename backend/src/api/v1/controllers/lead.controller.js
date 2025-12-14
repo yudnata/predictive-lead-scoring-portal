@@ -106,17 +106,19 @@ exports.uploadLeadsCSV = async (req, res, next) => {
 
   const parseCSV = (buffer) => {
     const content = buffer.toString();
-    const rows = content.split(/\r?\n/).filter(row => row.trim() !== '');
+    const rows = content.split(/\r?\n/).filter((row) => row.trim() !== '');
     if (rows.length < 2) return [];
 
-    const headers = rows[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const headers = rows[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
     const data = [];
 
     for (let i = 1; i < rows.length; i++) {
-      const values = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.trim().replace(/^"|"$/g, ''));
+      const values = rows[i]
+        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+        .map((val) => val.trim().replace(/^"|"$/g, ''));
       if (values.length === headers.length) {
         const obj = {};
-        headers.forEach((h, index) => obj[h] = values[index]);
+        headers.forEach((h, index) => (obj[h] = values[index]));
         data.push(obj);
       }
     }
@@ -136,12 +138,18 @@ exports.uploadLeadsCSV = async (req, res, next) => {
         rawData = parseCSV(req.file.buffer);
       } catch (e) {
         console.error('❌ CSV Parsing Error:', e.message);
-        uploadSession.updateSession(sessionId, { status: 'error', error: 'Failed to parse CSV file' });
+        uploadSession.updateSession(sessionId, {
+          status: 'error',
+          error: 'Failed to parse CSV file',
+        });
         return;
       }
 
       if (rawData.length === 0) {
-        uploadSession.updateSession(sessionId, { status: 'error', error: 'CSV file is empty or contains only headers' });
+        uploadSession.updateSession(sessionId, {
+          status: 'error',
+          error: 'CSV file is empty or contains only headers',
+        });
         return;
       }
 
@@ -149,18 +157,24 @@ exports.uploadLeadsCSV = async (req, res, next) => {
       let finalData = rawData;
 
       if (limit && limit < rawData.length) {
-         console.log(`Doing random sampling: ${limit} from ${rawData.length} leads.`);
-         for (let i = rawData.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [rawData[i], rawData[j]] = [rawData[j], rawData[i]];
-         }
-         finalData = rawData.slice(0, limit);
+        console.log(`Doing random sampling: ${limit} from ${rawData.length} leads.`);
+        for (let i = rawData.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [rawData[i], rawData[j]] = [rawData[j], rawData[i]];
+        }
+        finalData = rawData.slice(0, limit);
       }
 
-      console.log(`🚀 Sending ${finalData.length} leads (from original ${rawData.length}) to ML API.`);
+      console.log(
+        `🚀 Sending ${finalData.length} leads (from original ${rawData.length}) to ML API.`
+      );
 
       const headers = Object.keys(finalData[0]).join(',');
-      const csvRows = finalData.map(row => Object.values(row).map(val => `"${val}"`).join(','));
+      const csvRows = finalData.map((row) =>
+        Object.values(row)
+          .map((val) => `"${val}"`)
+          .join(',')
+      );
       const newCsvContent = [headers, ...csvRows].join('\n');
       const newBuffer = Buffer.from(newCsvContent, 'utf-8');
 

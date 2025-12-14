@@ -128,7 +128,7 @@ const OutboundModal = ({ lead, onClose, onSuccess }) => {
                 <div className="flex items-center gap-3">
                   <h2 className="text-lg font-semibold">{lead.lead_name || lead.full_name}</h2>
                   <span className="text-[13px] px-2 py-1 rounded-md bg-[#1F3D26] text-green-300 font-semibold">
-                    {lead.score ? `${Math.round(parseFloat(lead.score) * 100)}%` : '0%'}
+                    {lead.score ? `${(parseFloat(lead.score) * 100).toFixed(2)}%` : '0%'}
                   </span>
                 </div>
               </div>
@@ -391,20 +391,15 @@ const OutboundModal = ({ lead, onClose, onSuccess }) => {
                             <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity"></div>
                             <div className="flex justify-between items-start mb-3 relative z-10">
                               <div>
-                                312:{' '}
                                 <span className="text-[10px] text-gray-500 dark:text-gray-400 block mb-1 uppercase tracking-wider font-semibold">
-                                  313:{' '}
                                   {new Date(item.created_at).toLocaleString('id-ID', {
                                     day: '2-digit',
                                     month: 'short',
                                     hour: '2-digit',
                                     minute: '2-digit',
                                   })}
-                                  314:{' '}
                                 </span>
-                                315:{' '}
                                 <div className="flex items-center gap-2">
-                                  316:{' '}
                                   <span className="font-bold text-gray-900 dark:text-white text-sm bg-gray-200 dark:bg-white/10 px-2 py-0.5 rounded-md">
                                     {item.activity_type}
                                   </span>

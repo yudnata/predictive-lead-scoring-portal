@@ -2,19 +2,30 @@ import shap
 import numpy as np
 
 from .shap_utils import build_explanation
+
+def extract_tree_model(model):
+    try:
+        from imblearn.pipeline import Pipeline as ImbPipeline
+        if isinstance(model, ImbPipeline):
+            return model.steps[-1][1]
+    except ImportError:
+        pass
+    try:
+        from sklearn.pipeline import Pipeline as SkPipeline
+        if isinstance(model, SkPipeline):
+            return model.steps[-1][1]
+    except ImportError:
+        pass
+    return model
+
 class LeadScoringSHAPService:
     def __init__(self, model, feature_names):
-        """
-        Create SHAP explainer service for Tree-based models (RandomForest, XGBoost, CatBoost, LightGBM)
-
-        Parameters:
-        - model : trained tree model
-        - feature_names : list of feature names after preprocessing (encoder, scaler)
-        """
         self.model = model
         self.feature_names = feature_names
 
-        self.explainer = shap.TreeExplainer(model)
+        tree_model = extract_tree_model(model)
+        print(f"   ℹ️ Extracted model type for SHAP: {type(tree_model).__name__}")
+        self.explainer = shap.TreeExplainer(tree_model)
 
         if isinstance(self.explainer.expected_value, list) or isinstance(self.explainer.expected_value, np.ndarray):
             self.base_value = self.explainer.expected_value[1]
@@ -22,16 +33,6 @@ class LeadScoringSHAPService:
             self.base_value = self.explainer.expected_value
 
     def explain(self, X, single_data):
-        """
-        Generate SHAP explanation for a SINGLE row of processed data.
-
-        Parameters:
-        - X : np.array shape (1, n_features) - The processed features for the model
-        - single_data : dict - The raw feature values (for narrative generation)
-
-        Returns:
-        - dict JSON-friendly explanation
-        """
         if isinstance(X, np.ndarray) and X.ndim == 1:
             X = X.reshape(1, -1)
 

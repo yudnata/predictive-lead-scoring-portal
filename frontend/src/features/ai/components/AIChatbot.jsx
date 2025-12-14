@@ -199,7 +199,7 @@ const AIChatbot = () => {
                 </div>
                 <div>
                   <h3 className="text-white font-semibold text-sm">AI Sales Assistant</h3>
-                  <p className="text-white/70 text-xs">Powered by Groq</p>
+                  <p className="text-white/70 text-xs">Powered by LLaMA</p>
                 </div>
               </div>
               <button

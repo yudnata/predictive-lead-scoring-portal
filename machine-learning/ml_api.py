@@ -7,7 +7,10 @@ import os
 import warnings
 from flask import Flask, request, jsonify
 from shap_logic.shap_service import LeadScoringSHAPService
+from dotenv import load_dotenv
+from huggingface_hub import hf_hub_download
 
+load_dotenv()
 warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
@@ -28,50 +31,15 @@ encoder = None
 feature_names = []
 shap_service = None
 
-def load_artifacts():
-    global model, scaler, encoder, feature_names, shap_service
-    try:
-        if not os.path.exists(MODEL_FILE):
-            raise FileNotFoundError(f"Model file not found at {MODEL_FILE}")
-        model = joblib.load(MODEL_FILE)
-        scaler = joblib.load(SCALER_FILE)
-        encoder = joblib.load(ENCODER_FILE)
-
-        if os.path.exists(FEATURE_NAMES_FILE):
-            feature_names = joblib.load(FEATURE_NAMES_FILE)
-        else:
-            print(f"⚠️ Feature names file not found. attempting to reconstruction...")
-            if hasattr(model, 'feature_names_in_'):
-                feature_names = list(model.feature_names_in_)
-                print(f"✅ Recovered {len(feature_names)} feature names from model metadata.")
-            else:
-                try:
-                    numeric_cols = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
-                    categorical_cols = ["job", "marital", "education", "default", "housing", "loan", "contact", "month", "poutcome"]
-                    if hasattr(encoder, 'get_feature_names_out'):
-                        encoded_categs = list(encoder.get_feature_names_out(categorical_cols))
-                    else:
-                        encoded_categs = list(encoder.get_feature_names(categorical_cols))
-                    feature_names = numeric_cols + encoded_categs
-                    print(f"✅ Reconstructed {len(feature_names)} feature names from encoder.")
-                except Exception as ex:
-                    print(f"❌ Failed to reconstruct feature names: {ex}")
-                    feature_names = []
-
-        print(f"✅ Artifacts loaded successfully from {BASE_DIR}")
-
-        if model is not None and feature_names:
-            shap_service = LeadScoringSHAPService(model, feature_names)
-            print("✅ SHAP Service initialized.")
-        else:
-            print("⚠️ SHAP Service not initialized due to missing model or feature names.")
-
-    except Exception as e:
-        print(f"❌ Failed to load artifacts: {str(e)}")
-        sys.exit(1)
-
-from huggingface_hub import hf_hub_download
-import os
+IQR_BOUNDS = {
+    'age': {'lower': 18.0, 'upper': 70.0},
+    'balance': {'lower': -2203.0, 'upper': 3954.0},
+    'day': {'lower': -6.0, 'upper': 38.0},
+    'duration': {'lower': -268.5, 'upper': 643.5},
+    'campaign': {'lower': -2.0, 'upper': 6.0},
+    'pdays': {'lower': -1.0, 'upper': -1.0},
+    'previous': {'lower': 0.0, 'upper': 0.0}
+}
 
 HF_REPO_ID = os.getenv("HF_REPO_ID")
 
@@ -95,24 +63,50 @@ def download_models_from_hf():
                 should_download = False
                 print(f"   ℹ️ {filename} exists and seems valid ({file_size} bytes).")
             else:
-                print(f"   ⚠️ {filename} exists but is too small ({file_size} bytes). Likely an LFS pointer. Re-downloading...")
+                print(f"   ⚠️ {filename} exists but is too small ({file_size} bytes). Re-downloading...")
 
         if should_download:
             try:
                 print(f"   Downloading {filename}...")
-                downloaded_path = hf_hub_download(
-                    repo_id=HF_REPO_ID,
-                    filename=filename,
-                )
-
+                downloaded_path = hf_hub_download(repo_id=HF_REPO_ID, filename=filename)
                 import shutil
                 shutil.copy(downloaded_path, destination)
                 print(f"   ✅ Downloaded {filename} to {destination}")
             except Exception as e:
                 print(f"   ❌ Failed to download {filename}: {e}")
 
-download_models_from_hf()
+def load_artifacts():
+    global model, scaler, encoder, feature_names, shap_service
+    try:
+        if not os.path.exists(MODEL_FILE):
+            raise FileNotFoundError(f"Model file not found at {MODEL_FILE}")
 
+        model = joblib.load(MODEL_FILE)
+        scaler = joblib.load(SCALER_FILE)
+        encoder = joblib.load(ENCODER_FILE)
+
+        if os.path.exists(FEATURE_NAMES_FILE):
+            feature_names = joblib.load(FEATURE_NAMES_FILE)
+        else:
+            if hasattr(model, 'feature_names_in_'):
+                feature_names = list(model.feature_names_in_)
+            else:
+                numeric_cols = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
+                categorical_cols = ["job", "marital", "education", "default", "housing", "loan", "contact", "month", "poutcome"]
+                if hasattr(encoder, 'get_feature_names_out'):
+                    encoded_categs = list(encoder.get_feature_names_out(categorical_cols))
+                else:
+                    encoded_categs = list(encoder.get_feature_names(categorical_cols))
+                feature_names = numeric_cols + encoded_categs
+
+        if model is not None and feature_names:
+            shap_service = LeadScoringSHAPService(model, feature_names)
+
+    except Exception as e:
+        print(f"❌ Failed to load artifacts: {str(e)}")
+        sys.exit(1)
+
+download_models_from_hf()
 load_artifacts()
 
 def process_csv_logic(csv_path, limit=None):
@@ -121,7 +115,7 @@ def process_csv_logic(csv_path, limit=None):
         df = pd.read_csv(csv_path, sep=None, engine='python', nrows=nrows)
         df.columns = [c.lower().strip() for c in df.columns]
     except Exception as e:
-        return {"error": f"Gagal membaca CSV: {str(e)}"}
+        return {"error": f"Failed to read CSV: {str(e)}"}
 
     numeric_features_model_order = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
     numeric_features_scaler_order = ["age", "balance", "campaign", "pdays", "previous", "day", "duration"]
@@ -130,23 +124,28 @@ def process_csv_logic(csv_path, limit=None):
     all_expected = numeric_features_model_order + categorical_cols
     missing = [c for c in all_expected if c not in df.columns]
     if missing:
-        return {"error": f"Kolom wajib hilang di CSV: {missing}"}
+        return {"error": f"Missing required columns: {missing}"}
 
     X_raw = df[all_expected].copy()
-
-    X_raw = X_raw.replace('unknown', np.nan)
-    X_raw = X_raw.replace('Unknown', np.nan)
+    X_raw = X_raw.replace('unknown', np.nan).replace('Unknown', np.nan)
 
     for col in numeric_features_model_order:
         if col == 'pdays':
-             X_raw[col] = X_raw[col].fillna(-1)
+            X_raw[col] = X_raw[col].fillna(-1)
         else:
-             X_raw[col] = X_raw[col].fillna(0)
+            X_raw[col] = X_raw[col].fillna(0)
     for col in categorical_cols:
         X_raw[col] = X_raw[col].fillna('unknown')
 
     if "pdays" in X_raw.columns:
         X_raw["pdays"] = X_raw["pdays"].replace(999, -1)
+
+    for col in numeric_features_model_order:
+        if col in IQR_BOUNDS:
+            lower = IQR_BOUNDS[col]['lower']
+            upper = IQR_BOUNDS[col]['upper']
+            X_raw[col] = np.where(X_raw[col] < lower, lower,
+                         np.where(X_raw[col] > upper, upper, X_raw[col]))
 
     try:
         encoded_arr = encoder.transform(X_raw[categorical_cols])
@@ -163,11 +162,7 @@ def process_csv_logic(csv_path, limit=None):
 
     try:
         if hasattr(model, "feature_names_in_"):
-            try:
-                X_processed = X_processed[model.feature_names_in_]
-            except KeyError as e:
-                missing_cols = set(model.feature_names_in_) - set(X_processed.columns)
-                return {"error": f"Model expects features that are missing: {missing_cols}"}
+            X_processed = X_processed[model.feature_names_in_]
         else:
             X_processed = X_processed.values
 
@@ -182,10 +177,7 @@ def process_csv_logic(csv_path, limit=None):
     for i, score in enumerate(predictions):
         row_data = df.iloc[i].to_dict()
         clean_row = {k: (v if pd.notna(v) else None) for k, v in row_data.items()}
-        results.append({
-            **clean_row,
-            "ml_score": float(score)
-        })
+        results.append({**clean_row, "ml_score": float(score)})
 
     return results
 
@@ -200,7 +192,8 @@ def predict():
             if os.path.exists(data['file_path']):
                 return process_csv_logic(data['file_path'], data.get('limit'))
             else:
-                return jsonify({"error": "File path not found (Services are isolated?)"}), 404
+                return jsonify({"error": "File path not found"}), 404
+
     if not file_obj:
         return jsonify({"error": "No file provided"}), 400
 
@@ -214,8 +207,9 @@ def predict():
 
         if os.path.exists(temp_path):
             os.remove(temp_path)
+
         if isinstance(result, dict) and "error" in result:
-             return jsonify(result), 500
+            return jsonify(result), 500
         return jsonify(result)
 
     except Exception as e:
@@ -223,9 +217,7 @@ def predict():
 
 @app.route('/predict_single', methods=['POST'])
 def predict_single():
-    """Predict score for a single lead"""
     data = request.get_json()
-
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
@@ -251,15 +243,12 @@ def predict_single():
 
         df = pd.DataFrame([single_data])
 
-
         numeric_features_model_order = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
         numeric_features_scaler_order = ["age", "balance", "campaign", "pdays", "previous", "day", "duration"]
         categorical_cols = ["job", "marital", "education", "default", "housing", "loan", "contact", "month", "poutcome"]
 
         X_raw = df[numeric_features_model_order + categorical_cols].copy()
-
-        X_raw = X_raw.replace('unknown', np.nan)
-        X_raw = X_raw.replace('Unknown', np.nan)
+        X_raw = X_raw.replace('unknown', np.nan).replace('Unknown', np.nan)
 
         for col in numeric_features_model_order:
             if col == 'pdays':
@@ -271,6 +260,13 @@ def predict_single():
 
         if "pdays" in X_raw.columns:
             X_raw["pdays"] = X_raw["pdays"].replace(999, -1)
+
+        for col in numeric_features_model_order:
+            if col in IQR_BOUNDS:
+                lower = IQR_BOUNDS[col]['lower']
+                upper = IQR_BOUNDS[col]['upper']
+                X_raw[col] = np.where(X_raw[col] < lower, lower,
+                             np.where(X_raw[col] > upper, upper, X_raw[col]))
 
         encoded_arr = encoder.transform(X_raw[categorical_cols])
         encoded_cols = encoder.get_feature_names_out(categorical_cols)
@@ -287,23 +283,13 @@ def predict_single():
         else:
             prediction = model.predict(X_processed)[0]
 
-        return jsonify({
-            "prediction": float(prediction),
-            "success": True
-        })
+        return jsonify({"prediction": float(prediction), "success": True})
 
     except Exception as e:
-        print(f"❌ Prediction error: {str(e)}")
-        return jsonify({
-            "error": f"Prediction failed: {str(e)}",
-            "success": False
-        }), 500
-
-
+        return jsonify({"error": f"Prediction failed: {str(e)}", "success": False}), 500
 
 @app.route('/explain', methods=['POST'])
 def explain():
-    """Generate SHAP explanation for a single lead"""
     global shap_service
 
     if shap_service is None:
@@ -350,6 +336,13 @@ def explain():
         if "pdays" in X_raw.columns:
             X_raw["pdays"] = X_raw["pdays"].replace(999, -1)
 
+        for col in numeric_features_model_order:
+            if col in IQR_BOUNDS:
+                lower = IQR_BOUNDS[col]['lower']
+                upper = IQR_BOUNDS[col]['upper']
+                X_raw[col] = np.where(X_raw[col] < lower, lower,
+                             np.where(X_raw[col] > upper, upper, X_raw[col]))
+
         encoded_arr = encoder.transform(X_raw[categorical_cols])
         encoded_cols = encoder.get_feature_names_out(categorical_cols)
         df_encoded = pd.DataFrame(encoded_arr, columns=encoded_cols, index=X_raw.index)
@@ -365,10 +358,7 @@ def explain():
         else:
             prediction = model.predict(X_processed)[0]
 
-        print(f"DEBUG: shap_service type: {type(shap_service)}")
         explanation = shap_service.explain(X_processed, single_data)
-
-        print(f"✅ Explain completed for prediction: {prediction:.2%}")
 
         return jsonify({
             "success": True,
@@ -378,13 +368,9 @@ def explain():
         })
 
     except Exception as e:
-        print(f"❌ SHAP explanation error: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({
-            "error": f"Explanation failed: {str(e)}",
-            "success": False
-        }), 500
+        return jsonify({"error": f"Explanation failed: {str(e)}", "success": False}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)

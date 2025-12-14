@@ -159,7 +159,22 @@ const fullLeadQuery = `
         SELECT 1 FROM tb_campaign_leads cl WHERE cl.lead_id = l.lead_id
       ) THEN 'Tracked'
       ELSE 'Available'
-    END as crm_status
+    END as crm_status,
+
+    COALESCE(
+      (SELECT json_agg(
+        json_build_object(
+          'status', s.status,
+          'campaign_name', c.campaign_name,
+          'changed_at', h.changed_at
+        ) ORDER BY h.changed_at DESC
+      )
+      FROM tb_lead_status_history h
+      JOIN tb_campaigns c ON h.campaign_id = c.campaign_id
+      JOIN tb_status s ON h.status_id = s.status_id
+      WHERE h.lead_id = l.lead_id AND h.status_id IN (5, 6)
+      ), '[]'::json
+    ) as outcome_history
 
   FROM tb_leads l
   LEFT JOIN tb_job j ON l.job_id = j.job_id

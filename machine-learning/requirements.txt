@@ -3,9 +3,10 @@ flask-cors
 pandas
 numpy
 tensorflow
-scikit-learn
+scikit-learn==1.5.2
+imbalanced-learn==0.12.4
 faker
 shap
-huggingface_hub
+huggingface_hub[hf_xet]
 python-dotenv
 gunicorn

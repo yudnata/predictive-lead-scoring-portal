@@ -112,16 +112,16 @@ const Sidebar = ({ user }) => {
           onClick={() => navigate(isAdmin ? '/admin/dashboard' : '/sales/dashboard')}
         >
           <img
-            src="/logo.png"
+            src={isDarkMode ? "/lead-go-white.png" : "/lead-go-black.png"}
             alt="Accenture Logo"
-            className="w-8 h-8 object-contain min-w-[2rem]"
+            className="mt-1 w-6 h-6 object-contain min-w-[2rem]"
           />
           <span
             className={`text-xl font-semibold transition-all duration-500 ease-in-out ${
               isHovered ? 'max-w-[200px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0'
             }`}
           >
-            accenture
+            LeadGo
           </span>
         </div>
         <h3
@@ -173,7 +173,7 @@ const Sidebar = ({ user }) => {
               <p className={`text-xs ${secondaryText}`}>{user.email}</p>
             </>
           ) : (
-            <p className={`text-sm ${secondaryText}`}>Pengguna tidak ditemukan</p>
+            <p className={`text-sm ${secondaryText}`}>No User Found</p>
           )}
         </div>
       </div>

@@ -10,6 +10,7 @@ import LeadsFilter from '../features/leads/components/LeadsFilter';
 import Pagination from '../components/Pagination';
 import CampaignHoverCard from '../features/leads/components/CampaignHoverCard';
 import ActionDropdown from '../features/leads/components/ActionDropdown';
+import HistoryBadge from '../features/leads/components/HistoryBadge';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAIContext } from '../context/useAIContext';
 import { getScoreColor, getStatusBadge } from '../utils/formatters';
@@ -334,6 +335,7 @@ const LeadsPage = () => {
                 <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Group</th>
                 <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Score</th>
                 <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">Status</th>
+                <th className="px-4 py-5 font-bold tracking-wider hover:cursor-default">History</th>
                 {(user?.role === 'admin' || user?.role === 'sales') && (
                   <th className="px-4 py-5 font-semibold tracking-wider hover:cursor-default">
                     Action
@@ -364,7 +366,7 @@ const LeadsPage = () => {
               </style>
               {loading ? (
                 <tr>
-                  <td colSpan={isAdmin ? 8 : 7} className="py-12">
+                  <td colSpan={isAdmin ? 9 : 8} className="py-12">
                     <div className="flex items-center justify-center text-gray-400">
                       <div className="text-center">
                         <div className="inline-block w-8 h-8 border-4 border-gray-300 dark:border-gray-400 border-t-blue-600 dark:border-t-white rounded-full animate-spin mb-2"></div>
@@ -463,6 +465,9 @@ const LeadsPage = () => {
                           </span>
                         )}
                       </td>
+                      <td className="px-4 py-2" onClick={(e) => e.stopPropagation()}>
+                        <HistoryBadge history={lead.outcome_history} />
+                      </td>
                       {(user?.role === 'admin' || user?.role === 'sales') && (
                         <td className="px-4 py-2">
                           <ActionDropdown
@@ -482,7 +487,7 @@ const LeadsPage = () => {
                 : (
                     <tr>
                       <td
-                        colSpan={isAdmin ? 8 : 7}
+                        colSpan={isAdmin ? 9 : 8}
                         className="py-12 text-center text-gray-400"
                       >
                         No Leads Found.

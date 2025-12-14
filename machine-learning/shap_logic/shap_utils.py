@@ -86,7 +86,7 @@ def generate_narrative(raw, val, formatted_val, label, feature_value, context):
 
     if context:
         ctx = clean(context)
-        
+
         if raw == 'duration':
             narrative = f"This Lead has {formatted_val} call duration. {ctx}."
         elif raw == 'age':
@@ -139,10 +139,6 @@ def generate_narrative(raw, val, formatted_val, label, feature_value, context):
     return narrative
 
 def build_explanation(feature_names, shap_values, base_value, single_data):
-    """
-    Transform SHAP values into rich structured explanation for the UI.
-    Requires single_data (raw feature values) to generate narratives.
-    """
     base_prob = 1 / (1 + np.exp(-base_value)) * 100
 
     numeric_cols = {"age", "balance", "day", "duration", "campaign", "pdays", "previous"}

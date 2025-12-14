@@ -405,7 +405,7 @@ const LeadFormModal = ({ isOpen, onClose, initialData, onSuccess }) => {
                 <div className="space-y-5">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <span className="font-semibold text-gray-500 dark:text-gray-400">$</span>
+                      <span className="font-semibold text-gray-500 dark:text-gray-400">€</span>
                     </div>
                     <input
                       name="lead_balance"
