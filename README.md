@@ -242,10 +242,29 @@ Before running the app, you must configure the environment variables. The projec
     cp machine-learning/.env.example machine-learning/.env
     cp frontend/.env.example frontend/.env
     ```
-    Edit `backend/.env` with your Supabase/PostgreSQL credentials.
 
-3.  **Start All Services**
+3.  **Choose Your Docker Mode**
+
+    | Mode | Database | Use Case | Command |
+    |------|----------|----------|---------|
+    | **Local** | PostgreSQL in Docker | Development & Testing | `docker-compose -f docker-compose.local.yml up --build` |
+    | **Cloud** | Supabase/External DB | Production-like | `docker-compose up --build` |
+
+    #### 🏠 Local Development (PostgreSQL in Docker)
+    
+    No external database required! Everything runs locally:
     ```bash
+    docker-compose -f docker-compose.local.yml up --build
+    ```
+    - ✅ PostgreSQL database included in Docker
+    - ✅ Auto-migration on startup
+    - ✅ No Supabase account needed
+    
+    #### ☁️ Cloud Development (Supabase/External DB)
+    
+    Uses your configured external database:
+    ```bash
+    # Edit backend/.env with your Supabase credentials first
     docker-compose up --build
     ```
 
@@ -253,10 +272,18 @@ Before running the app, you must configure the environment variables. The projec
     - Frontend: http://localhost:5173
     - Backend API: http://localhost:5000
     - ML API: http://localhost:5001
+    - PostgreSQL (local mode): `localhost:5432`
 
-5.  **Production Mode**
+5.  **Useful Docker Commands**
     ```bash
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+    # Stop all services
+    docker-compose -f docker-compose.local.yml down
+    
+    # Stop and remove volumes (reset database)
+    docker-compose -f docker-compose.local.yml down -v
+    
+    # View logs
+    docker-compose -f docker-compose.local.yml logs -f backend
     ```
 
 ### Installation (Manual)

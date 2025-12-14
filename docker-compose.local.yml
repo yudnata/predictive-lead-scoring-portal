@@ -1,0 +1,85 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: plscore-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: plscore
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      target: development
+    container_name: plscore-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/plscore
+      JWT_SECRET: catch_me_if_you_can_1hdsjiwbcjsy38bjbu38sbak
+      JWT_EXPIRES_IN: 1d
+      ML_API_URL: http://ml-api:5001
+      GROQ_API_KEY: ${GROQ_API_KEY:-gsk_placeholder}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+      ml-api:
+        condition: service_started
+    command: sh -c "npm run migrate && npm run dev"
+
+  ml-api:
+    build:
+      context: ./machine-learning
+      target: development
+    container_name: plscore-ml-api
+    restart: unless-stopped
+    env_file:
+      - ./machine-learning/.env
+    environment:
+      FLASK_ENV: development
+      FLASK_DEBUG: 1
+    volumes:
+      - ./machine-learning:/app
+      - /app/__pycache__
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "5001:5001"
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    container_name: plscore-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:5000
+      VITE_API_BASE_URL: http://localhost:5000/api/v1
+      VITE_ML_API_URL: http://localhost:5001
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+      - ml-api
+
+volumes:
+  postgres_data:
